@@ -28,7 +28,10 @@ interface ParsedDatetime {
  */
 function parseDatetime(str: string): ParsedDatetime | null {
   // ISO 8601 형식: 2024-01-15T14:30:00, 2024-01-15T14:30
-  const isoMatch = str.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}(?::\d{2})?)$/);
+  // 밀리초(.123) 및 타임존(Z, +09:00, -05:00) 지원
+  const isoMatch = str.match(
+    /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}(?::\d{2})?)(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$/
+  );
   if (isoMatch) {
     return {
       datePart: isoMatch[1] ?? '',
@@ -131,8 +134,8 @@ export function datetime(input: string, options?: DatetimeOptions): string {
   };
   const timeResult = time(timePart, timeOptions);
 
-  // 둘 다 변환에 실패하면 원본 반환
-  if (dateResult === datePart && timeResult === timePart) {
+  // 날짜 또는 시간 중 하나라도 변환에 실패하면 원본 반환
+  if (dateResult === datePart || timeResult === timePart) {
     return input;
   }
 
