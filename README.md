@@ -188,20 +188,26 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 
 ### Auto-tags (Automatically Detected)
 
-| Tag        | Description      | Input              | Output                                        |
-| ---------- | ---------------- | ------------------ | --------------------------------------------- |
-| `phone`    | Phone numbers    | `010-1234-5678`    | `공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔`  |
-| `datetime` | Date and time    | `2024-01-15T14:30` | `이천이십사년 일월 십오일 오후 두 시 삼십 분` |
-| `time`     | Time             | `14:30`            | `오후 두 시 삼십 분`                          |
-| `date`     | Date             | `2024-01-15`       | `이천이십사년 일월 십오일`                    |
-| `money`    | Currency amounts | `50000원`          | `오만 원`                                     |
-| `year`     | Year             | `2024년`           | `이천이십사년`                                |
-| `month`    | Month            | `12월`             | `십이월`                                      |
-| `day`      | Day              | `25일`             | `이십오일`                                    |
-| `order`    | Ordinal numbers  | `3번째`            | `세 번째`                                     |
-| `point`    | Points/scores    | `95점`             | `구십오 점`                                   |
-| `piece`    | Counting         | `5개`              | `다섯 개`                                     |
-| `minsec`   | Duration         | `5분30초`          | `오 분 삼십 초`                               |
+| Tag        | Description      | Input               | Output                                            |
+| ---------- | ---------------- | ------------------- | ------------------------------------------------- |
+| `phone`    | Phone numbers    | `010-1234-5678`     | `공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔`      |
+| `datetime` | Date and time    | `2024-01-15T14:30`  | `이천이십사년 일월 십오일 오후 두 시 삼십 분`     |
+| `time`     | Time             | `14:30`             | `오후 두 시 삼십 분`                              |
+| `date`     | Date             | `2024-01-15`        | `이천이십사년 일월 십오일`                        |
+| `money`    | Currency amounts | `50000원`           | `오만 원`                                         |
+| `year`     | Year             | `2024년`            | `이천이십사년`                                    |
+| `month`    | Month            | `12월`              | `십이월`                                          |
+| `day`      | Day              | `25일`              | `이십오일`                                        |
+| `order`    | Ordinal numbers  | `3번째`, `2등`      | `세 번째`, `이 등`                                |
+| `point`    | Points/scores    | `95점`              | `구십오 점`                                       |
+| `piece`    | Counting         | `5개`               | `다섯 개`                                         |
+| `minsec`   | Duration         | `5분30초`           | `오 분 삼십 초`                                   |
+| `ratio`    | Ratio/percent    | `50%`, `1:2`        | `오십 퍼센트`, `일 대 이`                         |
+| `jari`     | Digit places     | `4자리`             | `네 자리`                                         |
+| `number`   | Number (번)      | `3번`               | `삼 번`                                           |
+| `duration` | Period           | `3개월`, `2주`      | `삼 개월`, `이 주`                                |
+| `floor`    | Floor numbers    | `5층`, `B1층`       | `오 층`, `지하 일 층`                             |
+| `account`  | Account numbers  | `123-456-789012`    | `일 이 삼 다시 사 오 육 다시 칠 팔 구 영 일 이`   |
 
 ### Manual-only Tags
 
@@ -348,18 +354,24 @@ src/
     ├── auto-tag.ts             # Auto-tagging logic
     ├── manual-tag.ts           # Manual-tagging logic
     ├── tags/                   # Individual tag converters
+    │   ├── account.ts          # Account number conversion
     │   ├── date.ts
     │   ├── datetime.ts
     │   ├── day.ts
     │   ├── digits.ts
+    │   ├── duration.ts         # Period/duration conversion
+    │   ├── floor.ts            # Floor number conversion
+    │   ├── jari.ts             # Digit places conversion
     │   ├── minsec.ts
     │   ├── money.ts
     │   ├── month.ts
     │   ├── name.ts
+    │   ├── number.ts           # Number (번) conversion
     │   ├── order.ts
     │   ├── phone.ts
     │   ├── piece.ts
     │   ├── point.ts
+    │   ├── ratio.ts            # Ratio/percent conversion
     │   ├── time.ts
     │   └── year.ts
     └── utils/

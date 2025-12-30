@@ -17,6 +17,7 @@ import { jari } from './tags/jari';
 import { numberTag } from './tags/number';
 import { duration } from './tags/duration';
 import { floor } from './tags/floor';
+import { account } from './tags/account';
 
 /**
  * 사용 가능한 태그 함수 매핑
@@ -43,6 +44,7 @@ const TAG_FUNCTIONS: Record<string, TagFunction> = {
   number: (input) => numberTag(input),
   duration: (input) => duration(input),
   floor: (input) => floor(input),
+  account: (input) => account(input),
 };
 
 /**
