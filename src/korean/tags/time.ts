@@ -1,4 +1,8 @@
-import { hourToNativeKorean, numberToKorean } from '../utils/number-to-korean';
+import {
+  hourToNativeKorean,
+  hourToNativeKorean24,
+  numberToKorean,
+} from '../utils/number-to-korean';
 
 /**
  * time 함수의 옵션
@@ -98,9 +102,12 @@ function parseTime(str: string): ParsedTime | null {
  * time('09:05'); // '오전 아홉 시 오 분'
  * time('12:00'); // '오후 열두 시'
  * time('00:00'); // '오전 열두 시'
+ * time('00:00', { use24Hour: true }); // '영 시'
  * time('14:30', { use24Hour: true }); // '열네 시 삼십 분'
  * time('14:30:45'); // '오후 두 시 삼십 분 사십오 초'
- * time('3시'); // '세 시'
+ * time('14:00:30'); // '오후 두 시 삼십 초' (분이 0이면 생략)
+ * time('14:30', { includeSeconds: true }); // '오후 두 시 삼십 분 영 초'
+ * time('3시'); // '오전 세 시'
  * time('오후 3시 30분'); // '오후 세 시 삼십 분'
  * ```
  */
@@ -128,31 +135,13 @@ export function time(input: string, options?: TimeOptions): string {
   }
 
   const parts: string[] = [];
+  const includeSeconds = options?.includeSeconds ?? false;
+  const hasSeconds = seconds !== undefined;
 
   if (use24Hour) {
-    // 24시간제: 열네 시, 스물세 시 등
-    // 24시간제에서도 시는 고유어를 사용
-    const hourStr = hourToNativeKorean(hours);
-    // 12시 이상인 경우 추가 처리
-    if (hours >= 13) {
-      // 13-23시: 열세 시, 열네 시, ..., 스물세 시
-      const hour24Readings: Record<number, string> = {
-        13: '열세',
-        14: '열네',
-        15: '열다섯',
-        16: '열여섯',
-        17: '열일곱',
-        18: '열여덟',
-        19: '열아홉',
-        20: '스물',
-        21: '스물한',
-        22: '스물두',
-        23: '스물세',
-      };
-      parts.push((hour24Readings[hours] ?? hourStr) + ' 시');
-    } else {
-      parts.push(hourStr + ' 시');
-    }
+    // 24시간제: 영 시, 한 시, ..., 스물세 시
+    const hourStr = hourToNativeKorean24(hours);
+    parts.push(hourStr + ' 시');
   } else {
     // 12시간제: 오전/오후 + 고유어 시
     const isPM = hours >= 12;
@@ -161,14 +150,17 @@ export function time(input: string, options?: TimeOptions): string {
     parts.push(ampm + ' ' + hourStr + ' 시');
   }
 
-  // 분 처리
-  if (minutes > 0 || seconds !== undefined) {
+  // 분 처리: 분이 0보다 크거나, 초가 있을 때만 표시 (단, 분이 0이고 초만 있으면 생략)
+  const shouldShowMinutes = minutes > 0 || includeSeconds;
+  if (shouldShowMinutes) {
     parts.push(numberToKorean(minutes) + ' 분');
   }
 
-  // 초 처리
-  if (seconds !== undefined && seconds > 0) {
-    parts.push(numberToKorean(seconds) + ' 초');
+  // 초 처리: 초가 있거나 includeSeconds 옵션이 true일 때 표시
+  const shouldShowSeconds = (hasSeconds && seconds > 0) || includeSeconds;
+  if (shouldShowSeconds) {
+    const secondsValue = seconds ?? 0;
+    parts.push(numberToKorean(secondsValue) + ' 초');
   }
 
   return parts.join(' ');
