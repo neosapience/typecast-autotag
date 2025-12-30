@@ -49,7 +49,7 @@ function numberToKoreanWithDecimal(numStr: string): string {
 /**
  * 비율을 한글로 변환
  *
- * 콜론(:) 비율과 퍼센트(%) 형식을 지원합니다.
+ * 콜론(:) 비율, 퍼센트(%), 배수(배) 형식을 지원합니다.
  *
  * @param input - 변환할 비율 (문자열)
  * @param options - 옵션
@@ -63,6 +63,8 @@ function numberToKoreanWithDecimal(numStr: string): string {
  * ratio('15%');     // '십오 퍼센트'
  * ratio('3.5%');    // '삼쩜오 퍼센트'
  * ratio('100%');    // '백 퍼센트'
+ * ratio('2배');     // '이 배'
+ * ratio('1.5배');   // '일쩜오 배'
  * ```
  */
 export function ratio(input: string, options?: RatioOptions): string {
@@ -84,6 +86,20 @@ export function ratio(input: string, options?: RatioOptions): string {
     }
 
     return korean + ' ' + percentUnit;
+  }
+
+  // 배수 형식: N배
+  const baeMatch = trimmed.match(/^(-?[\d,.]+)\s*배$/);
+  if (baeMatch) {
+    const numStr = baeMatch[1] ?? '';
+
+    // 마이너스 처리
+    if (numStr.startsWith('-')) {
+      return '마이너스 ' + numberToKoreanWithDecimal(numStr.slice(1)) + ' 배';
+    }
+
+    const korean = numberToKoreanWithDecimal(numStr);
+    return korean + ' 배';
   }
 
   // 콜론 비율 형식: N:M 또는 N:M:O...

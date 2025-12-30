@@ -41,6 +41,9 @@ function removeThousandSeparators(str: string): string {
  * money('5,500'); // '오천오백 원'
  * money(100, { unit: '달러' }); // '백 달러'
  * money(50, { unit: '엔' }); // '오십 엔'
+ * money('1억원'); // '일 억원'
+ * money('1000만원'); // '천 만원'
+ * money('100만원'); // '백 만원'
  * ```
  */
 export function money(input: number | string, options?: MoneyOptions): string {
@@ -56,6 +59,25 @@ export function money(input: number | string, options?: MoneyOptions): string {
     // "10,000원", "5000", "₩10000" 등의 형식 파싱
     // 통화 기호 제거: ₩, $, ¥, €, £
     const withoutCurrency = trimmed.replace(/^[₩$¥€£]\s*/, '');
+
+    // 한글 큰 단위 처리: "1000만원" → "천 만원", "1억원" → "일 억원"
+    // 숫자+(만|억|조|경|천)원 형식 감지
+    const bigUnitMatch = withoutCurrency.match(/^([\d,]+)\s*(만|억|조|경|천)원\s*(.*)$/);
+    if (bigUnitMatch) {
+      const numStr = removeThousandSeparators(bigUnitMatch[1] ?? '');
+      const bigUnit = bigUnitMatch[2]; // 만, 억, 조, 경, 천
+      const num = parseInt(numStr, 10);
+
+      if (isNaN(num) || num < 0) {
+        return String(input);
+      }
+
+      if (num === 0) {
+        return '영' + space + bigUnit + '원';
+      }
+
+      return numberToKorean(num) + space + bigUnit + '원';
+    }
 
     // 숫자와 단위 분리
     const match = withoutCurrency.match(/^([\d,]+)\s*(.*)$/);
