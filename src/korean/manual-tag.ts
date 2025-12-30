@@ -12,6 +12,11 @@ import { piece } from './tags/piece';
 import { digits } from './tags/digits';
 import { minsec } from './tags/minsec';
 import { datetime } from './tags/datetime';
+import { ratio } from './tags/ratio';
+import { jari } from './tags/jari';
+import { numberTag } from './tags/number';
+import { duration } from './tags/duration';
+import { floor } from './tags/floor';
 
 /**
  * 사용 가능한 태그 함수 매핑
@@ -33,6 +38,11 @@ const TAG_FUNCTIONS: Record<string, TagFunction> = {
   digits: (input) => digits(input),
   minsec: (input) => minsec(input),
   datetime: (input) => datetime(input),
+  ratio: (input) => ratio(input),
+  jari: (input) => jari(input),
+  number: (input) => numberTag(input),
+  duration: (input) => duration(input),
+  floor: (input) => floor(input),
 };
 
 /**

@@ -13,6 +13,8 @@ import { datetime } from './tags/datetime';
 import { ratio } from './tags/ratio';
 import { jari } from './tags/jari';
 import { numberTag } from './tags/number';
+import { duration } from './tags/duration';
+import { floor } from './tags/floor';
 
 /**
  * 자동 태깅 옵션
@@ -130,7 +132,7 @@ const AUTO_TAG_PATTERNS = {
 
   /**
    * 금액 패턴
-   * - 숫자 + 원
+   * - 숫자 + 원 (소수점 지원)
    * - 숫자 + 만원/억원/조원/경원/천원 (한글 큰 단위)
    * - ₩숫자
    * - 천단위 구분자 지원
@@ -139,8 +141,8 @@ const AUTO_TAG_PATTERNS = {
     patterns: [
       // 숫자 + 만원/억원/조원/경원/천원 (한글 큰 단위)
       /[\d,]+\s*(?:만|억|조|경|천)원(?!\s*[년월일시분초])/g,
-      // 숫자 + 원 (천단위 구분자 지원)
-      /[\d,]+\s*원(?!\s*[년월일시분초])/g,
+      // 숫자 + 원 (천단위 구분자 및 소수점 지원)
+      /[\d,]+(?:\.\d+)?\s*원(?!\s*[년월일시분초])/g,
       // 화폐 기호 + 숫자
       /[₩]\s*[\d,]+/g,
     ],
@@ -226,12 +228,14 @@ const AUTO_TAG_PATTERNS = {
    * 개수 패턴 (고유어 수사 사용)
    * - N개, N마리, N명, N대, N장, N권 등
    * 주의: \b는 한글 뒤에서 작동하지 않으므로 lookahead 사용
+   * 주의: "개월"은 기간이므로 duration 태그에서 처리 (개(?!월))
    */
   piece: {
     patterns: [
       // N개, N마리, N명, N대, N장, N권, N병, N잔, N그루, N송이, N쌍, N벌, N켤레, N채, N건, N회
       // 단위 뒤에 한글이 이어져도 매칭 (예: "5개의")
-      /(?<![0-9])[\d,]+(?:\.\d+)?\s*(?:개|마리|명|대|장|권|병|잔|그루|송이|쌍|벌|켤레|채|건|회)/g,
+      // "개월"은 제외 (duration에서 처리)
+      /(?<![0-9])[\d,]+(?:\.\d+)?\s*(?:개(?!월)|마리|명|대|장|권|병|잔|그루|송이|쌍|벌|켤레|채|건|회)/g,
     ],
     converter: (match: string) => piece(match),
   },
@@ -303,6 +307,44 @@ const AUTO_TAG_PATTERNS = {
       /(?<![0-9])[\d,]+\s*번(?![째호])/g,
     ],
     converter: (match: string) => numberTag(match),
+  },
+
+  /**
+   * 기간 패턴
+   * - N개월, N주, N주일, N년, N년간, N달, N학기, N분기
+   * 주의: piece 태그의 "개"와 충돌하지 않도록 "개월"은 여기서 처리
+   */
+  duration: {
+    patterns: [
+      // N개월 (기간)
+      /(?<![0-9])[\d,]+\s*개월/g,
+      // N주일, N주
+      /(?<![0-9])[\d,]+\s*주일?(?![문제])/g,
+      // N년간, N년 (기간으로서의 년, 년도와 구분)
+      // "2년간" 형태만 기간으로 인식, 단순 "N년"은 year 태그에서 처리
+      /(?<![0-9])[\d,]+\s*년간/g,
+      // N달 (기간)
+      /(?<![0-9])[\d,]+\s*달(?![러력])/g,
+      // N학기, N분기
+      /(?<![0-9])[\d,]+\s*(?:학기|분기)/g,
+    ],
+    converter: (match: string) => duration(match),
+  },
+
+  /**
+   * 층수 패턴
+   * - N층, B1층, 지하N층
+   */
+  floor: {
+    patterns: [
+      // 지하N층 (한글)
+      /지하\s*[\d,]+\s*층/g,
+      // B1층, B2층 (영문)
+      /[Bb][\d,]+\s*층/g,
+      // N층 (일반)
+      /(?<![0-9])[\d,]+\s*층/g,
+    ],
+    converter: (match: string) => floor(match),
   },
 } as const;
 
@@ -537,3 +579,5 @@ export const autoMinsec = (text: string): string => autoTag(text, { enabledTags:
 export const autoRatio = (text: string): string => autoTag(text, { enabledTags: ['ratio'] });
 export const autoJari = (text: string): string => autoTag(text, { enabledTags: ['jari'] });
 export const autoNumber = (text: string): string => autoTag(text, { enabledTags: ['number'] });
+export const autoDuration = (text: string): string => autoTag(text, { enabledTags: ['duration'] });
+export const autoFloor = (text: string): string => autoTag(text, { enabledTags: ['floor'] });

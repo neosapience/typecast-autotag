@@ -1,4 +1,4 @@
-import { numberToKorean } from '../utils/number-to-korean';
+import { numberToKorean, digitToKorean } from '../utils/number-to-korean';
 
 /**
  * money 함수의 옵션
@@ -22,6 +22,29 @@ export interface MoneyOptions {
  */
 function removeThousandSeparators(str: string): string {
   return str.replace(/,/g, '');
+}
+
+/**
+ * 소수점 숫자를 한글로 변환
+ * 예: 0.9 → "영 쩜 구", 1.5 → "일 쩜 오"
+ */
+function numberToKoreanWithDecimal(numStr: string): string {
+  const cleaned = removeThousandSeparators(numStr);
+
+  if (cleaned.includes('.')) {
+    const [intPart, decPart] = cleaned.split('.');
+    const intNum = parseInt(intPart || '0', 10);
+    const intKorean = intNum === 0 ? '영' : numberToKorean(intNum);
+    const decKorean = (decPart || '')
+      .split('')
+      .map((d) => digitToKorean(d))
+      .join(' ');
+    return intKorean + ' 쩜 ' + decKorean;
+  }
+
+  const num = parseInt(cleaned, 10);
+  if (isNaN(num)) return numStr;
+  return num === 0 ? '영' : numberToKorean(num);
 }
 
 /**
@@ -79,12 +102,20 @@ export function money(input: number | string, options?: MoneyOptions): string {
       return numberToKorean(num) + space + bigUnit + '원';
     }
 
-    // 숫자와 단위 분리
-    const match = withoutCurrency.match(/^([\d,]+)\s*(.*)$/);
+    // 숫자와 단위 분리 (소수점 지원)
+    const match = withoutCurrency.match(/^([\d,.]+)\s*(.*)$/);
     if (match) {
-      const numStr = removeThousandSeparators(match[1] ?? '');
-      const num = parseInt(numStr, 10);
+      const numStr = match[1] ?? '';
       const parsedUnit = match[2] || unit;
+
+      // 소수점이 포함된 경우
+      if (numStr.includes('.')) {
+        const korean = numberToKoreanWithDecimal(numStr);
+        return korean + space + parsedUnit;
+      }
+
+      const cleanedNum = removeThousandSeparators(numStr);
+      const num = parseInt(cleanedNum, 10);
 
       if (isNaN(num) || num < 0) {
         return String(input);
