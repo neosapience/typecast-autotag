@@ -27,6 +27,7 @@ interface ParsedTime {
   hours: number;
   minutes: number;
   seconds?: number;
+  timeOfDay?: string; // 아침, 저녁, 새벽, 밤 등
 }
 
 /**
@@ -62,6 +63,21 @@ function parseTime(str: string): ParsedTime | null {
       hours,
       minutes: koreanMatch[3] ? parseInt(koreanMatch[3], 10) : 0,
       seconds: koreanMatch[4] ? parseInt(koreanMatch[4], 10) : undefined,
+    };
+  }
+
+  // 시간대 + 시간 형식: "저녁 9시", "아침 7시", "새벽 3시", "밤 10시"
+  const timeOfDayMatch = str.match(
+    /^(아침|저녁|새벽|밤|낮)\s*(\d{1,2})시\s*(?:(\d{1,2})분)?\s*(?:(\d{1,2})초)?$/
+  );
+  if (timeOfDayMatch) {
+    const hours = parseInt(timeOfDayMatch[2] ?? '0', 10);
+
+    return {
+      hours,
+      minutes: timeOfDayMatch[3] ? parseInt(timeOfDayMatch[3], 10) : 0,
+      seconds: timeOfDayMatch[4] ? parseInt(timeOfDayMatch[4], 10) : undefined,
+      timeOfDay: timeOfDayMatch[1],
     };
   }
 
@@ -123,7 +139,7 @@ export function time(input: string, options?: TimeOptions): string {
     return input;
   }
 
-  const { hours, minutes, seconds } = parsed;
+  const { hours, minutes, seconds, timeOfDay } = parsed;
   const use24Hour = options?.use24Hour ?? false;
 
   // 유효성 검사
@@ -138,7 +154,11 @@ export function time(input: string, options?: TimeOptions): string {
   const includeSeconds = options?.includeSeconds ?? false;
   const hasSeconds = seconds !== undefined;
 
-  if (use24Hour) {
+  // 시간대(아침, 저녁, 새벽, 밤, 낮)가 명시된 경우
+  if (timeOfDay) {
+    const hourStr = hourToNativeKorean(hours);
+    parts.push(timeOfDay + ' ' + hourStr + ' 시');
+  } else if (use24Hour) {
     // 24시간제: 영 시, 한 시, ..., 스물세 시
     const hourStr = hourToNativeKorean24(hours);
     parts.push(hourStr + ' 시');

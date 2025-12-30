@@ -28,6 +28,15 @@ export {
   autoNumber,
   autoDuration,
   autoFloor,
+  autoAccount,
+  autoWeight,
+  autoMile,
+  autoArea,
+  autoSerial,
+  autoBakil,
+  autoRoomNumber,
+  autoJong,
+  autoTimeOfDay,
 } from './auto-tag';
 
 // Auto-tag types
@@ -56,6 +65,14 @@ export { jari } from './tags/jari';
 export { numberTag } from './tags/number';
 export { duration } from './tags/duration';
 export { floor } from './tags/floor';
+export { account } from './tags/account';
+export { weight } from './tags/weight';
+export { mile } from './tags/mile';
+export { area } from './tags/area';
+export { serial, serialNumbersOnly } from './tags/serial';
+export { bakil } from './tags/bakil';
+export { roomNumber } from './tags/room-number';
+export { jong } from './tags/jong';
 
 // Utility functions
 export { numberToKorean, numberToNativeKorean } from './utils/number-to-korean';

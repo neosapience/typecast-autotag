@@ -16,6 +16,13 @@ import { numberTag } from './tags/number';
 import { duration } from './tags/duration';
 import { floor } from './tags/floor';
 import { account } from './tags/account';
+import { weight } from './tags/weight';
+import { mile } from './tags/mile';
+import { area } from './tags/area';
+import { serial, serialNumbersOnly } from './tags/serial';
+import { bakil } from './tags/bakil';
+import { roomNumber } from './tags/room-number';
+import { jong } from './tags/jong';
 
 /**
  * 자동 태깅 옵션
@@ -319,8 +326,9 @@ const AUTO_TAG_PATTERNS = {
 
   /**
    * 기간 패턴
-   * - N개월, N주, N주일, N년, N년간, N달, N학기, N분기
+   * - N개월, N주, N주일, N년, N년간, N달, N학기, N분기, N일 (기간)
    * 주의: piece 태그의 "개"와 충돌하지 않도록 "개월"은 여기서 처리
+   * 주의: day 태그의 "N일"과 구분 필요 - "남은 기간: N일", "N일간" 등 기간 맥락
    */
   duration: {
     patterns: [
@@ -335,8 +343,20 @@ const AUTO_TAG_PATTERNS = {
       /(?<![0-9])[\d,]+\s*달(?![러력])/g,
       // N학기, N분기
       /(?<![0-9])[\d,]+\s*(?:학기|분기)/g,
+      // N일간 (기간)
+      /(?<![0-9])[\d,]+\s*일간/g,
+      // N일 (기간 맥락: "남은 기간:", "기간:" 뒤에 오는 경우)
+      /(?:남은\s*)?기간[:\s]+[\d,]+\s*일(?![째차생])/g,
     ],
-    converter: (match: string) => duration(match),
+    converter: (match: string) => {
+      // "기간: N일" 형태에서 숫자+일만 추출해서 변환
+      const durationMatch = match.match(/([\d,]+)\s*일/);
+      if (durationMatch && /기간/.test(match)) {
+        const prefix = match.replace(/([\d,]+)\s*일.*$/, '');
+        return prefix + duration(durationMatch[0]);
+      }
+      return duration(match);
+    },
   },
 
   /**
@@ -366,6 +386,117 @@ const AUTO_TAG_PATTERNS = {
       /\b\d{2,6}-\d{2,6}-\d{4,14}\b/g,
     ],
     converter: (match: string) => account(match),
+  },
+
+  /**
+   * 무게 패턴
+   * - N kg, N g, N ton, N 톤 등
+   */
+  weight: {
+    patterns: [
+      // 무게: 숫자 + kg/g/mg/ton/톤/킬로그램/그램/밀리그램
+      /[\d,]+(?:\.\d+)?\s*(?:kg|g|mg|ton|톤|킬로그램|그램|밀리그램)/gi,
+    ],
+    converter: (match: string) => weight(match),
+  },
+
+  /**
+   * 마일리지 패턴
+   * - N마일, N mile
+   */
+  mile: {
+    patterns: [
+      // 마일리지: 숫자 + 마일/mile/miles
+      /[\d,]+(?:\.\d+)?\s*(?:마일|miles?)/gi,
+    ],
+    converter: (match: string) => mile(match),
+  },
+
+  /**
+   * 면적 패턴
+   * - N㎡, N평, N m2
+   */
+  area: {
+    patterns: [
+      // 면적: 숫자 + ㎡/m2/m²/평/제곱미터/평방미터
+      /[\d,]+(?:\.\d+)?\s*(?:㎡|m²|m2|평|제곱미터|평방미터)/gi,
+    ],
+    converter: (match: string) => area(match),
+  },
+
+  /**
+   * 일련번호/코드 패턴
+   * - 모델번호: XXX-NNNN-NNN
+   * - 접수번호: NNNNNNNN-NNNN
+   * - 계약번호: NNNN-XXX-NNNNNN
+   * - 처방전 번호: XX-NNNNNNNN-NNNN
+   */
+  serial: {
+    patterns: [
+      // 모델번호, 접수번호, 계약번호, 처방전 번호 등 레이블 + 코드 형식
+      /(?:모델번호|접수번호|계약번호|처방전\s*번호|주문번호|예약번호)[:\s]*[A-Za-z0-9-]+/g,
+      // 영문+숫자+하이픈 조합의 코드 (최소 하이픈 1개 포함, 숫자 포함)
+      /\b[A-Za-z]{1,5}-\d{4,}-\d{2,}\b/g,
+      /\b\d{8,}-\d{4,}\b/g,
+    ],
+    converter: (match: string) => {
+      // 레이블이 있는 경우 레이블 유지하고 숫자만 변환
+      if (/^(?:모델번호|접수번호|계약번호|처방전\s*번호|주문번호|예약번호)/.test(match)) {
+        return serialNumbersOnly(match);
+      }
+      return serial(match);
+    },
+  },
+
+  /**
+   * 박일 패턴
+   * - N박 M일 (숙박 기간)
+   */
+  bakil: {
+    patterns: [
+      // N박 M일, N박M일
+      /\d+박\s*\d+일/g,
+      // N박만 있는 경우
+      /(?<![0-9])\d+박(?!\s*\d)/g,
+    ],
+    converter: (match: string) => bakil(match),
+  },
+
+  /**
+   * 호실 번호 패턴
+   * - N호 (객실, 호실 번호 - 개별 숫자로 읽기)
+   */
+  roomNumber: {
+    patterns: [
+      // N호 (뒤에 수, 기가 오지 않는 경우 - "호수", "호기" 제외)
+      // 3자리 이상의 숫자 + 호 (1205호, 302호 등)
+      /(?<![0-9])\d{3,}\s*호(?![수기선실])/g,
+    ],
+    converter: (match: string) => roomNumber(match),
+  },
+
+  /**
+   * 종류 패턴
+   * - N종 (종류 수)
+   */
+  jong: {
+    patterns: [
+      // N종 (뒤에 류, 목이 오지 않는 경우 - "종류", "종목" 제외)
+      /(?<![0-9])[\d,]+\s*종(?![류목])/g,
+    ],
+    converter: (match: string) => jong(match),
+  },
+
+  /**
+   * 시간대+시간 패턴
+   * - 아침/저녁/새벽/밤/낮 N시
+   */
+  timeOfDay: {
+    patterns: [
+      // 시간대 + N시 (M분) (S초)
+      /(?:아침|저녁|새벽|밤|낮)\s*\d{1,2}시(?:\s*\d{1,2}분)?(?:\s*\d{1,2}초)?/g,
+    ],
+    converter: (match: string) => time(match),
   },
 } as const;
 
@@ -603,3 +734,13 @@ export const autoNumber = (text: string): string => autoTag(text, { enabledTags:
 export const autoDuration = (text: string): string => autoTag(text, { enabledTags: ['duration'] });
 export const autoFloor = (text: string): string => autoTag(text, { enabledTags: ['floor'] });
 export const autoAccount = (text: string): string => autoTag(text, { enabledTags: ['account'] });
+export const autoWeight = (text: string): string => autoTag(text, { enabledTags: ['weight'] });
+export const autoMile = (text: string): string => autoTag(text, { enabledTags: ['mile'] });
+export const autoArea = (text: string): string => autoTag(text, { enabledTags: ['area'] });
+export const autoSerial = (text: string): string => autoTag(text, { enabledTags: ['serial'] });
+export const autoBakil = (text: string): string => autoTag(text, { enabledTags: ['bakil'] });
+export const autoRoomNumber = (text: string): string =>
+  autoTag(text, { enabledTags: ['roomNumber'] });
+export const autoJong = (text: string): string => autoTag(text, { enabledTags: ['jong'] });
+export const autoTimeOfDay = (text: string): string =>
+  autoTag(text, { enabledTags: ['timeOfDay'] });

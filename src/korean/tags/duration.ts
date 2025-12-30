@@ -31,6 +31,7 @@ const DURATION_UNITS: Record<string, string> = {
   달: '달',
   학기: '학기',
   분기: '분기',
+  일: '일',
 };
 
 /**

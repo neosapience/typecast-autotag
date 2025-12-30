@@ -18,12 +18,12 @@ describe('autoTag - minsec (시분초 자동 태깅)', () => {
     });
 
     it('NhNmNs 형식을 변환한다', () => {
-      expect(autoMinsec('1h30m20s')).toBe('일 시간 삼십 분 이십 초');
-      expect(autoMinsec('2h15m')).toBe('이 시간 십오 분');
+      expect(autoMinsec('1h30m20s')).toBe('한 시간 삼십 분 이십 초');
+      expect(autoMinsec('2h15m')).toBe('두 시간 십오 분');
     });
 
     it('Nh 형식을 변환한다', () => {
-      expect(autoMinsec('2h')).toBe('이 시간');
+      expect(autoMinsec('2h')).toBe('두 시간');
     });
   });
 
@@ -34,8 +34,8 @@ describe('autoTag - minsec (시분초 자동 태깅)', () => {
     });
 
     it('hour를 변환한다', () => {
-      expect(autoMinsec('1 hour')).toBe('일 시간');
-      expect(autoMinsec('2 hours')).toBe('이 시간');
+      expect(autoMinsec('1 hour')).toBe('한 시간');
+      expect(autoMinsec('2 hours')).toBe('두 시간');
     });
 
     it('min/sec 약어를 변환한다', () => {
@@ -59,8 +59,8 @@ describe('autoTag - minsec (시분초 자동 태깅)', () => {
     });
 
     it('N시간N분을 변환한다', () => {
-      expect(autoMinsec('1시간30분')).toBe('일 시간 삼십 분');
-      expect(autoMinsec('2시간 15분 20초')).toBe('이 시간 십오 분 이십 초');
+      expect(autoMinsec('1시간30분')).toBe('한 시간 삼십 분');
+      expect(autoMinsec('2시간 15분 20초')).toBe('두 시간 십오 분 이십 초');
     });
   });
 
