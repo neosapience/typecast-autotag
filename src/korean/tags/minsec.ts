@@ -72,12 +72,12 @@ export function minsec(input: string, options?: MinsecOptions): string {
   // 숫자만 있는 경우 초로 해석
   const numberOnlyMatch = normalizedInput.match(/^(\d+)$/);
 
-  let hours = hourMatch ? parseInt(hourMatch[1], 10) : 0;
-  let minutes = minMatch ? parseInt(minMatch[1], 10) : 0;
+  let hours = hourMatch ? parseInt(hourMatch[1] ?? '0', 10) : 0;
+  let minutes = minMatch ? parseInt(minMatch[1] ?? '0', 10) : 0;
   let seconds = secMatch
-    ? parseInt(secMatch[1], 10)
+    ? parseInt(secMatch[1] ?? '0', 10)
     : numberOnlyMatch
-      ? parseInt(numberOnlyMatch[1], 10)
+      ? parseInt(numberOnlyMatch[1] ?? '0', 10)
       : 0;
 
   // 어떤 단위도 매칭되지 않고 숫자만도 아닌 경우 원본 반환
