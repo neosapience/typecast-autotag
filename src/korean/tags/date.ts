@@ -1,5 +1,15 @@
 import { numberToKorean } from '../utils/number-to-korean';
 
+/**
+ * 월 발음 불규칙 처리 (국립국어원 표준 발음법)
+ * - 6월: 육 → 유
+ * - 10월: 십 → 시
+ */
+const IRREGULAR_MONTH_READINGS: Record<number, string> = {
+  6: '유',
+  10: '시',
+};
+
 /** 영어 월 이름 매핑 */
 const ENGLISH_MONTHS: Record<string, number> = {
   january: 1,
@@ -148,10 +158,11 @@ function parseDate(str: string): ParsedDate | null {
  *
  * @example
  * ```typescript
- * date(19940616); // '천구백구십사년 육 월 십육 일생'
+ * date(19940616); // '천구백구십사년 유 월 십육 일생'
  * date('2000-12-25'); // '이천년 십이 월 이십오 일생'
- * date('1994년6월16일'); // '천구백구십사년 육 월 십육 일생'
- * date('June 16, 1994'); // '천구백구십사년 육 월 십육 일생'
+ * date('1994년6월16일'); // '천구백구십사년 유 월 십육 일생'
+ * date('June 16, 1994'); // '천구백구십사년 유 월 십육 일생'
+ * date('2000-10-10'); // '이천년 시 월 십 일생'
  * ```
  */
 export function date(input: number | string): string {
@@ -180,6 +191,9 @@ export function date(input: number | string): string {
   if (month !== undefined && !isNaN(month)) {
     if (month === 0) {
       parts.push('영 월');
+    } else if (IRREGULAR_MONTH_READINGS[month]) {
+      // 불규칙 발음 처리 (6월 → 유 월, 10월 → 시 월)
+      parts.push(IRREGULAR_MONTH_READINGS[month] + ' 월');
     } else {
       parts.push(numberToKorean(month) + ' 월');
     }
