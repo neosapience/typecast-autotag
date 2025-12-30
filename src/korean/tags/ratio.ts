@@ -1,4 +1,4 @@
-import { numberToKorean, digitToKorean } from '../utils/number-to-korean';
+import { numberToKorean, digitToKorean, numberToNativeKorean } from '../utils/number-to-korean';
 
 /**
  * ratio 함수의 옵션
@@ -47,6 +47,33 @@ function numberToKoreanWithDecimal(numStr: string): string {
 }
 
 /**
+ * 배수용 숫자를 한글로 변환 (소수점 지원, 1-99는 고유어)
+ * 배수는 고유어로 읽는 것이 자연스러움: "두 배", "세 배"
+ */
+function numberToKoreanForBae(numStr: string): string {
+  const cleaned = removeThousandSeparators(numStr);
+
+  if (cleaned.includes('.')) {
+    const [intPart, decPart] = cleaned.split('.');
+    const intNum = parseInt(intPart || '0', 10);
+    // 정수부는 고유어 (1-99), 100 이상은 한자어
+    const intKorean =
+      intNum === 0 ? '영' : intNum < 100 ? numberToNativeKorean(intNum) : numberToKorean(intNum);
+    const decKorean = (decPart || '')
+      .split('')
+      .map((d) => digitToKorean(d))
+      .join('');
+    return intKorean + '쩜' + decKorean;
+  }
+
+  const num = parseInt(cleaned, 10);
+  if (isNaN(num)) return numStr;
+  if (num === 0) return '영';
+  // 1-99는 고유어, 100 이상은 한자어
+  return num < 100 ? numberToNativeKorean(num) : numberToKorean(num);
+}
+
+/**
  * 비율을 한글로 변환
  *
  * 콜론(:) 비율, 퍼센트(%), 배수(배) 형식을 지원합니다.
@@ -88,17 +115,17 @@ export function ratio(input: string, options?: RatioOptions): string {
     return korean + ' ' + percentUnit;
   }
 
-  // 배수 형식: N배
+  // 배수 형식: N배 (고유어 사용: 두 배, 세 배)
   const baeMatch = trimmed.match(/^(-?[\d,.]+)\s*배$/);
   if (baeMatch) {
     const numStr = baeMatch[1] ?? '';
 
     // 마이너스 처리
     if (numStr.startsWith('-')) {
-      return '마이너스 ' + numberToKoreanWithDecimal(numStr.slice(1)) + ' 배';
+      return '마이너스 ' + numberToKoreanForBae(numStr.slice(1)) + ' 배';
     }
 
-    const korean = numberToKoreanWithDecimal(numStr);
+    const korean = numberToKoreanForBae(numStr);
     return korean + ' 배';
   }
 

@@ -23,6 +23,11 @@ export {
   autoPoint,
   autoPiece,
   autoMinsec,
+  autoRatio,
+  autoJari,
+  autoNumber,
+  autoDuration,
+  autoFloor,
 } from './auto-tag';
 
 // Auto-tag types
@@ -46,6 +51,11 @@ export { piece } from './tags/piece';
 export { digits } from './tags/digits';
 export { minsec } from './tags/minsec';
 export { datetime } from './tags/datetime';
+export { ratio } from './tags/ratio';
+export { jari } from './tags/jari';
+export { numberTag } from './tags/number';
+export { duration } from './tags/duration';
+export { floor } from './tags/floor';
 
 // Utility functions
 export { numberToKorean, numberToNativeKorean } from './utils/number-to-korean';
