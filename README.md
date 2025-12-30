@@ -1,122 +1,379 @@
-# typecast-autotag
+<div align="center">
 
-Text preprocessing SDK for Typecast TTS API. Automatically converts phone numbers, dates, names, and other patterns into speech-friendly formats for AICC (AI Contact Center) environments.
+# Typecast Autotag
+
+**Text preprocessing SDK for TTS — convert text to speech-friendly Korean**
+
+[![Node.js](https://img.shields.io/badge/Node.js-≥18-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-success?style=for-the-badge)]()
+[![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)]()
+
+[Features](#features) •
+[Installation](#installation) •
+[Quick Start](#quick-start) •
+[API](#api-reference) •
+[Tags](#supported-tags)
+
+---
+
+</div>
+
+Transform phone numbers, dates, currency, and more into natural Korean speech patterns. Built for [Typecast](https://typecast.ai) TTS API and AICC (AI Contact Center) environments.
+
+```typescript
+autoTag('전화번호는 010-1234-5678입니다.');
+// → '전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다.'
+```
+
+<br>
 
 ## Features
 
-- **Tag-based conversion**: Explicit tag syntax for precise control over text conversion
-- **Automatic pattern detection**: Intelligent pattern recognition for common formats (phone numbers, dates, etc.)
-- **Korean language support**: Optimized for Korean TTS pronunciation
-- **Zero dependencies**: Lightweight and easy to integrate
+- **Auto-tagging**: Automatically detects and converts patterns like phone numbers, dates, times, and amounts.
+- **Manual-tagging**: Explicitly tag text with `tagName(value)` syntax for precise control.
+- **Korean-optimized**: Native Korean number reading with proper grammar and pronunciation.
+- **Zero Dependencies**: Lightweight, fast, and tree-shakeable. Supports both ESM and CommonJS.
+
+<br>
 
 ## Installation
 
 ```bash
+# pnpm (recommended)
 pnpm add typecast-autotag
-# or
+
+# npm
 npm install typecast-autotag
-# or
+
+# yarn
 yarn add typecast-autotag
 ```
 
-## Usage
+<br>
 
-### Tag-based Conversion
-
-Use explicit tags to mark text that needs conversion:
+## Quick Start
 
 ```typescript
-import { convertScript } from 'typecast-autotag';
+import { autoTag, manualTag, autoTagWithManual } from 'typecast-autotag';
 
-const input = '안녕하세요, name(김형우) 고객님. month(12) day(25)에 방문 예정입니다.';
-const output = convertScript(input);
-// Result: '안녕하세요, 김 형 우 고객님. 12월 25일에 방문 예정입니다.'
+// Auto-tagging - automatically detects patterns
+autoTag('전화번호는 010-1234-5678입니다.');
+// → '전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다.'
+
+autoTag('회의는 14:30에 시작합니다.');
+// → '회의는 오후 두 시 삼십 분에 시작합니다.'
+
+autoTag('총 금액은 50000원입니다.');
+// → '총 금액은 오만 원입니다.'
+
+// Manual-tagging - explicit control
+manualTag('안녕하세요, name(김철수)님.');
+// → '안녕하세요, 김 철 수님.'
+
+manualTag('month(12) day(25)에 방문 예정입니다.');
+// → '십이월 이십오일에 방문 예정입니다.'
+
+// Combined - use both together
+autoTagWithManual('name(김철수)님, 010-1234-5678로 연락주세요.');
+// → '김 철 수님, 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 연락주세요.'
 ```
 
-### Supported Tags
+<br>
 
-| Tag            | Description                      | Example                                                          |
-| -------------- | -------------------------------- | ---------------------------------------------------------------- |
-| `name(이름)`   | Read name character by character | `name(김형우)` → `김 형 우`                                      |
-| `phone(번호)`  | Convert phone number             | `phone(010-2055-4783)` → `공일공 다시 이공오오 다시 사칠팔삼`    |
-| `month(월)`    | Month notation                   | `month(12)` → `십이월`                                           |
-| `day(일)`      | Day notation                     | `day(25)` → `이십오일`                                           |
-| `date(날짜)`   | Birth date conversion            | `date(19940616)` → `천구백구십사년 육월 십육일생`                |
-| `minsec(분초)` | Waiting time                     | `minsec(3m20s)` → `상담사연결까지 약 삼분 이십초 소요예정입니다` |
-| `digits(숫자)` | Read digits one by one           | `digits(123456)` → `일 이 삼 사 오 륙`                           |
+## API Reference
 
-### Automatic Pattern Detection
+### Auto-tagging Functions
 
-Automatically detect and convert common patterns without explicit tags:
+<details open>
+<summary><b><code>autoTag(text, options?)</code></b> - Convert text with auto-detected patterns</summary>
 
 ```typescript
-import { autoConvert } from 'typecast-autotag';
+autoTag('내일 010-1234-5678로 전화주세요.');
+// → '내일 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 전화주세요.'
 
-const input = '010-2055-4783으로 연락 부탁드립니다.';
-const output = autoConvert(input, { phone: true, date: true });
-// Result: '공일공 다시 이공오오 다시 사칠팔삼으로 연락 부탁드립니다.'
+// Enable specific tags only
+autoTag('010-1234-5678, 50000원', { enabledTags: ['phone'] });
+// → '공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔, 50000원'
 ```
+
+| Option        | Type       | Default | Description         |
+| ------------- | ---------- | ------- | ------------------- |
+| `language`    | `'ko'`     | `'ko'`  | Language to use     |
+| `enabledTags` | `string[]` | all     | Tag types to enable |
+
+</details>
+
+<details>
+<summary><b><code>extractAutoTags(text, options?)</code></b> - Extract patterns without converting</summary>
+
+```typescript
+extractAutoTags('전화번호는 010-1234-5678이고, 금액은 50000원입니다.');
+// [
+//   { original: '010-1234-5678', tagType: 'phone', start: 6, end: 19 },
+//   { original: '50000원', tagType: 'money', start: 28, end: 34 }
+// ]
+```
+
+</details>
+
+### Manual-tagging Functions
+
+<details open>
+<summary><b><code>manualTag(text, options?)</code></b> - Parse and convert manual tags</summary>
+
+```typescript
+manualTag('안녕하세요, name(김철수) 고객님.');
+// → '안녕하세요, 김 철 수 고객님.'
+
+manualTag('금액은 money(10000)입니다.');
+// → '금액은 만 원입니다.'
+```
+
+</details>
+
+<details>
+<summary><b><code>manualTagSelective(text, options)</code></b> - Convert only specific tags</summary>
+
+```typescript
+manualTagSelective('name(김철수) month(12)', { allowedTags: ['name'] });
+// → '김 철 수 month(12)'
+```
+
+</details>
+
+<details>
+<summary><b><code>extractTags(text, options?)</code></b> - Extract manual tags without converting</summary>
+
+```typescript
+extractTags('안녕하세요, name(김철수) 고객님.');
+// [{ tag: 'name', value: '김철수', start: 7, end: 17 }]
+```
+
+</details>
+
+### Combined Function
+
+<details open>
+<summary><b><code>autoTagWithManual(text, options?)</code></b> - Apply both auto and manual tags</summary>
+
+```typescript
+autoTagWithManual('name(김철수)님, 010-1234-5678로 연락주세요.');
+// → '김 철 수님, 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 연락주세요.'
+```
+
+> **Note:** Manual tags are processed first, then auto-tags are applied.
+
+</details>
+
+### Utility Functions
+
+```typescript
+import {
+  getSupportedLanguages,
+  getSupportedAutoTags,
+  getSupportedManualTags,
+  setDefaultLanguage,
+  getDefaultLanguage,
+} from 'typecast-autotag';
+
+getSupportedLanguages(); // ['ko']
+getSupportedAutoTags(); // ['phone', 'datetime', 'time', 'date', ...]
+getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
+```
+
+<br>
+
+## Supported Tags
+
+### Auto-tags (Automatically Detected)
+
+| Tag        | Description      | Input              | Output                                        |
+| ---------- | ---------------- | ------------------ | --------------------------------------------- |
+| `phone`    | Phone numbers    | `010-1234-5678`    | `공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔`  |
+| `datetime` | Date and time    | `2024-01-15T14:30` | `이천이십사년 일월 십오일 오후 두 시 삼십 분` |
+| `time`     | Time             | `14:30`            | `오후 두 시 삼십 분`                          |
+| `date`     | Date             | `2024-01-15`       | `이천이십사년 일월 십오일`                    |
+| `money`    | Currency amounts | `50000원`          | `오만 원`                                     |
+| `year`     | Year             | `2024년`           | `이천이십사년`                                |
+| `month`    | Month            | `12월`             | `십이월`                                      |
+| `day`      | Day              | `25일`             | `이십오일`                                    |
+| `order`    | Ordinal numbers  | `3번째`            | `세 번째`                                     |
+| `point`    | Points/scores    | `95점`             | `구십오 점`                                   |
+| `piece`    | Counting         | `5개`              | `다섯 개`                                     |
+| `minsec`   | Duration         | `5분30초`          | `오 분 삼십 초`                               |
+
+### Manual-only Tags
+
+| Tag      | Description         | Syntax         | Output        |
+| -------- | ------------------- | -------------- | ------------- |
+| `name`   | Name (char-by-char) | `name(김철수)` | `김 철 수`    |
+| `digits` | Digit-by-digit      | `digits(1234)` | `일 이 삼 사` |
+
+> **Tip:** All auto-tags can also be used as manual tags with explicit syntax.
+
+<br>
+
+## Examples
+
+<details open>
+<summary><b>Phone Numbers</b></summary>
+
+```typescript
+autoTag('010-1234-5678'); // → '공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔'
+autoTag('02-123-4567'); // → '공 이 다시 일 이 삼 다시 사 오 육 칠'
+autoTag('1588-1234'); // → '일 오 팔 팔 다시 일 이 삼 사'
+autoTag('112'); // → '일 일 이'
+```
+
+</details>
+
+<details>
+<summary><b>Dates and Times</b></summary>
+
+```typescript
+autoTag('2024-01-15'); // → '이천이십사년 일월 십오일'
+autoTag('2024년 6월 16일'); // → '이천이십사년 유월 십육일'
+autoTag('14:30'); // → '오후 두 시 삼십 분'
+autoTag('오전 9시 30분'); // → '오전 아홉 시 삼십 분'
+```
+
+</details>
+
+<details>
+<summary><b>Money and Amounts</b></summary>
+
+```typescript
+autoTag('50000원'); // → '오만 원'
+autoTag('1,234,567원'); // → '백이십삼만사천오백육십칠 원'
+autoTag('₩10000'); // → '만 원'
+```
+
+</details>
+
+<details>
+<summary><b>Counting (Native Korean)</b></summary>
+
+```typescript
+autoTag('사과 5개'); // → '사과 다섯 개'
+autoTag('강아지 3마리'); // → '강아지 세 마리'
+autoTag('참석자 10명'); // → '참석자 열 명'
+```
+
+</details>
+
+<details>
+<summary><b>Names</b></summary>
+
+```typescript
+manualTag('name(김철수)'); // → '김 철 수'
+manualTag('name(홍길동)'); // → '홍 길 동'
+manualTag('name(김John)'); // → '김 John'
+```
+
+</details>
+
+<br>
+
+## Use Cases
+
+### AICC (AI Contact Center)
+
+Perfect for converting structured data to natural speech in automated phone systems:
+
+```typescript
+const script = autoTagWithManual(`
+  안녕하세요, name(${customerName})님.
+  주문하신 상품이 ${deliveryDate}에 배송될 예정입니다.
+  문의사항은 ${supportPhone}으로 연락주세요.
+`);
+// All names, dates, and phone numbers are converted to natural Korean speech
+```
+
+### IVR Systems
+
+Generate natural-sounding automated responses:
+
+```typescript
+autoTag('고객님의 잔액은 1,234,567원입니다.');
+// → '고객님의 잔액은 백이십삼만사천오백육십칠 원입니다.'
+```
+
+<br>
+
+## Advanced Usage
+
+### Direct Korean Module Access
+
+```typescript
+import { korean } from 'typecast-autotag';
+
+// Use Korean-specific functions
+korean.autoTag('010-1234-5678');
+korean.manualTag('name(김철수)');
+
+// Access individual tag converters
+import { name, phone, money, date, time } from 'typecast-autotag/korean';
+```
+
+<br>
 
 ## Development
 
 ### Prerequisites
 
 - Node.js >= 18
-- pnpm >= 9
+- pnpm 9.x
 
-### Setup
+### Commands
 
-```bash
-# Install dependencies
-pnpm install
+| Command              | Description             |
+| -------------------- | ----------------------- |
+| `pnpm install`       | Install dependencies    |
+| `pnpm dev`           | Watch mode              |
+| `pnpm build`         | Build for production    |
+| `pnpm test`          | Run tests               |
+| `pnpm test:coverage` | Run tests with coverage |
+| `pnpm typecheck`     | Type check              |
+| `pnpm lint`          | Lint code               |
+| `pnpm format`        | Format code             |
 
-# Run tests
-pnpm test
+### Project Structure
 
-# Build
-pnpm build
-
-# Lint
-pnpm lint
-
-# Format
-pnpm format
+```
+src/
+├── index.ts                    # Main entry point
+└── korean/                     # Korean language module
+    ├── index.ts                # Korean module exports
+    ├── auto-tag.ts             # Auto-tagging logic
+    ├── manual-tag.ts           # Manual-tagging logic
+    ├── tags/                   # Individual tag converters
+    │   ├── date.ts
+    │   ├── datetime.ts
+    │   ├── day.ts
+    │   ├── digits.ts
+    │   ├── minsec.ts
+    │   ├── money.ts
+    │   ├── month.ts
+    │   ├── name.ts
+    │   ├── order.ts
+    │   ├── phone.ts
+    │   ├── piece.ts
+    │   ├── point.ts
+    │   ├── time.ts
+    │   └── year.ts
+    └── utils/
+        └── number-to-korean.ts # Number conversion utilities
 ```
 
-### Scripts
+<br>
 
-| Script               | Description                         |
-| -------------------- | ----------------------------------- |
-| `pnpm build`         | Build the library using microbundle |
-| `pnpm dev`           | Watch mode for development          |
-| `pnpm test`          | Run tests                           |
-| `pnpm test:watch`    | Run tests in watch mode             |
-| `pnpm test:coverage` | Run tests with coverage report      |
-| `pnpm lint`          | Run ESLint                          |
-| `pnpm lint:fix`      | Run ESLint with auto-fix            |
-| `pnpm format`        | Format code with Prettier           |
-| `pnpm typecheck`     | Run TypeScript type checking        |
+---
 
-## API Reference
+<div align="center">
 
-### `convertScript(input, options?)`
+Made for [Typecast](https://typecast.ai)
 
-Converts tagged script text into speech-friendly format.
+**[Back to Top](#typecast-autotag)**
 
-**Parameters:**
-
-- `input` (string): The input text containing tags to convert
-- `options` (ConvertOptions, optional): Conversion options
-
-**Returns:** The converted text with all tags processed
-
-### `autoConvert(input, options?)`
-
-Automatically detects and converts patterns in text.
-
-**Parameters:**
-
-- `input` (string): The input text to process
-- `options` (AutoConvertOptions, optional): Options to control pattern detection
-
-**Returns:** The converted text with detected patterns processed
+</div>
