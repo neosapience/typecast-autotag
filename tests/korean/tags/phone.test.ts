@@ -262,6 +262,47 @@ describe('phone', () => {
     });
   });
 
+  describe('포네틱 코드', () => {
+    it('포네틱 코드를 사용하면 혼동되기 쉬운 숫자를 다르게 발음한다', () => {
+      expect(phone('010-1234-5678', { usePhoneticCode: true })).toBe(
+        '공 하나 공 다시 하나 둘 삼 넷 다시 오 여섯 칠 팔'
+      );
+    });
+
+    it('기본값은 포네틱 코드를 사용하지 않는다', () => {
+      expect(phone('010-1234-5678')).toBe('공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔');
+    });
+
+    it('usePhoneticCode: false는 기본 발음을 사용한다', () => {
+      expect(phone('010-1234-5678', { usePhoneticCode: false })).toBe(
+        '공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔'
+      );
+    });
+
+    it('포네틱 코드와 다시 옵션을 함께 사용할 수 있다', () => {
+      expect(phone('010-1234', { usePhoneticCode: true, includeSeparatorWord: false })).toBe(
+        '공 하나 공 하나 둘 삼 넷'
+      );
+    });
+
+    it('포네틱 코드로 모든 숫자를 변환한다', () => {
+      // 0=공, 1=하나, 2=둘, 3=삼, 4=넷, 5=오, 6=여섯, 7=칠, 8=팔, 9=아홉
+      expect(phone('1234567890', { usePhoneticCode: true })).toBe(
+        '하나 둘 삼 넷 오 여섯 칠 팔 아홉 공'
+      );
+    });
+
+    it('긴급번호에서 포네틱 코드를 사용한다', () => {
+      expect(phone('119', { usePhoneticCode: true })).toBe('하나 하나 아홉');
+    });
+
+    it('대표번호에서 포네틱 코드를 사용한다', () => {
+      expect(phone('1588-1234', { usePhoneticCode: true })).toBe(
+        '하나 오 팔 팔 다시 하나 둘 삼 넷'
+      );
+    });
+  });
+
   describe('괄호 처리', () => {
     it('괄호가 포함된 번호에서 괄호를 제거한다 (구분자 없이 연결된 경우)', () => {
       // (02)1234는 하나의 그룹으로 처리됨 (괄호는 구분자가 아님)

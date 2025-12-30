@@ -1,4 +1,4 @@
-import { digitToPhoneKorean } from '../utils/number-to-korean';
+import { digitToPhoneKorean, digitToPhoneticKorean } from '../utils/number-to-korean';
 
 export interface PhoneOptions {
   /**
@@ -12,6 +12,14 @@ export interface PhoneOptions {
    * @default true
    */
   includeSeparatorWord?: boolean;
+
+  /**
+   * 포네틱 코드 사용 여부
+   * true: 1=하나, 2=둘, 3=삼, 4=넷, 5=오, 6=여섯, 7=칠, 8=팔, 9=아홉, 0=공
+   * false: 1=일, 2=이, 3=삼, 4=사, 5=오, 6=육, 7=칠, 8=팔, 9=구, 0=공
+   * @default false
+   */
+  usePhoneticCode?: boolean;
 }
 
 /**
@@ -28,6 +36,10 @@ export interface PhoneOptions {
  * phone('1588-1234'); // '일 오 팔 팔 다시 일 이 삼 사'
  * phone('1588-1234', { includeSeparatorWord: false }); // '일 오 팔 팔 일 이 삼 사'
  * phone('112'); // '일 일 이'
+ *
+ * // 포네틱 코드 사용 (발음 혼동 방지)
+ * phone('010-1234-5678', { usePhoneticCode: true });
+ * // '공 하나 공 다시 하나 둘 삼 넷 다시 오 여섯 칠 팔'
  * ```
  */
 export function phone(input: string, options?: PhoneOptions): string {
@@ -43,6 +55,10 @@ export function phone(input: string, options?: PhoneOptions): string {
   const includeSeparatorWord = options?.includeSeparatorWord ?? true;
   const separator = includeSeparatorWord ? ' 다시 ' : ' ';
 
+  // 포네틱 코드 사용 여부 (기본값: false)
+  const usePhoneticCode = options?.usePhoneticCode ?? false;
+  const digitConverter = usePhoneticCode ? digitToPhoneticKorean : digitToPhoneKorean;
+
   // 구분자로 분리 (구분자가 없으면 전체를 하나의 그룹으로)
   const groups = input.split(delimiters).filter((group) => group.length > 0);
 
@@ -57,7 +73,7 @@ export function phone(input: string, options?: PhoneOptions): string {
       .map((char): string | null => {
         // 숫자인 경우 변환
         if (/\d/.test(char)) {
-          return digitToPhoneKorean(char);
+          return digitConverter(char);
         }
         // 특수문자 발음 변환
         if (char === '#') {

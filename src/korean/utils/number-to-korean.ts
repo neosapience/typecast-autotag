@@ -8,6 +8,9 @@ const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '
 /** 전화번호용 한글 숫자 (0-9) */
 const PHONE_DIGITS = ['공', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
 
+/** 포네틱 코드용 한글 숫자 (0-9) - 혼동 방지를 위해 사용 */
+const PHONETIC_DIGITS = ['공', '하나', '둘', '삼', '넷', '오', '여섯', '칠', '팔', '아홉'];
+
 /** 단위 (일, 십, 백, 천) */
 const SMALL_UNITS = ['', '십', '백', '천'];
 
@@ -38,6 +41,20 @@ export function digitToPhoneKorean(digit: string): string {
     return digit;
   }
   return PHONE_DIGITS[num] ?? digit;
+}
+
+/**
+ * 단일 숫자(0-9)를 포네틱 코드 한글로 변환
+ * 발음 혼동을 방지하기 위해 사용 (예: 1=하나, 2=둘, 4=넷, 6=여섯, 9=아홉)
+ * @param digit - 단일 숫자 문자
+ * @returns 포네틱 코드 한글 숫자
+ */
+export function digitToPhoneticKorean(digit: string): string {
+  const num = parseInt(digit, 10);
+  if (isNaN(num) || num < 0 || num > 9) {
+    return digit;
+  }
+  return PHONETIC_DIGITS[num] ?? digit;
 }
 
 /**
