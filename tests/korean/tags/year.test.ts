@@ -36,8 +36,21 @@ describe('year', () => {
       expect(year('1994년생')).toBe('천구백구십사년생');
     });
 
+    it('"1994생"을 천구백구십사년생으로 변환한다', () => {
+      expect(year('1994생')).toBe('천구백구십사년생');
+    });
+
+    it('"2024년도"를 이천이십사년도로 변환한다', () => {
+      expect(year('2024년도')).toBe('이천이십사년도');
+    });
+
     it('공백이 있는 문자열도 처리한다', () => {
       expect(year('  2024년  ')).toBe('이천이십사년');
+    });
+
+    it('천단위 구분자가 있는 문자열도 처리한다', () => {
+      expect(year('2,024년')).toBe('이천이십사년');
+      expect(year('2,024')).toBe('이천이십사년');
     });
   });
 
@@ -76,6 +89,28 @@ describe('year', () => {
 
     it('잘못된 형식은 원본 반환한다', () => {
       expect(year('abc')).toBe('abc');
+    });
+
+    it('소수점 년도는 버림 처리한다', () => {
+      expect(year(2024.9)).toBe('이천이십사년');
+      expect(year(2024.1)).toBe('이천이십사년');
+    });
+
+    it('Infinity는 원본 반환한다', () => {
+      expect(year(Infinity)).toBe('Infinity');
+      expect(year(-Infinity)).toBe('-Infinity');
+    });
+
+    it('NaN은 원본 반환한다', () => {
+      expect(year(NaN)).toBe('NaN');
+    });
+
+    it('공백만 있는 문자열은 원본 반환한다', () => {
+      expect(year('   ')).toBe('   ');
+    });
+
+    it('문자열 음수는 원본 반환한다', () => {
+      expect(year('-2024')).toBe('-2024');
     });
   });
 
