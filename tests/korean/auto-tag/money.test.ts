@@ -84,4 +84,40 @@ describe('autoTag - money (금액 자동 태깅)', () => {
       expect(result).toContain('일만 원');
     });
   });
+
+  describe('한글 큰 단위', () => {
+    it('1억원을 변환한다', () => {
+      expect(autoMoney('연간 1억원 이상 구매')).toBe('연간 일 억원 이상 구매');
+    });
+
+    it('1000만원을 변환한다', () => {
+      expect(autoMoney('연간 1000만원 이상 구매')).toBe('연간 천 만원 이상 구매');
+    });
+
+    it('100만원을 변환한다', () => {
+      expect(autoMoney('연간 100만원 이상 구매')).toBe('연간 백 만원 이상 구매');
+    });
+
+    it('5천원을 변환한다', () => {
+      expect(autoMoney('배송비 5천원')).toBe('배송비 오 천원');
+    });
+
+    it('1조원을 변환한다', () => {
+      expect(autoMoney('매출 1조원 달성')).toBe('매출 일 조원 달성');
+    });
+
+    it('1경원을 변환한다', () => {
+      expect(autoMoney('예산 1경원')).toBe('예산 일 경원');
+    });
+
+    it('천단위 구분자가 있는 큰 단위를 변환한다', () => {
+      expect(autoMoney('1,000만원')).toBe('천 만원');
+    });
+
+    it('여러 큰 단위 금액을 모두 변환한다', () => {
+      const result = autoMoney('최소 100만원, 최대 1억원');
+      expect(result).toContain('백 만원');
+      expect(result).toContain('일 억원');
+    });
+  });
 });

@@ -75,4 +75,26 @@ describe('autoTag - ratio (비율 자동 태깅)', () => {
       expect(result).toContain('일대일');
     });
   });
+
+  describe('배수', () => {
+    it('기본 배수를 변환한다', () => {
+      expect(autoRatio('포인트 2배 적립')).toBe('포인트 이 배 적립');
+      expect(autoRatio('10배')).toBe('십 배');
+    });
+
+    it('소수점 배수를 변환한다', () => {
+      expect(autoRatio('1.5배')).toBe('일쩜오 배');
+      expect(autoRatio('2.5배 증가')).toBe('이쩜오 배 증가');
+    });
+
+    it('여러 배수를 모두 변환한다', () => {
+      const result = autoRatio('기본 2배, 프리미엄 3배');
+      expect(result).toContain('이 배');
+      expect(result).toContain('삼 배');
+    });
+
+    it('문장 내 배수를 올바르게 변환한다', () => {
+      expect(autoRatio('네 번째 혜택: 포인트 2배 적립')).toBe('네 번째 혜택: 포인트 이 배 적립');
+    });
+  });
 });
