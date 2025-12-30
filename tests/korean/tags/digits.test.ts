@@ -74,4 +74,47 @@ describe('digits', () => {
       expect(digits('940101')).toBe('구 사 영 일 영 일');
     });
   });
+
+  describe('옵션 객체 지원', () => {
+    it('옵션 객체로 구분자를 설정할 수 있다', () => {
+      expect(digits('123', { separator: '-' })).toBe('일-이-삼');
+    });
+
+    it('옵션 객체로 빈 구분자를 설정할 수 있다', () => {
+      expect(digits('123', { separator: '' })).toBe('일이삼');
+    });
+  });
+
+  describe('포네틱 코드', () => {
+    it('포네틱 코드를 사용하면 혼동되기 쉬운 숫자를 다르게 발음한다', () => {
+      expect(digits('1234', { usePhoneticCode: true })).toBe('하나 둘 삼 넷');
+    });
+
+    it('포네틱 코드로 모든 숫자를 변환한다', () => {
+      // 0=공, 1=하나, 2=둘, 3=삼, 4=넷, 5=오, 6=여섯, 7=칠, 8=팔, 9=아홉
+      expect(digits('1234567890', { usePhoneticCode: true })).toBe(
+        '하나 둘 삼 넷 오 여섯 칠 팔 아홉 공'
+      );
+    });
+
+    it('기본값은 포네틱 코드를 사용하지 않는다', () => {
+      expect(digits('1234')).toBe('일 이 삼 사');
+    });
+
+    it('usePhoneticCode: false는 기본 발음을 사용한다', () => {
+      expect(digits('1234', { usePhoneticCode: false })).toBe('일 이 삼 사');
+    });
+
+    it('포네틱 코드와 구분자를 함께 사용할 수 있다', () => {
+      expect(digits('1234', { usePhoneticCode: true, separator: '-' })).toBe('하나-둘-삼-넷');
+    });
+
+    it('포네틱 코드에서 소수점도 쩜으로 변환한다', () => {
+      expect(digits('1.5', { usePhoneticCode: true })).toBe('하나 쩜 오');
+    });
+
+    it('포네틱 코드에서 0은 공으로 변환한다', () => {
+      expect(digits('0', { usePhoneticCode: true })).toBe('공');
+    });
+  });
 });
