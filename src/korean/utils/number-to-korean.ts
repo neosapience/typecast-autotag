@@ -195,7 +195,8 @@ export function numberToOrdinalKorean(num: number): string {
   const tensStr = NATIVE_KOREAN_TENS[tens] ?? '';
   const onesStr = NATIVE_KOREAN_ORDINALS_ONES[ones] ?? '';
 
-  return tensStr + onesStr;
+  // 십단위와 일단위 사이에 공백 추가 (둘 다 있는 경우에만)
+  return tensStr + (tensStr && onesStr ? ' ' : '') + onesStr;
 }
 
 /**
