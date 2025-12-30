@@ -40,10 +40,8 @@ describe('False Positive 방지', () => {
     it('날짜 형식이지만 유효하지 않은 값은 처리된다', () => {
       // 주의: date 함수 자체가 유효성 검사를 하지 않으므로 변환됨
       // 유효성 검사가 필요하다면 date 함수를 수정해야 함
-      expect(autoTag('2024-13-01', { enabledTags: ['date'] })).toBe('이천이십사년 십삼 월 일 일생');
-      expect(autoTag('2024-01-32', { enabledTags: ['date'] })).toBe(
-        '이천이십사년 일 월 삼십이 일생'
-      );
+      expect(autoTag('2024-13-01', { enabledTags: ['date'] })).toBe('이천이십사년 십삼 월 일 일');
+      expect(autoTag('2024-01-32', { enabledTags: ['date'] })).toBe('이천이십사년 일 월 삼십이 일');
     });
   });
 
@@ -82,10 +80,11 @@ describe('False Positive 방지', () => {
   });
 
   describe('날짜/시간 구분', () => {
-    it('datetime 형식에서 날짜만 추출하지 않는다', () => {
-      // datetime이 우선되어야 함
+    it('datetime 형식에서 날짜와 시간이 함께 변환된다', () => {
+      // datetime이 우선되어야 함 - 날짜와 시간이 모두 변환됨
       const result = autoTag('2024-01-15T14:30');
-      expect(result).not.toContain('일생'); // date가 적용되면 '일생'이 붙음
+      expect(result).toContain('오후 두 시'); // 시간도 변환되어야 함
+      expect(result).toContain('십오 일'); // 날짜도 변환됨
     });
 
     it('날짜 뒤의 공백 + 시간은 datetime으로 처리해야 한다', () => {
@@ -115,7 +114,7 @@ describe('False Positive 방지', () => {
       const text = '날짜: 2024-01-15, 코드: 2024';
       const result = autoTag(text, { enabledTags: ['date'] });
 
-      expect(result).toContain('이천이십사년 일 월 십오 일생');
+      expect(result).toContain('이천이십사년 일 월 십오 일');
       expect(result).toContain('코드: 2024'); // 일반 숫자는 유지
     });
   });

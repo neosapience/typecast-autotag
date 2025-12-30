@@ -20,18 +20,18 @@ describe('autoTag - order (순서 자동 태깅)', () => {
     });
   });
 
-  describe('N등 형식', () => {
+  describe('N등 형식 (한자어 수사)', () => {
     it('등수를 변환한다', () => {
-      expect(autoOrder('1등')).toBe('첫 등');
-      expect(autoOrder('2등')).toBe('두 등');
-      expect(autoOrder('10등')).toBe('열 등');
+      expect(autoOrder('1등')).toBe('일 등');
+      expect(autoOrder('2등')).toBe('이 등');
+      expect(autoOrder('10등')).toBe('십 등');
     });
   });
 
-  describe('N위 형식', () => {
+  describe('N위 형식 (한자어 수사)', () => {
     it('순위를 변환한다', () => {
-      expect(autoOrder('1위')).toBe('첫 위');
-      expect(autoOrder('5위')).toBe('다섯 위');
+      expect(autoOrder('1위')).toBe('일 위');
+      expect(autoOrder('5위')).toBe('오 위');
       expect(autoOrder('100위')).toBe('백 위');
     });
   });
@@ -39,8 +39,8 @@ describe('autoTag - order (순서 자동 태깅)', () => {
   describe('복수 순서', () => {
     it('여러 순서를 모두 변환한다', () => {
       const result = autoOrder('1등부터 10등까지');
-      expect(result).toContain('첫 등');
-      expect(result).toContain('열 등');
+      expect(result).toContain('일 등');
+      expect(result).toContain('십 등');
     });
   });
 
@@ -56,7 +56,7 @@ describe('autoTag - order (순서 자동 태깅)', () => {
 
   describe('문맥 내 순서', () => {
     it('문장 내 순서를 변환한다', () => {
-      expect(autoOrder('우리 팀이 1등을 차지했습니다')).toBe('우리 팀이 첫 등 을 차지했습니다');
+      expect(autoOrder('우리 팀이 1등을 차지했습니다')).toBe('우리 팀이 일 등 을 차지했습니다');
     });
 
     it('괄호 안 순서를 변환한다', () => {

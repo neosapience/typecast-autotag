@@ -158,12 +158,12 @@ describe('order', () => {
       expect(order('1번째')).toBe('첫 번째');
     });
 
-    it('"3등"을 세 등으로 변환한다', () => {
-      expect(order('3등')).toBe('세 등');
+    it('"3등"을 삼 등으로 변환한다 (한자어 수사)', () => {
+      expect(order('3등')).toBe('삼 등');
     });
 
-    it('"5위"를 다섯 위로 변환한다', () => {
-      expect(order('5위')).toBe('다섯 위');
+    it('"5위"를 오 위로 변환한다 (한자어 수사)', () => {
+      expect(order('5위')).toBe('오 위');
     });
 
     it('천단위 구분자가 있는 숫자도 처리한다', () => {
@@ -178,8 +178,8 @@ describe('order', () => {
       expect(order('-1번째')).toBe('마이너스 첫 번째');
     });
 
-    it('"-5등"을 마이너스 다섯 등으로 변환한다', () => {
-      expect(order('-5등')).toBe('마이너스 다섯 등');
+    it('"-5등"을 마이너스 오 등으로 변환한다 (한자어 수사)', () => {
+      expect(order('-5등')).toBe('마이너스 오 등');
     });
 
     it('숫자만 있는 문자열도 처리한다', () => {
@@ -192,15 +192,15 @@ describe('order', () => {
   });
 
   describe('옵션 - 접미사', () => {
-    it('접미사를 등으로 설정할 수 있다', () => {
-      expect(order(2, { suffix: '등' })).toBe('두 등');
+    it('접미사를 등으로 설정하면 한자어 수사를 사용한다', () => {
+      expect(order(2, { suffix: '등' })).toBe('이 등');
     });
 
-    it('접미사를 위로 설정할 수 있다', () => {
-      expect(order(1, { suffix: '위' })).toBe('첫 위');
+    it('접미사를 위로 설정하면 한자어 수사를 사용한다', () => {
+      expect(order(1, { suffix: '위' })).toBe('일 위');
     });
 
-    it('접미사를 순위로 설정할 수 있다', () => {
+    it('접미사를 순위로 설정하면 고유어 수사를 사용한다', () => {
       expect(order(3, { suffix: '순위' })).toBe('세 순위');
     });
 
@@ -218,8 +218,8 @@ describe('order', () => {
       expect(order(1, { includeSpace: false })).toBe('첫번째');
     });
 
-    it('접미사와 공백 옵션을 함께 사용할 수 있다', () => {
-      expect(order(2, { suffix: '등', includeSpace: false })).toBe('두등');
+    it('접미사와 공백 옵션을 함께 사용할 수 있다 (한자어 수사)', () => {
+      expect(order(2, { suffix: '등', includeSpace: false })).toBe('이등');
     });
   });
 });
