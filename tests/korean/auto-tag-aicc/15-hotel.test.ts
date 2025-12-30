@@ -200,7 +200,6 @@ describe('AICC 시나리오 15: 호텔 예약 안내', () => {
 적립 내역은 이 번,
 등급 혜택은 삼 번,
 이전 메뉴로 돌아가시려면 별표를 눌러주세요.`;
-
     expect(autoTag(input)).toBe(expected);
   });
 });

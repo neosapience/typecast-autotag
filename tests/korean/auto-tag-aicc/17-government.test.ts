@@ -200,7 +200,6 @@ describe('AICC 시나리오 17: 공공기관 민원 안내', () => {
 이의신청은 이 번,
 납부 내역 조회는 삼 번,
 이전 메뉴로 돌아가시려면 별표를 눌러주세요.`;
-
     expect(autoTag(input)).toBe(expected);
   });
 });
