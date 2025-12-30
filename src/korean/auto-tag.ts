@@ -349,6 +349,15 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
     result += text.slice(currentIndex, match.start);
     // 변환된 텍스트 추가
     result += match.converted;
+
+    // 변환된 텍스트 뒤에 다음 문자가 한글, 영문, 숫자인 경우 공백 추가
+    // (TTS에서 자연스럽게 읽히도록)
+    const nextChar = text[match.end];
+    const convertedEndsWithSpace = match.converted.endsWith(' ');
+    if (nextChar && !convertedEndsWithSpace && /[가-힣a-zA-Z0-9]/.test(nextChar)) {
+      result += ' ';
+    }
+
     currentIndex = match.end;
   }
 

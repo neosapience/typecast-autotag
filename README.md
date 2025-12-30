@@ -23,7 +23,7 @@ Transform phone numbers, dates, currency, and more into natural Korean speech pa
 
 ```typescript
 autoTag('전화번호는 010-1234-5678입니다.');
-// → '전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다.'
+// → '전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 입니다.'
 ```
 
 <br>
@@ -59,13 +59,13 @@ import { autoTag, manualTag, autoTagWithManual } from 'typecast-autotag';
 
 // Auto-tagging - automatically detects patterns
 autoTag('전화번호는 010-1234-5678입니다.');
-// → '전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다.'
+// → '전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 입니다.'
 
 autoTag('회의는 14:30에 시작합니다.');
-// → '회의는 오후 두 시 삼십 분에 시작합니다.'
+// → '회의는 오후 두 시 삼십 분 에 시작합니다.'
 
 autoTag('총 금액은 50000원입니다.');
-// → '총 금액은 오만 원입니다.'
+// → '총 금액은 오만 원 입니다.'
 
 // Manual-tagging - explicit control
 manualTag('안녕하세요, name(김철수)님.');
@@ -76,7 +76,7 @@ manualTag('month(12) day(25)에 방문 예정입니다.');
 
 // Combined - use both together
 autoTagWithManual('name(김철수)님, 010-1234-5678로 연락주세요.');
-// → '김 철 수님, 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 연락주세요.'
+// → '김 철 수 님, 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 로 연락주세요.'
 ```
 
 <br>
@@ -90,7 +90,7 @@ autoTagWithManual('name(김철수)님, 010-1234-5678로 연락주세요.');
 
 ```typescript
 autoTag('내일 010-1234-5678로 전화주세요.');
-// → '내일 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 전화주세요.'
+// → '내일 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 로 전화주세요.'
 
 // Enable specific tags only
 autoTag('010-1234-5678, 50000원', { enabledTags: ['phone'] });
@@ -159,7 +159,7 @@ extractTags('안녕하세요, name(김철수) 고객님.');
 
 ```typescript
 autoTagWithManual('name(김철수)님, 010-1234-5678로 연락주세요.');
-// → '김 철 수님, 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 연락주세요.'
+// → '김 철 수 님, 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 로 연락주세요.'
 ```
 
 > **Note:** Manual tags are processed first, then auto-tags are applied.
@@ -296,7 +296,7 @@ Generate natural-sounding automated responses:
 
 ```typescript
 autoTag('고객님의 잔액은 1,234,567원입니다.');
-// → '고객님의 잔액은 백이십삼만사천오백육십칠 원입니다.'
+// → '고객님의 잔액은 백이십삼만사천오백육십칠 원 입니다.'
 ```
 
 <br>

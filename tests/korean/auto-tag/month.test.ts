@@ -4,7 +4,7 @@ describe('autoTag - month (월 자동 태깅)', () => {
   describe('N월 형식', () => {
     it('기본 월을 변환한다', () => {
       expect(autoMonth('이번달은 12월')).toBe('이번달은 십이월');
-      expect(autoMonth('3월에 만나요')).toBe('삼월에 만나요');
+      expect(autoMonth('3월에 만나요')).toBe('삼월 에 만나요');
     });
 
     it('불규칙 발음 월을 변환한다', () => {
@@ -48,7 +48,7 @@ describe('autoTag - month (월 자동 태깅)', () => {
 
   describe('문맥 내 월', () => {
     it('문장 끝 월을 변환한다', () => {
-      expect(autoMonth('다음 분기는 4월부터')).toBe('다음 분기는 사월부터');
+      expect(autoMonth('다음 분기는 4월부터')).toBe('다음 분기는 사월 부터');
     });
 
     it('괄호 안 월을 변환한다', () => {
