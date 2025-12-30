@@ -76,6 +76,15 @@ function parseDate(str: string): ParsedDate | null {
     };
   }
 
+  // 한글 형식 (년월만): "2023년12월", "2023년 12월"
+  const koreanYearMonth = str.match(/^(\d{4})년\s*(\d{1,2})월$/);
+  if (koreanYearMonth) {
+    return {
+      year: parseInt(koreanYearMonth[1] ?? '', 10),
+      month: parseInt(koreanYearMonth[2] ?? '', 10),
+    };
+  }
+
   // 한글 형식 (년만): "1994년", "1994년생"
   const koreanYearOnly = str.match(/^(\d{4})년(생)?$/);
   if (koreanYearOnly) {
@@ -151,18 +160,18 @@ function parseDate(str: string): ParsedDate | null {
 }
 
 /**
- * 생년월일을 한글로 변환
+ * 날짜를 한글로 변환
  *
  * @param input - 변환할 날짜 (다양한 형식 지원)
- * @returns 한글 생년월일 표기
+ * @returns 한글 날짜 표기
  *
  * @example
  * ```typescript
- * date(19940616); // '천구백구십사년 유 월 십육 일생'
- * date('2000-12-25'); // '이천년 십이 월 이십오 일생'
- * date('1994년6월16일'); // '천구백구십사년 유 월 십육 일생'
- * date('June 16, 1994'); // '천구백구십사년 유 월 십육 일생'
- * date('2000-10-10'); // '이천년 시 월 십 일생'
+ * date(19940616); // '천구백구십사년 유 월 십육 일'
+ * date('2000-12-25'); // '이천년 십이 월 이십오 일'
+ * date('1994년6월16일'); // '천구백구십사년 유 월 십육 일'
+ * date('June 16, 1994'); // '천구백구십사년 유 월 십육 일'
+ * date('2000-10-10'); // '이천년 시 월 십 일'
  * ```
  */
 export function date(input: number | string): string {
@@ -179,6 +188,9 @@ export function date(input: number | string): string {
   if (year === undefined && month === undefined && day === undefined) {
     return str;
   }
+
+  // 입력 문자열이 "생"으로 끝나는지 확인 (생년월일인 경우)
+  const endsWithSaeng = str.endsWith('생');
 
   const parts: string[] = [];
 
@@ -202,14 +214,18 @@ export function date(input: number | string): string {
   // 일 처리 (0도 허용하여 발음)
   if (day !== undefined && !isNaN(day)) {
     if (day === 0) {
-      parts.push('영 일생');
+      parts.push('영 일');
     } else {
-      parts.push(numberToKorean(day) + ' 일생');
+      parts.push(numberToKorean(day) + ' 일');
     }
-  } else if (year !== undefined && month === undefined && day === undefined) {
-    // 년만 있는 경우 '생' 추가
-    parts[0] = (parts[0] ?? '') + '생';
   }
 
-  return parts.join(' ');
+  let result = parts.join(' ');
+
+  // 입력에 "생"이 있었으면 출력에도 추가
+  if (endsWithSaeng) {
+    result += '생';
+  }
+
+  return result;
 }

@@ -22,7 +22,7 @@ describe('manualTag', () => {
     });
 
     it('date 태그를 변환한다', () => {
-      expect(manualTag('date(19940616)')).toBe('천구백구십사년 유 월 십육 일생');
+      expect(manualTag('date(19940616)')).toBe('천구백구십사년 유 월 십육 일');
     });
 
     it('time 태그를 변환한다', () => {

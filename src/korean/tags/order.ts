@@ -1,6 +1,12 @@
 import { numberToOrdinalKorean, numberToKorean } from '../utils/number-to-korean';
 
 /**
+ * 한자어 수사를 사용해야 하는 접미사 목록
+ * (순위를 나타내는 표현들)
+ */
+const HANJA_SUFFIXES = ['등', '위', '단계'];
+
+/**
  * order 함수의 옵션
  */
 export interface OrderOptions {
@@ -25,13 +31,19 @@ function removeThousandSeparators(str: string): string {
 }
 
 /**
+ * 접미사가 한자어 수사를 사용해야 하는지 확인
+ */
+function shouldUseHanja(suffix: string): boolean {
+  return HANJA_SUFFIXES.includes(suffix);
+}
+
+/**
  * 순서(서수)를 한글로 변환
  *
- * 한국어에서 순서를 나타낼 때는 고유어 수사 + '번째'를 사용합니다:
- * - 1번째: 첫 번째
- * - 2번째: 두 번째
- * - 3번째: 세 번째
- * - 100 이상: 한자어 + 번째
+ * 한국어에서 순서를 나타낼 때:
+ * - '번째' 접미사: 고유어 수사 사용 (첫 번째, 두 번째, 세 번째)
+ * - '등', '위', '단계' 접미사: 한자어 수사 사용 (일 등, 이 위, 삼 단계)
+ * - 100 이상: 항상 한자어 사용
  *
  * @param input - 변환할 순서 (숫자 또는 문자열)
  * @param options - 옵션 (접미사, 공백 포함 여부)
@@ -46,9 +58,10 @@ function removeThousandSeparators(str: string): string {
  * order(21); // '스물한 번째'
  * order(100); // '백 번째'
  * order('1번째'); // '첫 번째'
- * order('3등'); // '세 등'
- * order(2, { suffix: '등' }); // '두 등'
- * order(1, { suffix: '위' }); // '첫 위'
+ * order('3등'); // '삼 등'
+ * order(2, { suffix: '등' }); // '이 등'
+ * order(1, { suffix: '위' }); // '일 위'
+ * order('2단계'); // '이 단계'
  * ```
  */
 export function order(input: number | string, options?: OrderOptions): string {
@@ -82,9 +95,14 @@ export function order(input: number | string, options?: OrderOptions): string {
         return '영' + space + parsedSuffix;
       }
 
-      // 1은 특별 처리: "첫 번째"
-      // 21, 31 등은 "스물한 번째"로 처리 (numberToOrdinalKorean에서 처리)
-      const koreanNum = num < 100 ? numberToOrdinalKorean(num) : numberToKorean(num);
+      // 한자어 수사를 사용해야 하는 접미사인 경우 (등, 위, 단계)
+      // 그 외에는 고유어 수사 사용 (번째)
+      let koreanNum: string;
+      if (shouldUseHanja(parsedSuffix)) {
+        koreanNum = numberToKorean(num);
+      } else {
+        koreanNum = num < 100 ? numberToOrdinalKorean(num) : numberToKorean(num);
+      }
       return koreanNum + space + parsedSuffix;
     }
 
@@ -108,6 +126,12 @@ export function order(input: number | string, options?: OrderOptions): string {
     return '영' + space + suffix;
   }
 
-  const koreanNum = input < 100 ? numberToOrdinalKorean(input) : numberToKorean(input);
+  // 한자어 수사를 사용해야 하는 접미사인 경우 (등, 위, 단계)
+  let koreanNum: string;
+  if (shouldUseHanja(suffix)) {
+    koreanNum = numberToKorean(input);
+  } else {
+    koreanNum = input < 100 ? numberToOrdinalKorean(input) : numberToKorean(input);
+  }
   return koreanNum + space + suffix;
 }

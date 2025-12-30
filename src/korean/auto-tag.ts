@@ -15,6 +15,7 @@ import { jari } from './tags/jari';
 import { numberTag } from './tags/number';
 import { duration } from './tags/duration';
 import { floor } from './tags/floor';
+import { account } from './tags/account';
 
 /**
  * 자동 태깅 옵션
@@ -94,7 +95,7 @@ const AUTO_TAG_PATTERNS = {
   /**
    * 시간 패턴
    * - HH:MM, HH:MM:SS 형식
-   * - 한글 형식: 14시30분, 오후 2시 30분
+   * - 한글 형식: 14시30분, 오후 2시 30분, 9시 (단독)
    */
   time: {
     patterns: [
@@ -104,6 +105,9 @@ const AUTO_TAG_PATTERNS = {
       /(?:오전|오후)\s*\d{1,2}시(?:\s*\d{1,2}분)?(?:\s*\d{1,2}초)?/g,
       // 한글 시간 (오전/오후 없이): N시M분
       /\d{1,2}시\d{1,2}분(?:\d{1,2}초)?/g,
+      // 단독 N시 (뒤에 숫자나 분이 오지 않는 경우, N시간과 구분하기 위해 간 제외)
+      // 앞에 "아침", "저녁", "새벽", "밤" 등이 있으면 제외 (오전/오후와 충돌)
+      /(?<!아침\s*)(?<!저녁\s*)(?<!새벽\s*)(?<!밤\s*)(?<![0-9])(?:1[0-9]|2[0-3]|[0-9])시(?![0-9분간])/g,
     ],
     converter: (match: string) => time(match),
   },
@@ -114,12 +118,14 @@ const AUTO_TAG_PATTERNS = {
    * - YYYY-MM-DD, YYYY/MM/DD, YYYY.MM.DD
    * - 한글: 1994년 6월 16일
    * - datetime으로 이미 처리된 것은 제외
+   * - YYYYMMDD-숫자 형태 (접수번호 등)는 제외
    */
   date: {
     patterns: [
       // YYYYMMDD 형식 (8자리 숫자, 생년월일 형태)
       // 년도 범위 제한: 1900-2099
-      /\b(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\b/g,
+      // 뒤에 -숫자가 오면 접수번호 등으로 간주하여 제외
+      /\b(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])(?!-\d)\b/g,
       // YYYY-MM-DD 형식 (시간이 뒤따르지 않는 경우만)
       /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}(?!\s*\d{1,2}:\d{2})(?!\s*T\d)/g,
       // 한글 날짜: YYYY년 M월 D일 (생략 가능)
@@ -196,7 +202,7 @@ const AUTO_TAG_PATTERNS = {
 
   /**
    * 순서 패턴
-   * - N번째, N등, N위
+   * - N번째, N등, N위, N단계
    * 주의: \b는 한글과 함께 사용할 때 제대로 작동하지 않으므로 lookbehind/lookahead 사용
    */
   order: {
@@ -207,6 +213,8 @@ const AUTO_TAG_PATTERNS = {
       /(?<![0-9])[\d,]+\s*등(?![록급])/g,
       // N위
       /(?<![0-9])[\d,]+\s*위(?![치험반])/g,
+      // N단계
+      /(?<![0-9])[\d,]+\s*단계/g,
     ],
     converter: (match: string) => order(match),
   },
@@ -345,6 +353,19 @@ const AUTO_TAG_PATTERNS = {
       /(?<![0-9])[\d,]+\s*층/g,
     ],
     converter: (match: string) => floor(match),
+  },
+
+  /**
+   * 계좌번호 패턴
+   * - 은행 계좌번호 형식: NNN-NNN-NNNNNN
+   * - 하이픈으로 구분된 2~6자리 숫자 그룹 3개
+   */
+  account: {
+    patterns: [
+      // 계좌번호: 2-6자리-2-6자리-4-14자리
+      /\b\d{2,6}-\d{2,6}-\d{4,14}\b/g,
+    ],
+    converter: (match: string) => account(match),
   },
 } as const;
 
@@ -581,3 +602,4 @@ export const autoJari = (text: string): string => autoTag(text, { enabledTags: [
 export const autoNumber = (text: string): string => autoTag(text, { enabledTags: ['number'] });
 export const autoDuration = (text: string): string => autoTag(text, { enabledTags: ['duration'] });
 export const autoFloor = (text: string): string => autoTag(text, { enabledTags: ['floor'] });
+export const autoAccount = (text: string): string => autoTag(text, { enabledTags: ['account'] });

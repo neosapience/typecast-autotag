@@ -26,7 +26,7 @@ describe('autoTag 통합 테스트', () => {
       const text = '생년월일: 19940616, 연락처: 010-9876-5432';
       const result = autoTag(text);
 
-      expect(result).toContain('천구백구십사년 유 월 십육 일생');
+      expect(result).toContain('천구백구십사년 유 월 십육 일');
       expect(result).toContain('공 일 공 다시 구 팔 칠 육 다시 오 사 삼 이');
     });
 
@@ -48,7 +48,7 @@ describe('autoTag 통합 테스트', () => {
       const text = '현재 순위: 3등, 점수: 95점';
       const result = autoTag(text);
 
-      expect(result).toContain('세 등');
+      expect(result).toContain('삼 등');
       expect(result).toContain('구십오 점');
     });
 
@@ -104,7 +104,7 @@ describe('autoTag 통합 테스트', () => {
       const result = autoTag(text);
 
       // 한 번에 datetime으로 처리되어야 함
-      expect(result).not.toContain('일생'); // date 처리 시 붙는 '생'
+      expect(result).toContain('오후 두 시 삼십 분'); // 시간이 포함되어야 함
     });
 
     it('패턴 사이의 텍스트 보존', () => {
