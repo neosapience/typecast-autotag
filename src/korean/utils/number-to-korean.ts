@@ -201,6 +201,7 @@ export function numberToOrdinalKorean(num: number): string {
 
 /**
  * 시간(시)을 고유어 수사로 변환 (한 시, 두 시, ..., 열두 시)
+ * 12시간제용 - 0시와 12시 모두 "열두"로 변환
  * @param hour - 시간 (0-23)
  * @returns 고유어 시간
  */
@@ -208,4 +209,45 @@ export function hourToNativeKorean(hour: number): string {
   // 24시간제를 12시간제로 변환
   const hour12 = hour % 12;
   return NATIVE_KOREAN_HOURS[hour12] ?? '';
+}
+
+/** 24시간제 시간용 고유어 수사 (0-23) */
+const NATIVE_KOREAN_HOURS_24: Record<number, string> = {
+  0: '영',
+  1: '한',
+  2: '두',
+  3: '세',
+  4: '네',
+  5: '다섯',
+  6: '여섯',
+  7: '일곱',
+  8: '여덟',
+  9: '아홉',
+  10: '열',
+  11: '열한',
+  12: '열두',
+  13: '열세',
+  14: '열네',
+  15: '열다섯',
+  16: '열여섯',
+  17: '열일곱',
+  18: '열여덟',
+  19: '열아홉',
+  20: '스물',
+  21: '스물한',
+  22: '스물두',
+  23: '스물세',
+};
+
+/**
+ * 시간(시)을 24시간제 고유어 수사로 변환 (영 시, 한 시, ..., 스물세 시)
+ * 24시간제용 - 0시는 "영"으로 변환
+ * @param hour - 시간 (0-23)
+ * @returns 24시간제 고유어 시간
+ */
+export function hourToNativeKorean24(hour: number): string {
+  if (hour < 0 || hour > 23) {
+    return '';
+  }
+  return NATIVE_KOREAN_HOURS_24[hour] ?? '';
 }
