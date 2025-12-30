@@ -79,7 +79,7 @@ export function money(input: number | string, options?: MoneyOptions): string {
   }
 
   // 숫자 처리
-  if (isNaN(input) || input < 0) {
+  if (isNaN(input) || !isFinite(input) || input < 0) {
     return String(input);
   }
 
