@@ -33,6 +33,19 @@ function isValidNumber(num: number): boolean {
 }
 
 /**
+ * 한자어 수사를 사용해야 하는 단위 목록
+ * (회차를 나타내는 "회" 등)
+ */
+const HANJA_UNITS = ['회'];
+
+/**
+ * 단위가 한자어 수사를 사용해야 하는지 확인
+ */
+function shouldUseHanja(unit: string): boolean {
+  return HANJA_UNITS.includes(unit);
+}
+
+/**
  * 개수를 고유어 수사로 변환
  *
  * 한국어에서 개수를 셀 때는 고유어 수사를 사용합니다:
@@ -95,7 +108,13 @@ export function piece(input: number | string, options?: PieceOptions): string {
         return '영' + space + parsedUnit;
       }
 
-      const koreanNum = num < 100 ? numberToNativeKorean(num) : numberToKorean(num);
+      // 한자어 수사를 사용해야 하는 단위인지 확인
+      let koreanNum: string;
+      if (shouldUseHanja(parsedUnit)) {
+        koreanNum = numberToKorean(num);
+      } else {
+        koreanNum = num < 100 ? numberToNativeKorean(num) : numberToKorean(num);
+      }
       return koreanNum + space + parsedUnit;
     }
 
@@ -114,6 +133,12 @@ export function piece(input: number | string, options?: PieceOptions): string {
     return '영' + space + unit;
   }
 
-  const koreanNum = num < 100 ? numberToNativeKorean(num) : numberToKorean(num);
+  // 한자어 수사를 사용해야 하는 단위인지 확인
+  let koreanNum: string;
+  if (shouldUseHanja(unit)) {
+    koreanNum = numberToKorean(num);
+  } else {
+    koreanNum = num < 100 ? numberToNativeKorean(num) : numberToKorean(num);
+  }
   return koreanNum + space + unit;
 }

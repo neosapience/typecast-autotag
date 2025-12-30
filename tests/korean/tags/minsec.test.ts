@@ -17,19 +17,19 @@ describe('minsec', () => {
 
   describe('시간(hour) 지원', () => {
     it('시간만 있는 경우를 처리한다', () => {
-      expect(minsec('2h')).toBe('이 시간');
+      expect(minsec('2h')).toBe('두 시간');
     });
 
     it('시간과 분을 함께 처리한다', () => {
-      expect(minsec('1h30m')).toBe('일 시간 삼십 분');
+      expect(minsec('1h30m')).toBe('한 시간 삼십 분');
     });
 
     it('시간, 분, 초를 모두 처리한다', () => {
-      expect(minsec('1h30m45s')).toBe('일 시간 삼십 분 사십오 초');
+      expect(minsec('1h30m45s')).toBe('한 시간 삼십 분 사십오 초');
     });
 
     it('시간과 초만 있는 경우를 처리한다', () => {
-      expect(minsec('2h15s')).toBe('이 시간 십오 초');
+      expect(minsec('2h15s')).toBe('두 시간 십오 초');
     });
   });
 
@@ -47,15 +47,15 @@ describe('minsec', () => {
     });
 
     it('시간만 있는 한글 형식을 처리한다', () => {
-      expect(minsec('2시간')).toBe('이 시간');
+      expect(minsec('2시간')).toBe('두 시간');
     });
 
     it('시간분 한글 형식을 처리한다', () => {
-      expect(minsec('1시간30분')).toBe('일 시간 삼십 분');
+      expect(minsec('1시간30분')).toBe('한 시간 삼십 분');
     });
 
     it('시간분초 한글 형식을 처리한다', () => {
-      expect(minsec('1시간30분45초')).toBe('일 시간 삼십 분 사십오 초');
+      expect(minsec('1시간30분45초')).toBe('한 시간 삼십 분 사십오 초');
     });
 
     it('한글 형식에 공백이 있어도 처리한다', () => {
@@ -65,11 +65,11 @@ describe('minsec', () => {
 
   describe('영어 단어 형식 지원', () => {
     it('hour 형식을 처리한다', () => {
-      expect(minsec('3hour')).toBe('삼 시간');
+      expect(minsec('3hour')).toBe('세 시간');
     });
 
     it('hours 형식을 처리한다', () => {
-      expect(minsec('2hours')).toBe('이 시간');
+      expect(minsec('2hours')).toBe('두 시간');
     });
 
     it('minute 형식을 처리한다', () => {
@@ -101,7 +101,7 @@ describe('minsec', () => {
     });
 
     it('다양한 영어 단어 조합을 처리한다', () => {
-      expect(minsec('1hour30min45sec')).toBe('일 시간 삼십 분 사십오 초');
+      expect(minsec('1hour30min45sec')).toBe('한 시간 삼십 분 사십오 초');
     });
   });
 
@@ -125,7 +125,7 @@ describe('minsec', () => {
     });
 
     it('대소문자 혼합도 인식한다', () => {
-      expect(minsec('1H30m45S')).toBe('일 시간 삼십 분 사십오 초');
+      expect(minsec('1H30m45S')).toBe('한 시간 삼십 분 사십오 초');
     });
 
     it('공백이 포함되어도 처리한다', () => {
@@ -133,7 +133,7 @@ describe('minsec', () => {
     });
 
     it('여러 공백이 포함되어도 처리한다', () => {
-      expect(minsec('1h  30m  45s')).toBe('일 시간 삼십 분 사십오 초');
+      expect(minsec('1h  30m  45s')).toBe('한 시간 삼십 분 사십오 초');
     });
   });
 
@@ -147,11 +147,11 @@ describe('minsec', () => {
     });
 
     it('60분을 1시간 0분으로 정규화한다', () => {
-      expect(minsec('60m', { normalize: true })).toBe('일 시간 영 분');
+      expect(minsec('60m', { normalize: true })).toBe('한 시간 영 분');
     });
 
     it('90분을 1시간 30분으로 정규화한다', () => {
-      expect(minsec('90m', { normalize: true })).toBe('일 시간 삼십 분');
+      expect(minsec('90m', { normalize: true })).toBe('한 시간 삼십 분');
     });
 
     it('복합 정규화를 처리한다 (3m90s → 4분 30초)', () => {
@@ -214,7 +214,7 @@ describe('minsec', () => {
       expect(minsec('0m0s')).toBe('영 분 영 초');
     });
 
-    it('0시 0분 0초도 한글로 변환한다', () => {
+    it('0시간 0분 0초도 한글로 변환한다', () => {
       expect(minsec('0h0m0s')).toBe('영 시간 영 분 영 초');
     });
 

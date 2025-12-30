@@ -1,4 +1,4 @@
-import { numberToKorean } from '../utils/number-to-korean';
+import { numberToKorean, numberToNativeKorean } from '../utils/number-to-korean';
 
 /**
  * minsec 함수의 옵션
@@ -103,10 +103,14 @@ export function minsec(input: string, options?: MinsecOptions): string {
   const parts: string[] = [];
 
   // 단위가 명시되었거나 값이 0보다 크면 표시
+  // 시간은 고유어 수사 사용 (한 시간, 두 시간, 세 시간...)
   if (hours > 0 || hourMatch) {
-    parts.push(numberToKorean(hours) + ' 시간');
+    const hourKorean =
+      hours === 0 ? '영' : hours < 100 ? numberToNativeKorean(hours) : numberToKorean(hours);
+    parts.push(hourKorean + ' 시간');
   }
 
+  // 분, 초는 한자어 수사 사용
   if (minutes > 0 || minMatch) {
     parts.push(numberToKorean(minutes) + ' 분');
   }
