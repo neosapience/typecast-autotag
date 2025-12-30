@@ -17,6 +17,42 @@ const SMALL_UNITS = ['', '십', '백', '천'];
 /** 큰 단위 (만, 억, 조) */
 const BIG_UNITS = ['', '만', '억', '조'];
 
+/** 고유어 수사 (1-99) - 개수 세기용 */
+const NATIVE_KOREAN_ONES = ['', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉'];
+
+const NATIVE_KOREAN_TENS = ['', '열', '스물', '서른', '마흔', '쉰', '예순', '일흔', '여든', '아흔'];
+
+/** 고유어 서수 (첫째, 둘째, ...) - 1은 '첫', 나머지는 고유어 수사 사용 */
+const NATIVE_KOREAN_ORDINALS_ONES = [
+  '',
+  '한', // 11 → 열한, 21 → 스물한 (1은 특별히 '첫'으로 처리)
+  '두',
+  '세',
+  '네',
+  '다섯',
+  '여섯',
+  '일곱',
+  '여덟',
+  '아홉',
+];
+
+/** 시간용 고유어 수사 (1-12) */
+const NATIVE_KOREAN_HOURS = [
+  '열두', // 0시 = 열두 시
+  '한',
+  '두',
+  '세',
+  '네',
+  '다섯',
+  '여섯',
+  '일곱',
+  '여덟',
+  '아홉',
+  '열',
+  '열한',
+  '열두',
+];
+
 /**
  * 단일 숫자(0-9)를 한글로 변환
  * @param digit - 단일 숫자 문자
@@ -117,4 +153,58 @@ export function numberToKorean(num: number): string {
   }
 
   return result;
+}
+
+/**
+ * 숫자를 고유어 수사로 변환 (개수 세기용: 한, 두, 세, 네...)
+ * 1-99까지만 고유어, 100 이상은 한자어
+ * @param num - 변환할 숫자
+ * @returns 고유어 수사
+ */
+export function numberToNativeKorean(num: number): string {
+  if (num <= 0) return numberToKorean(num);
+  if (num >= 100) return numberToKorean(num);
+
+  const tens = Math.floor(num / 10);
+  const ones = num % 10;
+
+  const tensStr = NATIVE_KOREAN_TENS[tens] ?? '';
+  const onesStr = NATIVE_KOREAN_ONES[ones] ?? '';
+
+  return tensStr + onesStr;
+}
+
+/**
+ * 숫자를 서수 형태의 고유어로 변환 (번째용: 첫, 두, 세...)
+ * 1-99까지만 고유어, 100 이상은 한자어
+ * @param num - 변환할 숫자
+ * @returns 서수용 고유어
+ */
+export function numberToOrdinalKorean(num: number): string {
+  if (num <= 0) return numberToKorean(num);
+  if (num >= 100) return numberToKorean(num);
+
+  const tens = Math.floor(num / 10);
+  const ones = num % 10;
+
+  // 1은 특별히 '첫'으로 처리
+  if (num === 1) {
+    return '첫';
+  }
+
+  const tensStr = NATIVE_KOREAN_TENS[tens] ?? '';
+  const onesStr = NATIVE_KOREAN_ORDINALS_ONES[ones] ?? '';
+
+  return tensStr + onesStr;
+}
+
+/**
+ * 시간(시)을 고유어 수사로 변환 (한 시, 두 시, ..., 열두 시)
+ * @param hour - 시간 (0-23)
+ * @returns 고유어 시간
+ */
+export function hourToNativeKorean(hour: number): string {
+  // 24시간제를 12시간제로 변환
+  const hour12 = hour % 12;
+  return NATIVE_KOREAN_HOURS[hour12] ?? '';
 }
