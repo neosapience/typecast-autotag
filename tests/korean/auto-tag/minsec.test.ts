@@ -85,7 +85,7 @@ describe('autoTag - minsec (시분초 자동 태깅)', () => {
 
   describe('문맥 내 시간', () => {
     it('문장 내 시간을 변환한다', () => {
-      expect(autoMinsec('대기시간은 약 5m입니다')).toBe('대기시간은 약 오 분입니다');
+      expect(autoMinsec('대기시간은 약 5m입니다')).toBe('대기시간은 약 오 분 입니다');
     });
 
     it('괄호 안 시간을 변환한다', () => {

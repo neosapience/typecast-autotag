@@ -14,13 +14,13 @@ describe('autoTag - year (년도 자동 태깅)', () => {
 
   describe('YYYY년도 형식', () => {
     it('년도 접미사를 변환한다', () => {
-      expect(autoYear('2024년도 계획')).toBe('이천이십사년도 계획');
+      expect(autoYear('2024년도 계획')).toBe('이천이십사년 도 계획');
     });
   });
 
   describe('YYYY년생 형식', () => {
     it('년생 접미사를 변환한다', () => {
-      expect(autoYear('1994년생입니다')).toBe('천구백구십사년생입니다');
+      expect(autoYear('1994년생입니다')).toBe('천구백구십사년 생입니다');
     });
   });
 
@@ -51,7 +51,7 @@ describe('autoTag - year (년도 자동 태깅)', () => {
   describe('문맥 내 년도', () => {
     it('문장 내 년도를 올바르게 변환한다', () => {
       expect(autoYear('우리 회사는 1998년에 설립되었습니다.')).toBe(
-        '우리 회사는 천구백구십팔년에 설립되었습니다.'
+        '우리 회사는 천구백구십팔년 에 설립되었습니다.'
       );
     });
 

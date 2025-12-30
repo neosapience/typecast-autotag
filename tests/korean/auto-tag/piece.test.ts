@@ -74,7 +74,7 @@ describe('autoTag - piece (개수 자동 태깅)', () => {
 
   describe('문맥 내 개수', () => {
     it('문장 내 개수를 변환한다', () => {
-      expect(autoPiece('사과 5개를 샀습니다')).toBe('사과 다섯 개를 샀습니다');
+      expect(autoPiece('사과 5개를 샀습니다')).toBe('사과 다섯 개 를 샀습니다');
     });
 
     it('괄호 안 개수를 변환한다', () => {

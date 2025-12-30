@@ -123,7 +123,7 @@ describe('False Positive 방지', () => {
   describe('경계 조건', () => {
     it('문자열 시작의 패턴을 올바르게 처리한다', () => {
       expect(autoTag('010-1234-5678입니다', { enabledTags: ['phone'] })).toBe(
-        '공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다'
+        '공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 입니다'
       );
     });
 

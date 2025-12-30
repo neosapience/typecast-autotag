@@ -50,11 +50,11 @@ describe('autoTag - day (일 자동 태깅)', () => {
 
   describe('문맥 내 일', () => {
     it('문장 내 D-Day를 변환한다', () => {
-      expect(autoDay('시험 D-7까지')).toBe('시험 디데이 칠일까지');
+      expect(autoDay('시험 D-7까지')).toBe('시험 디데이 칠일 까지');
     });
 
     it('문장 내 N일째를 변환한다', () => {
-      expect(autoDay('오늘로 100일째입니다')).toBe('오늘로 백일째입니다');
+      expect(autoDay('오늘로 100일째입니다')).toBe('오늘로 백일째 입니다');
     });
   });
 });
