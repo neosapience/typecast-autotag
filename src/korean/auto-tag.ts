@@ -10,6 +10,9 @@ import { point } from './tags/point';
 import { piece } from './tags/piece';
 import { minsec } from './tags/minsec';
 import { datetime } from './tags/datetime';
+import { ratio } from './tags/ratio';
+import { jari } from './tags/jari';
+import { numberTag } from './tags/number';
 
 /**
  * 자동 태깅 옵션
@@ -250,6 +253,51 @@ const AUTO_TAG_PATTERNS = {
     ],
     converter: (match: string) => minsec(match),
   },
+
+  /**
+   * 비율 패턴
+   * - N:M 형식 (콜론 비율)
+   * - N% 형식 (퍼센트)
+   * 주의: 시간 형식(14:30)과 구분 필요 - time 패턴이 먼저 처리되어야 함
+   */
+  ratio: {
+    patterns: [
+      // 퍼센트: N%, N.N%
+      /(?<![0-9])[\d,]+(?:\.\d+)?\s*%/g,
+      // 콜론 비율: N:M, N:M:O (시간 형식 제외)
+      // 시간은 두 자리:두 자리 형태이므로, 한 자리 숫자 또는 세 자리 이상을 포함하면 비율로 처리
+      /\b\d+\s*:\s*\d+(?:\s*:\s*\d+)*\b/g,
+    ],
+    converter: (match: string) => ratio(match),
+  },
+
+  /**
+   * 자리 패턴
+   * - N자리 (자리 수)
+   * - N자리 DDDD (자리 수 + 후행 숫자)
+   */
+  jari: {
+    patterns: [
+      // N자리 + 후행 숫자
+      /\d+\s*자리\s+\d+/g,
+      // N자리 (단독)
+      /\d+\s*자리(?!\s*\d)/g,
+    ],
+    converter: (match: string) => jari(match),
+  },
+
+  /**
+   * 번호 패턴
+   * - N번 (순서가 아닌 단순 번호)
+   * 주의: 번째, 번호 등과 구분
+   */
+  number: {
+    patterns: [
+      // N번 (뒤에 째, 호가 오지 않는 경우)
+      /(?<![0-9])[\d,]+\s*번(?![째호])/g,
+    ],
+    converter: (match: string) => numberTag(match),
+  },
 } as const;
 
 /**
@@ -480,3 +528,6 @@ export const autoOrder = (text: string): string => autoTag(text, { enabledTags: 
 export const autoPoint = (text: string): string => autoTag(text, { enabledTags: ['point'] });
 export const autoPiece = (text: string): string => autoTag(text, { enabledTags: ['piece'] });
 export const autoMinsec = (text: string): string => autoTag(text, { enabledTags: ['minsec'] });
+export const autoRatio = (text: string): string => autoTag(text, { enabledTags: ['ratio'] });
+export const autoJari = (text: string): string => autoTag(text, { enabledTags: ['jari'] });
+export const autoNumber = (text: string): string => autoTag(text, { enabledTags: ['number'] });
