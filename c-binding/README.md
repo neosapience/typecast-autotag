@@ -219,6 +219,67 @@ cd c-binding
 # - build/typecast_autotag.h
 ```
 
+### E2E 테스트
+
+빌드된 라이브러리를 CentOS 6.9와 Amazon Linux 2에서 자동으로 테스트합니다.
+
+```bash
+cd c-binding
+
+# E2E 테스트 실행 (Docker 필요)
+./scripts/test-e2e.sh
+```
+
+**테스트 범위:**
+
+| 카테고리                        | 테스트 수 | 설명                          |
+| ------------------------------- | --------- | ----------------------------- |
+| `typecast_manual_tag`           | 31        | 모든 수동 태그 (31개)         |
+| `typecast_auto_tag`             | 8         | 자동 인식 패턴                |
+| `typecast_auto_tag_with_manual` | 4         | 수동 + 자동 혼합              |
+| **총합**                        | **44**    | 환경별 44개 테스트 × 2개 환경 |
+
+**테스트 환경:**
+
+- CentOS 6.9 (glibc 2.12)
+- Amazon Linux 2 (glibc 2.26)
+
+**출력 예시:**
+
+```
+==============================================
+  TypeCast AutoTag C Library E2E Test
+==============================================
+
+=== Testing typecast_manual_tag (31 tags) ===
+  [PASS] name
+  [PASS] month
+  [PASS] day
+  ...
+
+=== Testing typecast_auto_tag ===
+  [PASS] auto_phone
+  [PASS] auto_money
+  ...
+
+=== Testing typecast_auto_tag_with_manual ===
+  [PASS] mixed_name_phone
+  [PASS] mixed_name_money
+  ...
+
+===========================================
+Test Results:
+  Total:  44
+  Passed: 44
+  Failed: 0
+===========================================
+
+✓ CentOS 6.9: ALL TESTS PASSED
+✓ Amazon Linux 2: ALL TESTS PASSED
+
+All E2E tests passed!
+```
+
 ## 배포
 
 ### 필요한 파일
