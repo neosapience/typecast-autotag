@@ -24,6 +24,10 @@ import { bakil } from './tags/bakil';
 import { roomNumber } from './tags/room-number';
 import { jong } from './tags/jong';
 import { distance } from './tags/distance';
+import { carNumber } from './tags/car-number';
+import { flight } from './tags/flight';
+import { seat } from './tags/seat';
+import { lecture } from './tags/lecture';
 
 /**
  * 자동 태깅 옵션
@@ -346,6 +350,8 @@ const AUTO_TAG_PATTERNS = {
     patterns: [
       // N일 이내/이후/이상/이하
       /(?<![0-9])[\d,]+\s*일\s*(?:이내|이후|이상|이하)/g,
+      // 최대/최소 N일
+      /(?:최대|최소)\s*[\d,]+\s*일(?![째차생간])/g,
       // N개월 (기간)
       /(?<![0-9])[\d,]+\s*개월/g,
       // N주일, N주
@@ -451,15 +457,19 @@ const AUTO_TAG_PATTERNS = {
    */
   serial: {
     patterns: [
-      // 모델번호, 접수번호, 계약번호, 처방전 번호 등 레이블 + 코드 형식
-      /(?:모델번호|접수번호|계약번호|처방전\s*번호|주문번호|예약번호)[:\s]*[A-Za-z0-9-]+/g,
+      // 모델번호, 접수번호, 계약번호, 처방전 번호, 증권번호, 보험번호 등 레이블 + 코드 형식
+      /(?:모델번호|접수번호|계약번호|처방전\s*번호|주문번호|예약번호|증권번호|보험번호)[:\s]*[A-Za-z0-9-]+/g,
       // 영문+숫자+하이픈 조합의 코드 (최소 하이픈 1개 포함, 숫자 포함)
       /\b[A-Za-z]{1,5}-\d{4,}-\d{2,}\b/g,
       /\b\d{8,}-\d{4,}\b/g,
     ],
     converter: (match: string) => {
       // 레이블이 있는 경우 레이블 유지하고 숫자만 변환
-      if (/^(?:모델번호|접수번호|계약번호|처방전\s*번호|주문번호|예약번호)/.test(match)) {
+      if (
+        /^(?:모델번호|접수번호|계약번호|처방전\s*번호|주문번호|예약번호|증권번호|보험번호)/.test(
+          match
+        )
+      ) {
         return serialNumbersOnly(match);
       }
       return serial(match);
@@ -555,6 +565,87 @@ const AUTO_TAG_PATTERNS = {
       /\d+\s*기분/g,
     ],
     converter: (match: string) => gIbun(match),
+  },
+
+  /**
+   * 차량번호 패턴
+   * - 12가 3456, 123가1234, 서울12가3456
+   * - 차량번호: 12가 3456
+   */
+  carNumber: {
+    patterns: [
+      // 차량번호 레이블 + 차량번호
+      /차량번호[:\s]*(?:[가-힣]{2})?\d{2,3}[가-힣]\s?\d{4}/g,
+      // 지역명(선택) + 숫자2-3자리 + 한글1자 + 공백(선택) + 숫자4자리
+      /(?:[가-힣]{2})?\d{2,3}[가-힣]\s?\d{4}/g,
+    ],
+    converter: (match: string) => {
+      // 차량번호 레이블이 있는 경우 레이블 유지
+      const labelMatch = match.match(/^(차량번호[:\s]*)/);
+      if (labelMatch) {
+        const label = labelMatch[0];
+        const carNum = match.slice(label.length);
+        return label + carNumber(carNum);
+      }
+      return carNumber(match);
+    },
+  },
+
+  /**
+   * 항공편 패턴
+   * - SK301, KE123, OZ751
+   */
+  flight: {
+    patterns: [
+      // 항공사코드 영문 2자리 + 편명 숫자 1-4자리
+      // 출발편, 도착편, 편명 등의 레이블 뒤에 오는 경우
+      /(?:출발편|도착편|편명)[:\s]*[A-Za-z]{2}\d{1,4}/g,
+      // 단독 항공편 번호 (알려진 항공사 코드)
+      /\b(?:KE|OZ|LJ|TW|7C|BX|ZE|RS|4V|SK|AA|UA|DL|BA|AF|LH|NH|JL|CX|SQ|EK|QR)\d{1,4}\b/g,
+    ],
+    converter: (match: string) => {
+      // 레이블이 있는 경우 레이블 유지
+      const labelMatch = match.match(/^(출발편|도착편|편명)[:\s]*/);
+      if (labelMatch) {
+        const label = labelMatch[0];
+        const code = match.slice(label.length);
+        return label + flight(code);
+      }
+      return flight(match);
+    },
+  },
+
+  /**
+   * 좌석번호 패턴
+   * - 23A, 15F, 7C
+   */
+  seat: {
+    patterns: [
+      // 좌석번호 레이블 + 숫자 + 영문
+      /(?:좌석번호|좌석)[:\s]*\d{1,3}[A-Za-z]/g,
+    ],
+    converter: (match: string) => {
+      // 레이블이 있는 경우 레이블 유지
+      const labelMatch = match.match(/^(좌석번호|좌석)[:\s]*/);
+      if (labelMatch) {
+        const label = labelMatch[0];
+        const seatNum = match.slice(label.length);
+        return label + seat(seatNum);
+      }
+      return seat(match);
+    },
+  },
+
+  /**
+   * 강의수 패턴
+   * - 26강, 40강
+   */
+  lecture: {
+    patterns: [
+      // N강 (강의 번호/개수)
+      /(?<![0-9])[\d,]+\s*강(?![의사좌])/g,
+    ],
+    converter: (match: string) => lecture(match),
   },
 } as const;
 
@@ -806,3 +897,8 @@ export const autoDistance = (text: string): string => autoTag(text, { enabledTag
 export const autoYearMonth = (text: string): string =>
   autoTag(text, { enabledTags: ['yearMonth'] });
 export const autoGIbun = (text: string): string => autoTag(text, { enabledTags: ['gIbun'] });
+export const autoCarNumber = (text: string): string =>
+  autoTag(text, { enabledTags: ['carNumber'] });
+export const autoFlight = (text: string): string => autoTag(text, { enabledTags: ['flight'] });
+export const autoSeat = (text: string): string => autoTag(text, { enabledTags: ['seat'] });
+export const autoLecture = (text: string): string => autoTag(text, { enabledTags: ['lecture'] });

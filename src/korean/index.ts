@@ -37,6 +37,13 @@ export {
   autoRoomNumber,
   autoJong,
   autoTimeOfDay,
+  autoDistance,
+  autoYearMonth,
+  autoGIbun,
+  autoCarNumber,
+  autoFlight,
+  autoSeat,
+  autoLecture,
 } from './auto-tag';
 
 // Auto-tag types
@@ -73,6 +80,11 @@ export { serial, serialNumbersOnly } from './tags/serial';
 export { bakil } from './tags/bakil';
 export { roomNumber } from './tags/room-number';
 export { jong } from './tags/jong';
+export { distance } from './tags/distance';
+export { carNumber } from './tags/car-number';
+export { flight } from './tags/flight';
+export { seat } from './tags/seat';
+export { lecture } from './tags/lecture';
 
 // Utility functions
 export { numberToKorean, numberToNativeKorean } from './utils/number-to-korean';
