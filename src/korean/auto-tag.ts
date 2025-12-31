@@ -1,3 +1,4 @@
+import { numberToKorean } from './utils/number-to-korean';
 import { month } from './tags/month';
 import { day } from './tags/day';
 import { date, yearMonth } from './tags/date';
@@ -23,11 +24,127 @@ import { serial, serialNumbersOnly } from './tags/serial';
 import { bakil } from './tags/bakil';
 import { roomNumber } from './tags/room-number';
 import { jong } from './tags/jong';
-import { distance } from './tags/distance';
+import {
+  distance,
+  distanceWithContext,
+  DISTANCE_CONTEXT_AFTER,
+  DISTANCE_CONTEXT_BEFORE,
+} from './tags/distance';
 import { carNumber } from './tags/car-number';
 import { flight } from './tags/flight';
 import { seat } from './tags/seat';
 import { lecture } from './tags/lecture';
+import { fraction, fractionWithContext } from './tags/fraction';
+import { temperature, temperatureRange } from './tags/temperature';
+import { volume } from './tags/volume';
+import { dataCapacity } from './tags/data-capacity';
+import { inch } from './tags/inch';
+
+/**
+ * 특수문자 단위를 발음으로 변환하는 매핑
+ * 패턴 매칭으로 처리되지 않는 단독 특수문자들을 후처리로 변환
+ */
+const SPECIAL_UNIT_MAP: Array<[RegExp, string]> = [
+  // 부피/용량 단위
+  [/m³/g, '세제곱미터'],
+  [/m3(?![0-9])/g, '세제곱미터'],
+  [/cm³/g, '세제곱센티미터'],
+  [/cm3(?![0-9])/g, '세제곱센티미터'],
+  [/㎥/g, '세제곱미터'],
+  // 면적 단위
+  [/m²/g, '제곱미터'],
+  [/m2(?![0-9])/g, '제곱미터'],
+  [/㎡/g, '제곱미터'],
+  // 온도 단위
+  [/℃/g, '도'],
+  [/℉/g, '화씨'],
+  // 무게/길이 등 특수문자 단위
+  [/㎏/g, '킬로그램'],
+  [/㎞/g, '킬로미터'],
+  [/㎝/g, '센티미터'],
+  [/㎜/g, '밀리미터'],
+  [/ℓ/g, '리터'],
+  [/㎖/g, '밀리리터'],
+  [/㏄/g, '시시'],
+];
+
+/**
+ * 기술 약어를 발음으로 변환하는 매핑
+ * 단어 경계를 고려하여 정확한 약어만 변환
+ */
+const ABBREVIATION_MAP: Array<[RegExp, string]> = [
+  // 네트워크 세대
+  [/\b2G\b/g, '투지'],
+  [/\b3G\b/g, '쓰리지'],
+  [/\b4G\b/g, '포지'],
+  [/\b5G\b/g, '파이브지'],
+  [/\bLTE\b/gi, '엘티이'],
+  // 기술 약어
+  [/\bVR\b/g, '브이알'],
+  [/\bAR\b/g, '에이알'],
+  [/\bTTS\b/g, '티티에스'],
+  [/\bSTT\b/g, '에스티티'],
+];
+
+/**
+ * 시간(분) 컨텍스트 키워드 (뒤에 오는 단어들)
+ * 이 키워드들이 뒤에 오면 'm'을 '분'으로 해석
+ */
+const TIME_CONTEXT_AFTER = [
+  // 시간 경과/소요
+  '후',
+  '뒤',
+  '내',
+  '안에',
+  '동안',
+  '이내',
+  '이상',
+  '이하',
+  '전',
+  '경과',
+  '소요',
+  '걸림',
+  '걸려',
+  '걸리',
+  '남음',
+  '남은',
+  '대기',
+  '기다',
+  '지나',
+  '지난',
+  '만에',
+  '정각',
+  '간격',
+  '마다',
+  '단위',
+  // 범위
+  '에서',
+  '부터',
+  '까지',
+];
+
+/**
+ * 시간(분) 컨텍스트 키워드 (앞에 오는 단어들)
+ * 이 키워드들이 앞에 오면 'm'을 '분'으로 해석
+ */
+const TIME_CONTEXT_BEFORE = [
+  // 시간 관련
+  '약',
+  '대략',
+  '최소',
+  '최대',
+  '평균',
+  '소요시간',
+  '대기시간',
+  '남은시간',
+  '예상시간',
+  '소요',
+  '대기',
+  '도착',
+  '예상',
+  '남은',
+  '잔여',
+];
 
 /**
  * 자동 태깅 옵션
@@ -71,6 +188,166 @@ const AUTO_TAG_PATTERNS = {
    * - 대표번호: 1588-XXXX, 1544-XXXX, 1600-XXXX, 1666-XXXX, 1800-XXXX
    * - 긴급번호: 112, 119, 110
    */
+  /**
+   * 지번 보호 패턴 (전화번호로 잘못 인식되지 않도록 먼저 매칭)
+   * N동 123-45, N구 123-456 등의 지번은 변환하지 않음
+   */
+  lotNumber: {
+    patterns: [
+      // 동/리 + 숫자-숫자 (지번)
+      /(?:동|리|구|면|읍)\s+\d{1,4}[-]\d{1,4}\b/g,
+    ],
+    converter: (match: string) => match, // 그대로 유지
+  },
+
+  /**
+   * 주소 번지수 패턴
+   * N로 123, N길 456, N대로 789 등에서 번지수를 하나씩 읽음
+   */
+  addressNumber: {
+    patterns: [
+      // N로/길/대로 + 숫자 (번지수) - 뒤에 쉼표, 공백, 괄호, 줄끝 등이 올 수 있음
+      /(?:로|길|대로)\s+\d+(?=\s*[,\s)）]|$)/g,
+    ],
+    converter: (match: string) => {
+      // "로 123" -> "로 일 이 삼"
+      const numMatch = match.match(/(\d+)$/);
+      if (numMatch) {
+        const prefix = match.replace(/\d+$/, '');
+        const digits = numMatch[1] ?? '';
+        const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        const koreanDigits = digits
+          .split('')
+          .map((d) => DIGITS[parseInt(d, 10)] ?? d)
+          .join(' ');
+        return prefix + koreanDigits;
+      }
+      return match;
+    },
+  },
+
+  /**
+   * 고객번호 패턴 (다른 패턴보다 먼저 매칭)
+   * 고객번호: NN-NN-NNNN-NNNN 형태를 숫자 하나씩 읽음
+   */
+  customerNumber: {
+    patterns: [
+      // 고객번호: NN-NN-NNNN-NNNN 형태
+      /(?:고객번호)[:\s]*\d{2,4}[-]\d{2,4}[-]\d{2,4}[-]\d{2,4}\b/g,
+      // 고객번호: 영문-숫자 조합 (GS-2024-123456 등)
+      /(?:고객번호)[:\s]*[A-Z]{1,3}[-]\d{4}[-]\d{4,6}\b/g,
+    ],
+    converter: (match: string) => {
+      const numMatch = match.match(/([A-Z\d][-A-Z\d]+)$/);
+      if (numMatch) {
+        const prefix = match.replace(/([A-Z\d][-A-Z\d]+)$/, '');
+        const code = numMatch[1] ?? '';
+        const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        const parts: string[] = [];
+        let currentLetters = '';
+        for (const c of code) {
+          if (c === '-') {
+            if (currentLetters) {
+              parts.push(currentLetters);
+              currentLetters = '';
+            }
+            parts.push('다시');
+          } else if (/\d/.test(c)) {
+            if (currentLetters) {
+              parts.push(currentLetters);
+              currentLetters = '';
+            }
+            parts.push(DIGITS[parseInt(c, 10)] ?? c);
+          } else {
+            currentLetters += c;
+          }
+        }
+        if (currentLetters) {
+          parts.push(currentLetters);
+        }
+        return prefix + parts.join(' ');
+      }
+      return match;
+    },
+  },
+
+  /**
+   * 락커번호 패턴 (영문-숫자 조합)
+   * 락커번호 A-125 형태를 개별 숫자로 읽음
+   */
+  lockerNumber: {
+    patterns: [
+      // 락커번호: A-123, B-45 등
+      /(?:락커번호|사물함번호|사물함)[:\s]*[A-Z가-힣]{1,3}[-]?\d{1,4}\b/gi,
+    ],
+    converter: (match: string) => {
+      const numMatch = match.match(/([A-Z가-힣]{1,3}[-]?\d{1,4})$/i);
+      if (numMatch) {
+        const prefix = match.replace(/([A-Z가-힣]{1,3}[-]?\d{1,4})$/i, '');
+        const code = numMatch[1] ?? '';
+        const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        const parts: string[] = [];
+        let currentLetters = '';
+        for (const c of code) {
+          if (c === '-') {
+            if (currentLetters) {
+              parts.push(currentLetters);
+              currentLetters = '';
+            }
+            parts.push('다시');
+          } else if (/\d/.test(c)) {
+            if (currentLetters) {
+              parts.push(currentLetters);
+              currentLetters = '';
+            }
+            parts.push(DIGITS[parseInt(c, 10)] ?? c);
+          } else {
+            currentLetters += c;
+          }
+        }
+        if (currentLetters) {
+          parts.push(currentLetters);
+        }
+        return prefix + parts.join(' ');
+      }
+      return match;
+    },
+  },
+
+  /**
+   * 운송장/추적번호 패턴 (phone보다 먼저 매칭)
+   * 송장번호, 운송장번호 등의 컨텍스트가 있을 때 숫자를 하나씩 읽음
+   */
+  trackingNumber: {
+    patterns: [
+      // 송장번호: NNNN-NNNN-NNNN 형태
+      /(?:송장번호|운송장번호|운송장|송장|추적번호)[:\s]*\d{4}[-]\d{4}[-]\d{4}\b/g,
+      // 송장번호: 12-14자리 숫자
+      /(?:송장번호|운송장번호|운송장|송장|추적번호)[:\s]*\d{12,14}\b/g,
+    ],
+    converter: (match: string) => {
+      // 숫자 부분 추출
+      const numMatch = match.match(/(\d[-\d]+)$/);
+      if (numMatch) {
+        const prefix = match.replace(/(\d[-\d]+)$/, '');
+        const digits = numMatch[1] ?? '';
+        // 각 숫자를 하나씩 읽음, 하이픈은 "다시"로
+        const koreanDigits = digits
+          .split('')
+          .map((c) => {
+            if (c === '-') return ' 다시 ';
+            const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+            return DIGITS[parseInt(c, 10)] ?? c;
+          })
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        return prefix + koreanDigits;
+      }
+      return match;
+    },
+  },
+
   phone: {
     // 더 구체적인 패턴부터 먼저 매칭
     patterns: [
@@ -82,8 +359,13 @@ const AUTO_TAG_PATTERNS = {
       /\b0[3-6]\d[-.\s]?\d{3,4}[-.\s]?\d{4}\b/g,
       // 대표번호: 1588, 1544, 1600, 1666, 1800 등
       /\b1[5-8]\d{2}[-.\s]?\d{4}\b/g,
-      // 긴급/특수번호: 112, 119, 110, 114 등
-      /\b1[0-1][0-9]\b/g,
+      // 긴급/특수번호: 명시적 목록 (지번과 혼동 방지)
+      // 3자리: 110(경찰), 111(간첩), 112(경찰), 113(간첩), 114(안내), 115(전보), 116(전화고장),
+      //        117(학교폭력), 118(사이버), 119(소방), 120(정부민원), 122(해양), 123(한전),
+      //        125(환경), 128(안보), 129(보건), 131(기상), 132(법률구조), 181(인권), 182(경찰민원)
+      // 4자리: 1330(관광), 1339(응급의료), 1345(출입국), 1366(여성긴급), 1388(청소년), 1393(자살예방)
+      // 뒤에 -숫자가 오면 지번이므로 제외
+      /\b(?:110|111|112|113|114|115|116|117|118|119|120|122|123|125|128|129|131|132|181|182|1330|1339|1345|1366|1388|1393)(?![-]\d)\b/g,
     ],
     converter: (match: string) => phone(match),
   },
@@ -107,10 +389,13 @@ const AUTO_TAG_PATTERNS = {
   /**
    * 시간 패턴
    * - HH:MM, HH:MM:SS 형식
+   * - HH:MM~HH:MM 범위 형식
    * - 한글 형식: 14시30분, 오후 2시 30분, 9시 (단독)
    */
   time: {
     patterns: [
+      // HH:MM~HH:MM 시간 범위 (먼저 매칭)
+      /\d{1,2}:\d{2}(?::\d{2})?\s*[~-]\s*\d{1,2}:\d{2}(?::\d{2})?/g,
       // HH:MM 또는 HH:MM:SS - 날짜 뒤에 오지 않는 경우만
       /(?<!\d[-/.]\d{1,2}[-/.])(?<!\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\s*)(?<!\d[-/.])(?<=^|[^\d])\d{1,2}:\d{2}(?::\d{2})?(?=$|[^\d:])/g,
       // 한글 시간: 오전/오후 N시 M분 S초
@@ -121,7 +406,18 @@ const AUTO_TAG_PATTERNS = {
       // 앞에 "아침", "저녁", "새벽", "밤" 등이 있으면 제외 (오전/오후와 충돌)
       /(?<!아침\s*)(?<!저녁\s*)(?<!새벽\s*)(?<!밤\s*)(?<![0-9])(?:1[0-9]|2[0-3]|[0-9])시(?![0-9분간])/g,
     ],
-    converter: (match: string) => time(match),
+    converter: (match: string) => {
+      // 시간 범위인 경우
+      if (/\d{1,2}:\d{2}.*[~-].*\d{1,2}:\d{2}/.test(match)) {
+        const parts = match.split(/\s*[~-]\s*/);
+        if (parts.length === 2) {
+          const time1 = time(parts[0] ?? '');
+          const time2 = time(parts[1] ?? '');
+          return time1 + '에서 ' + time2;
+        }
+      }
+      return time(match);
+    },
   },
 
   /**
@@ -134,18 +430,31 @@ const AUTO_TAG_PATTERNS = {
    */
   date: {
     patterns: [
+      // YYYY-MM-DD ~ YYYY-MM-DD 날짜 범위 (먼저 매칭)
+      /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\s*[~]\s*\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\b/g,
       // YYYYMMDD 형식 (8자리 숫자, 생년월일 형태)
       // 년도 범위 제한: 1900-2099
       // 뒤에 -숫자가 오면 접수번호 등으로 간주하여 제외
       /\b(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])(?!-\d)\b/g,
       // YYYY-MM-DD 형식 (시간이 뒤따르지 않는 경우만)
       /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}(?!\s*\d{1,2}:\d{2})(?!\s*T\d)/g,
-      // 한글 날짜: YYYY년 M월 D일 (생략 가능)
-      /\d{4}년\s*(?:\d{1,2}월\s*)?(?:\d{1,2}일)?(?:생)?/g,
+      // 한글 날짜: YYYY년 M월 D일 (생략 가능) - 월/일 뒤의 공백은 포함하지 않음
+      /\d{4}년\s*(?:\d{1,2}월)?(?:\s*\d{1,2}일)?(?:생)?/g,
       // 한글 월일만: M월 D일
       /(?<!\d년\s*)\d{1,2}월\s*\d{1,2}일/g,
     ],
-    converter: (match: string) => date(match),
+    converter: (match: string) => {
+      // 날짜 범위인 경우
+      if (/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\s*[~]\s*\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(match)) {
+        const parts = match.split(/\s*[~]\s*/);
+        if (parts.length === 2) {
+          const date1 = date(parts[0] ?? '');
+          const date2 = date(parts[1] ?? '');
+          return date1 + ' ~ ' + date2;
+        }
+      }
+      return date(match);
+    },
   },
 
   /**
@@ -159,18 +468,31 @@ const AUTO_TAG_PATTERNS = {
    */
   money: {
     patterns: [
-      // 음수 금액: -숫자원
-      /-[\d,]+(?:\.\d+)?\s*원(?!\s*[년월일시분초])/g,
+      // N원~M원 금액 범위 (먼저 매칭)
+      /[\d,]+\s*원\s*[~]\s*[\d,]+\s*원/g,
+      // 음수 금액: -숫자원 (줄바꿈 뒤의 문자는 무시)
+      /-[\d,]+(?:\.\d+)?\s*원(?![ \t]*[년월일시분초])/g,
       // 한글 숫자 혼합: N억 N천만원, N억원
       /\d+억\s*(?:\d+천만)?(?:\d+백만)?원/g,
       // 숫자 + 만원/억원/조원/경원/천원 (한글 큰 단위)
-      /[\d,]+\s*(?:만|억|조|경|천)원(?!\s*[년월일시분초])/g,
+      /[\d,]+\s*(?:만|억|조|경|천)원(?![ \t]*[년월일시분초])/g,
       // 숫자 + 원 (천단위 구분자 및 소수점 지원)
-      /[\d,]+(?:\.\d+)?\s*원(?!\s*[년월일시분초])/g,
+      /[\d,]+(?:\.\d+)?\s*원(?![ \t]*[년월일시분초])/g,
       // 화폐 기호 + 숫자
       /[₩]\s*[\d,]+/g,
     ],
-    converter: (match: string) => money(match),
+    converter: (match: string) => {
+      // 금액 범위인 경우
+      if (/[\d,]+\s*원\s*[~]\s*[\d,]+\s*원/.test(match)) {
+        const parts = match.split(/\s*[~]\s*/);
+        if (parts.length === 2) {
+          const money1 = money(parts[0] ?? '');
+          const money2 = money(parts[1] ?? '');
+          return money1 + '에서 ' + money2;
+        }
+      }
+      return money(match);
+    },
   },
 
   /**
@@ -270,24 +592,117 @@ const AUTO_TAG_PATTERNS = {
   },
 
   /**
+   * 거리 컨텍스트 패턴 (m 단위 + 거리 컨텍스트 키워드)
+   * - 500m 전방, 100m 이내 등
+   * - minsecContext보다 먼저 처리해야 함 (m을 거리로 인식)
+   */
+  distanceContext: {
+    patterns: [
+      // 숫자 + m + 거리 컨텍스트 키워드 (뒤에)
+      new RegExp(`[\\d,]+(?:\\.\\d+)?\\s*m\\s*(?:${DISTANCE_CONTEXT_AFTER.join('|')})`, 'gi'),
+      // 거리 컨텍스트 키워드 (앞에) + 숫자 + m
+      new RegExp(
+        `(?:${DISTANCE_CONTEXT_BEFORE.join('|')})\\s*[\\d,]+(?:\\.\\d+)?\\s*m(?![a-zA-Z])`,
+        'gi'
+      ),
+    ],
+    converter: (match: string) => distanceWithContext(match),
+  },
+
+  /**
+   * 시간(분) 컨텍스트 패턴 (m 단위 + 시간 컨텍스트 키워드)
+   * - 5m 후, 30m 이내, 약 10m 소요 등
+   * - distanceContext 다음, 일반 minsec 이전에 처리
+   * 주의: NmNs 조합은 여기서 처리하지 않고 minsec에서 처리
+   */
+  minsecContext: {
+    patterns: [
+      // 숫자 + m + 시간 컨텍스트 키워드 (뒤에) - 뒤에 숫자s가 오지 않는 경우만
+      // 주의: distanceContext가 먼저 처리되므로 거리 컨텍스트가 있으면 거기서 처리됨
+      new RegExp(`\\b\\d+m(?!\\d)\\s*(?:${TIME_CONTEXT_AFTER.join('|')})`, 'gi'),
+      // 시간 컨텍스트 키워드 (앞에) + 숫자 + m (뒤에 숫자나 영문이 오지 않는 경우)
+      new RegExp(`(?:${TIME_CONTEXT_BEFORE.join('|')})\\s*\\d+m(?!\\d)(?![a-zA-Z])`, 'gi'),
+    ],
+    converter: (match: string) => {
+      // 컨텍스트 키워드를 유지하면서 시간만 변환
+      // 뒤에 오는 컨텍스트
+      const afterMatch = match.match(
+        new RegExp(`^(\\d+)m\\s*(${TIME_CONTEXT_AFTER.join('|')})(.*)$`, 'i')
+      );
+      if (afterMatch) {
+        const num = parseInt(afterMatch[1] ?? '0', 10);
+        const context = afterMatch[2] ?? '';
+        const rest = afterMatch[3] ?? '';
+        return minsec(`${num}m`) + ' ' + context + rest;
+      }
+
+      // 앞에 오는 컨텍스트
+      const beforeMatch = match.match(
+        new RegExp(`^(${TIME_CONTEXT_BEFORE.join('|')})\\s*(\\d+)m$`, 'i')
+      );
+      if (beforeMatch) {
+        const context = beforeMatch[1] ?? '';
+        const num = parseInt(beforeMatch[2] ?? '0', 10);
+        return context + ' ' + minsec(`${num}m`);
+      }
+
+      return minsec(match);
+    },
+  },
+
+  /**
    * 시분초 패턴 (지속시간)
    * - Nm, Ns, NmNs, NhNmNs
    * - N분, N초, N분N초, N시간N분
    * - 시간 범위: 1h30m~2h (~ → 에서)
    * - 소수점 지원: 0.3초, 1.5초 등
+   * 주의: distanceContext가 먼저 처리되므로 거리 컨텍스트가 있으면 거리로 처리됨
    */
   minsec: {
     patterns: [
-      // 시간 범위: 1h30m~2h, 5m~10m
-      /\b\d+h(?:\d+m)?(?:\d+s)?~\d+h(?:\d+m)?(?:\d+s)?\b/gi,
-      /\b\d+m(?:\d+s)?~\d+m(?:\d+s)?\b/gi,
-      // 영문: 1h30m20s, 5m, 30s, 1h30m
+      // 밀리초 범위: 50~100ms, 1~5ms (먼저 매칭)
+      /\b\d+\s*[~]\s*\d+\s*ms\b/gi,
+      // 단독 밀리초: 10ms, 100ms
+      /\b\d+\s*ms\b/gi,
+      // 마이크로초 범위: 1~5µs, 1~5us
+      /\b\d+\s*[~]\s*\d+\s*[µu]s\b/gi,
+      // 단독 마이크로초: 10µs, 10us
+      /\b\d+\s*[µu]s\b/gi,
+      // 나노초 범위: 1~5ns
+      /\b\d+\s*[~]\s*\d+\s*ns\b/gi,
+      // 단독 나노초: 10ns
+      /\b\d+\s*ns\b/gi,
+      // 피코초 범위: 1~5ps
+      /\b\d+\s*[~]\s*\d+\s*ps\b/gi,
+      // 단독 피코초: 10ps
+      /\b\d+\s*ps\b/gi,
+      // 펨토초 범위: 1~5fs
+      /\b\d+\s*[~]\s*\d+\s*fs\b/gi,
+      // 단독 펨토초: 10fs
+      /\b\d+\s*fs\b/gi,
+      // 한글 숫자 분~시간 범위 (이미 변환된 한글, 먼저 매칭)
+      /[일이삼사오육칠팔구십백천한두세네]+\s*분\s*[~]\s*[일이삼사오육칠팔구십백천한두세네]+\s*시간/g,
+      // 한글 숫자 분~분 범위 (이미 변환된 한글, 먼저 매칭)
+      /[일이삼사오육칠팔구십백천]+\s*분\s*[~]\s*[일이삼사오육칠팔구십백천]+\s*분/g,
+      // 아라비아 숫자 분~시간 범위 (먼저 매칭)
+      /\d+\s*분\s*[~]\s*\d+\s*시간/g,
+      // 아라비아 숫자 분~분 범위 (먼저 매칭)
+      /\d+\s*분\s*[~]\s*\d+\s*분/g,
+      // 시간 범위: 1h30m~2h, 5m~10m (범위는 명확히 시간)
+      /\b\d+h(?:\d+m)?(?:\d+s)?[~]\d+h(?:\d+m)?(?:\d+s)?\b/gi,
+      /\b\d+m(?:\d+s)?[~]\d+m(?:\d+s)?\b/gi,
+      // 영문: 1h30m20s, 1h30m, 1h (h가 포함되면 시간)
       /\b\d+h(?:\d+m)?(?:\d+s)?\b/gi,
-      /\b\d+m(?:\d+s)?\b/gi,
+      // 영문: NmNs 조합 (s가 포함되면 시간) - 단독 Nm보다 먼저 매칭
+      /\b\d+m\d+s\b/gi,
+      // 단독 Nm: 뒤에 숫자s, 영문, 특수문자(³ 등)가 없는 경우
+      // distanceContext가 먼저 처리되므로 여기에 도달하면 시간으로 처리
+      /\b\d+m(?!\d)(?![a-zA-Z³²])/gi,
+      // 영문: Ns 단독
       /\b\d+s\b/gi,
-      // 영문 풀 단어: 5minutes, 30seconds, 1hour
+      // 영문 풀 단어: 5minutes, 30seconds, 1hour (명확한 시간)
       /\b\d+\s*(?:hours?|minutes?|seconds?|mins?|secs?)\b/gi,
-      // 한글: N시간, N분, N초 조합 (소수점 지원)
+      // 한글: N시간, N분, N초 조합 (소수점 지원) - 한글은 명확
       /\d+시간(?:\s*\d+분)?(?:\s*[\d.]+초)?/g,
       /(?<!\d시간\s*)\d+분(?:\s*[\d.]+초)?/g,
       // 소수점 초: 0.3초, 1.5초 등 (정수 초보다 먼저 매칭)
@@ -295,7 +710,74 @@ const AUTO_TAG_PATTERNS = {
       // 정수 초: 30초 등
       /(?<!\d분\s*)\d+초(?!\s*[점])/g,
     ],
-    converter: (match: string) => minsec(match),
+    converter: (match: string) => {
+      // SI 시간 단위 매핑
+      const timeUnitMap: Record<string, string> = {
+        ms: '밀리초',
+        µs: '마이크로초',
+        us: '마이크로초',
+        ns: '나노초',
+        ps: '피코초',
+        fs: '펨토초',
+      };
+
+      // SI 시간 단위 범위: N~Munit (한자어 수사 사용)
+      const siTimeRangeMatch = match.match(/^(\d+)\s*[~]\s*(\d+)\s*([µu]?[mnpf]?s)$/i);
+      if (siTimeRangeMatch) {
+        const num1 = parseInt(siTimeRangeMatch[1] ?? '0', 10);
+        const num2 = parseInt(siTimeRangeMatch[2] ?? '0', 10);
+        const unit = siTimeRangeMatch[3]?.toLowerCase() ?? 'ms';
+        const koreanUnit = timeUnitMap[unit] ?? '초';
+        const koreanNum1 = numberToKorean(num1);
+        const koreanNum2 = numberToKorean(num2);
+        return koreanNum1 + ' ' + koreanUnit + '에서 ' + koreanNum2 + ' ' + koreanUnit;
+      }
+      // 단독 SI 시간 단위: Nunit (한자어 수사 사용)
+      const siTimeMatch = match.match(/^(\d+)\s*([µu]?[mnpf]?s)$/i);
+      if (siTimeMatch) {
+        const num = parseInt(siTimeMatch[1] ?? '0', 10);
+        const unit = siTimeMatch[2]?.toLowerCase() ?? 'ms';
+        const koreanUnit = timeUnitMap[unit] ?? '초';
+        const koreanNum = numberToKorean(num);
+        return koreanNum + ' ' + koreanUnit;
+      }
+      // 한글 숫자 분~시간 범위인 경우 (이미 변환된 한글)
+      const koreanMinHourMatch = match.match(
+        /^([일이삼사오육칠팔구십백천한두세네]+\s*분)\s*[~]\s*([일이삼사오육칠팔구십백천한두세네]+\s*시간)$/
+      );
+      if (koreanMinHourMatch) {
+        return koreanMinHourMatch[1] + '에서 ' + koreanMinHourMatch[2];
+      }
+      // 한글 숫자 분~분 범위인 경우 (이미 변환된 한글)
+      const koreanNumRangeMatch = match.match(
+        /^([일이삼사오육칠팔구십백천]+\s*분)\s*[~]\s*([일이삼사오육칠팔구십백천]+\s*분)$/
+      );
+      if (koreanNumRangeMatch) {
+        return koreanNumRangeMatch[1] + '에서 ' + koreanNumRangeMatch[2];
+      }
+      // 아라비아 숫자 분~시간 범위인 경우
+      const arabicMinHourMatch = match.match(/^(\d+)\s*분\s*[~]\s*(\d+)\s*시간$/);
+      if (arabicMinHourMatch) {
+        const min = minsec(arabicMinHourMatch[1] + '분');
+        const hour = minsec(arabicMinHourMatch[2] + '시간');
+        return min + '에서 ' + hour;
+      }
+      // 아라비아 숫자 분~분 범위인 경우
+      const arabicRangeMatch = match.match(/^(\d+)\s*분\s*[~]\s*(\d+)\s*분$/);
+      if (arabicRangeMatch) {
+        const min1 = minsec(arabicRangeMatch[1] + '분');
+        const min2 = minsec(arabicRangeMatch[2] + '분');
+        return min1 + '에서 ' + min2;
+      }
+      // 영문 범위인 경우 (5m~10m 등)
+      const engRangeMatch = match.match(/^(.+)[~](.+)$/);
+      if (engRangeMatch) {
+        const time1 = minsec(engRangeMatch[1] ?? '');
+        const time2 = minsec(engRangeMatch[2] ?? '');
+        return time1 + '에서 ' + time2;
+      }
+      return minsec(match);
+    },
   },
 
   /**
@@ -355,6 +837,14 @@ const AUTO_TAG_PATTERNS = {
    */
   duration: {
     patterns: [
+      // N~M시간 범위 (먼저 매칭)
+      /\d+\s*[~]\s*\d+\s*시간/g,
+      // N~M일 범위 (일째, 일차 등 제외)
+      /\d+\s*[~]\s*\d+\s*일(?![째차생간])/g,
+      // N~M개월 범위
+      /\d+\s*[~]\s*\d+\s*개월/g,
+      // N~M주 범위
+      /\d+\s*[~]\s*\d+\s*주(?![문제])/g,
       // N일 이내/이후/이상/이하
       /(?<![0-9])[\d,]+\s*일\s*(?:이내|이후|이상|이하)/g,
       // 최대/최소 N일
@@ -380,6 +870,19 @@ const AUTO_TAG_PATTERNS = {
       /(?:남은\s*)?기간[:\s]+[\d,]+\s*일(?![째차생])/g,
     ],
     converter: (match: string) => {
+      // 기간 범위인 경우 (N~M시간, N~M일 등) - 한자어 수사 사용
+      const rangeMatch = match.match(/^(\d+)\s*[~]\s*(\d+)\s*(시간|일|개월|주)$/);
+      if (rangeMatch) {
+        const num1 = parseInt(rangeMatch[1] ?? '0', 10);
+        const num2 = parseInt(rangeMatch[2] ?? '0', 10);
+        const unit = rangeMatch[3] ?? '';
+
+        const koreanNum1 = numberToKorean(num1);
+        const koreanNum2 = numberToKorean(num2);
+
+        return koreanNum1 + '에서 ' + koreanNum2 + ' ' + unit;
+      }
+
       // "기간: N일" 형태에서 숫자+일만 추출해서 변환
       const durationMatch = match.match(/([\d,]+)\s*일/);
       if (durationMatch && /기간/.test(match)) {
@@ -425,8 +928,10 @@ const AUTO_TAG_PATTERNS = {
    */
   weight: {
     patterns: [
-      // 무게: 숫자 + kg/g/mg/ton/톤/킬로그램/그램/밀리그램
-      /[\d,]+(?:\.\d+)?\s*(?:kg|g|mg|ton|톤|킬로그램|그램|밀리그램)/gi,
+      // 무게: 숫자 + kg/mg/ton/톤/킬로그램/그램/밀리그램 (kg, mg 먼저 매칭)
+      /[\d,]+(?:\.\d+)?\s*(?:kg|mg|ton|톤|킬로그램|그램|밀리그램)/gi,
+      // 무게: 숫자 + g (소문자 g만, 뒤에 영문자가 없는 경우만 - 5G, GB 등 제외)
+      /[\d,]+(?:\.\d+)?\s*g(?![a-zA-Z])/g,
     ],
     converter: (match: string) => weight(match),
   },
@@ -464,19 +969,17 @@ const AUTO_TAG_PATTERNS = {
    */
   serial: {
     patterns: [
-      // 모델번호, 접수번호, 계약번호, 처방전 번호, 증권번호, 보험번호 등 레이블 + 코드 형식
-      /(?:모델번호|접수번호|계약번호|처방전\s*번호|주문번호|예약번호|증권번호|보험번호)[:\s]*[A-Za-z0-9-]+/g,
+      // 일련번호 관련 키워드 + 번호: 숫자 형태
+      // 승인, 인증, 확인, 거래, 결제, 주문, 예약, 접수, 계약, 등록, 회원, 고객, 증권, 보험, 처방전, 모델, 제품, 시리얼 등
+      // 카드 제외 (마스킹된 경우가 많음)
+      /(?:승인|인증|확인|거래|결제|주문|예약|접수|계약|등록|회원|고객|증권|보험|처방전|모델|제품|시리얼|계좌|통장|영수증|송장|운송장|택배|배송|추적|조회|참조|관리|사업자|법인|학번|사번|군번)\s*번호[:\s]+[A-Za-z0-9-]+/g,
       // 영문+숫자+하이픈 조합의 코드 (최소 하이픈 1개 포함, 숫자 포함)
       /\b[A-Za-z]{1,5}-\d{4,}-\d{2,}\b/g,
       /\b\d{8,}-\d{4,}\b/g,
     ],
     converter: (match: string) => {
       // 레이블이 있는 경우 레이블 유지하고 숫자만 변환
-      if (
-        /^(?:모델번호|접수번호|계약번호|처방전\s*번호|주문번호|예약번호|증권번호|보험번호)/.test(
-          match
-        )
-      ) {
+      if (/번호/.test(match)) {
         return serialNumbersOnly(match);
       }
       return serial(match);
@@ -537,12 +1040,13 @@ const AUTO_TAG_PATTERNS = {
   /**
    * 거리 패턴
    * - N km, N m, N 킬로미터 등
+   * - 명확한 거리 단위 (km, cm, mm, 미터, 킬로미터 등)
    */
   distance: {
     patterns: [
-      // 거리: 숫자 + km/m/cm/mm/킬로미터/미터/센티미터/밀리미터
+      // 거리: 숫자 + km/cm/mm/킬로미터/미터/센티미터/밀리미터
       /[\d,]+(?:\.\d+)?\s*(?:km|킬로미터|센티미터|밀리미터|cm|mm)/gi,
-      // m은 다른 단위와 충돌할 수 있으므로 따로 처리
+      // 한글 '미터'는 명확하므로 처리
       /[\d,]+(?:\.\d+)?\s*미터(?![법])/g,
     ],
     converter: (match: string) => distance(match),
@@ -653,6 +1157,253 @@ const AUTO_TAG_PATTERNS = {
       /(?<![0-9])[\d,]+\s*강(?![의사좌])/g,
     ],
     converter: (match: string) => lecture(match),
+  },
+
+  /**
+   * 분수 패턴
+   * - 1/4, 2/3, 3/4
+   */
+  fraction: {
+    patterns: [
+      // N/M + 컨텍스트 (잔량, 정도 등)
+      /\b\d+\s*\/\s*\d+\s*(?:잔량|정도|수준|비율|확률)/g,
+      // 단독 분수 (앞뒤가 숫자가 아닌 경우, 날짜 형식 제외)
+      /(?<!\d)(?<!\d[-/.])(?<!\d년\s*)\b\d+\s*\/\s*\d+\b(?![-/.]?\d)/g,
+    ],
+    converter: (match: string) => {
+      // 컨텍스트가 있는 경우
+      const contextMatch = match.match(/^(\d+)\s*\/\s*(\d+)\s*(.+)$/);
+      if (contextMatch) {
+        return fractionWithContext(match);
+      }
+      return fraction(match);
+    },
+  },
+
+  /**
+   * 온도 패턴
+   * - 20℃, -5.3℃, 68℉, 273K
+   * - 20도, 20°C
+   */
+  temperature: {
+    patterns: [
+      // 온도 범위: N℃~M℃, N도~M도
+      /[+-]?[\d,]+(?:\.\d+)?\s*(?:℃|℉|°[CcFf])\s*[~-]\s*[+-]?[\d,]+(?:\.\d+)?\s*(?:℃|℉|°[CcFf])/g,
+      // 단독 온도: N℃, N℉, N°C, N°F
+      /[+-]?[\d,]+(?:\.\d+)?\s*(?:℃|℉|°[CcFf])/g,
+      // 켈빈: NK, N켈빈 (대문자 K만)
+      /[\d,]+(?:\.\d+)?\s*(?:K|켈빈)(?![a-zA-Z])/g,
+      // N도 (온도 맥락: 기온, 온도, 영상, 영하 뒤에 오는 경우)
+      /(?:기온|온도|영상|영하)\s*[+-]?[\d,]+(?:\.\d+)?\s*도/g,
+    ],
+    converter: (match: string) => {
+      // 범위인 경우
+      if (/[~-]/.test(match) && match.match(/\d.*[~-].*\d/)) {
+        return temperatureRange(match);
+      }
+      // 기온/온도 컨텍스트
+      const contextMatch = match.match(/^(기온|온도|영상|영하)\s*(.+)$/);
+      if (contextMatch) {
+        const context = contextMatch[1] ?? '';
+        const temp = contextMatch[2] ?? '';
+        return context + ' ' + temperature(temp);
+      }
+      return temperature(match);
+    },
+  },
+
+  /**
+   * 용량/부피 패턴
+   * - 12L, 500mL, 85m³
+   */
+  volume: {
+    patterns: [
+      // 리터: NL, NmL (숫자로 시작해야 함 - LTE 등과 구분)
+      /\d[\d,]*(?:\.\d+)?\s*(?:mL|ML|ml|L|ℓ)/g,
+      // 세제곱미터: Nm³, Nm3
+      /\d[\d,]*(?:\.\d+)?\s*(?:m³|m3|cm³|cm3)/g,
+      // 시시: Ncc (뒤에 영문자가 없는 경우만 - CCTV 등 제외)
+      /\d[\d,]*(?:\.\d+)?\s*(?:cc|CC)(?![a-zA-Z])/gi,
+    ],
+    converter: (match: string) => volume(match),
+  },
+
+  /**
+   * 데이터/전력 용량 패턴
+   * - 6GB, 400Kbps, 450kWh
+   */
+  dataCapacity: {
+    patterns: [
+      // 데이터 속도 범위: 100Mbps~200Mbps (먼저 매칭)
+      /[\d,]+(?:\.\d+)?\s*(?:Gbps|Mbps|Kbps|gbps|mbps|kbps|bps)\s*[~]\s*[\d,]+(?:\.\d+)?\s*(?:Gbps|Mbps|Kbps|gbps|mbps|kbps|bps)/gi,
+      // 데이터 용량: NGB, NMB, NTB, NKB
+      /[+-]?[\d,]+(?:\.\d+)?\s*(?:TB|GB|MB|KB|tb|gb|mb|kb)/g,
+      // 데이터 속도: NMbps, NKbps, NGbps
+      /[\d,]+(?:\.\d+)?\s*(?:Gbps|Mbps|Kbps|gbps|mbps|kbps|bps)/gi,
+      // 전력량: NkWh, NMWh, NWh
+      /[+-]?[\d,]+(?:\.\d+)?\s*(?:MWh|kWh|Wh|mwh|kwh|wh)/g,
+      // 전력: NkW, NMW, NW
+      /[\d,]+(?:\.\d+)?\s*(?:MW|kW|W|mw|kw)(?![a-zA-Z])/g,
+      // 전압: NkV, NV
+      /[\d,]+(?:\.\d+)?\s*(?:kV|V|kv)(?![a-zA-Z])/g,
+      // 전류: NmA, NA (뒤에 영문자나 /가 없는 경우만 - A/S 등 제외)
+      /[\d,]+(?:\.\d+)?\s*(?:mA|ma)(?![a-zA-Z/])/g,
+      /[\d,]+(?:\.\d+)?\s*A(?![a-zA-Z/])/g,
+    ],
+    converter: (match: string) => {
+      // 데이터 속도 범위인 경우: 100Mbps~200Mbps
+      const rangeMatch = match.match(
+        /^([\d,]+(?:\.\d+)?)\s*(Gbps|Mbps|Kbps|bps)\s*[~]\s*([\d,]+(?:\.\d+)?)\s*(Gbps|Mbps|Kbps|bps)$/i
+      );
+      if (rangeMatch) {
+        const num1 = rangeMatch[1] ?? '';
+        const unit1 = rangeMatch[2] ?? '';
+        const num2 = rangeMatch[3] ?? '';
+        const unit2 = rangeMatch[4] ?? '';
+        const converted1 = dataCapacity(num1 + unit1);
+        const converted2 = dataCapacity(num2 + unit2);
+        return converted1 + '에서 ' + converted2;
+      }
+      return dataCapacity(match);
+    },
+  },
+
+  /**
+   * 인치 패턴
+   * - 65인치, 55인치
+   */
+  inch: {
+    patterns: [
+      // N인치
+      /[\d,]+(?:\.\d+)?\s*인치/g,
+    ],
+    converter: (match: string) => inch(match),
+  },
+
+  /**
+   * 사양 패턴 (인승, 도어, 세대, 정 등)
+   * - 5인승, 4도어, 120세대, 1정
+   */
+  specification: {
+    patterns: [
+      // N인승 (차량 좌석 수)
+      /[\d,]+\s*인승/g,
+      // N도어 (차량 문 수)
+      /[\d,]+\s*도어/g,
+      // N세대 (주거 단위)
+      /[\d,]+\s*세대/g,
+      // N정 (약 단위)
+      /[\d,]+\s*정(?![보상류확])/g,
+      // N캡슐 (약 단위)
+      /[\d,]+\s*캡슐/g,
+      // N포 (약 단위)
+      /[\d,]+\s*포(?![인함장])/g,
+    ],
+    converter: (match: string) => {
+      // 단위 추출하여 piece로 변환
+      const numMatch = match.match(/^([\d,]+)\s*(.+)$/);
+      if (numMatch) {
+        const numStr = numMatch[1]?.replace(/,/g, '') ?? '0';
+        const unit = numMatch[2] ?? '';
+        const num = parseInt(numStr, 10);
+        if (!isNaN(num)) {
+          return numberToKorean(num) + ' ' + unit;
+        }
+      }
+      return match;
+    },
+  },
+
+  /**
+   * 포인트 (P 단위) 패턴
+   * - 15,600P, 128,450P
+   */
+  pointP: {
+    patterns: [
+      // 숫자 + P (포인트)
+      /[\d,]+\s*P(?![a-zA-Z])/g,
+    ],
+    converter: (match: string) => {
+      const numMatch = match.match(/^([\d,]+)\s*P$/i);
+      if (numMatch) {
+        const numStr = numMatch[1]?.replace(/,/g, '') ?? '0';
+        const num = parseInt(numStr, 10);
+        if (!isNaN(num)) {
+          return numberToKorean(num) + ' 포인트';
+        }
+      }
+      return match;
+    },
+  },
+
+  /**
+   * 외화 패턴
+   * - $350.00, $0.00, ¥1000
+   */
+  foreignCurrency: {
+    patterns: [
+      // 달러: $N, $N.NN
+      /\$[\d,]+(?:\.\d+)?/g,
+      // 엔화: ¥N, ¥N.NN
+      /¥[\d,]+(?:\.\d+)?/g,
+      // 유로: €N, €N.NN
+      /€[\d,]+(?:\.\d+)?/g,
+      // 파운드: £N, £N.NN
+      /£[\d,]+(?:\.\d+)?/g,
+    ],
+    converter: (match: string) => {
+      const currencyMatch = match.match(/^([$$¥€£])([\d,]+(?:\.\d+)?)$/);
+      if (currencyMatch) {
+        const symbol = currencyMatch[1];
+        const numStr = currencyMatch[2]?.replace(/,/g, '') ?? '0';
+
+        // 통화 단위 결정
+        let unit: string;
+        switch (symbol) {
+          case '$':
+            unit = '달러';
+            break;
+          case '¥':
+            unit = '엔';
+            break;
+          case '€':
+            unit = '유로';
+            break;
+          case '£':
+            unit = '파운드';
+            break;
+          default:
+            unit = '';
+        }
+
+        // 소수점 처리
+        if (numStr.includes('.')) {
+          const [intPart, decPart] = numStr.split('.');
+          const intNum = parseInt(intPart || '0', 10);
+          const intKorean = intNum === 0 ? '영' : numberToKorean(intNum);
+
+          // 소수점 이하가 00이면 생략
+          if (decPart === '00') {
+            return intKorean + ' ' + unit;
+          }
+
+          const decKorean = (decPart || '')
+            .split('')
+            .map((d) => {
+              const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+              return DIGITS[parseInt(d, 10)] ?? d;
+            })
+            .join('');
+          return intKorean + ' 쩜 ' + decKorean + ' ' + unit;
+        }
+
+        const num = parseInt(numStr, 10);
+        if (!isNaN(num)) {
+          return (num === 0 ? '영' : numberToKorean(num)) + ' ' + unit;
+        }
+      }
+      return match;
+    },
   },
 } as const;
 
@@ -767,6 +1518,16 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
 
   // 나머지 텍스트 추가
   result += text.slice(currentIndex);
+
+  // 특수문자 단위를 발음으로 변환 (후처리)
+  for (const [pattern, replacement] of SPECIAL_UNIT_MAP) {
+    result = result.replace(pattern, replacement);
+  }
+
+  // 기술 약어를 발음으로 변환 (후처리)
+  for (const [pattern, replacement] of ABBREVIATION_MAP) {
+    result = result.replace(pattern, replacement);
+  }
 
   return result;
 }
@@ -900,7 +1661,11 @@ export const autoRoomNumber = (text: string): string =>
 export const autoJong = (text: string): string => autoTag(text, { enabledTags: ['jong'] });
 export const autoTimeOfDay = (text: string): string =>
   autoTag(text, { enabledTags: ['timeOfDay'] });
+export const autoDistanceContext = (text: string): string =>
+  autoTag(text, { enabledTags: ['distanceContext'] });
 export const autoDistance = (text: string): string => autoTag(text, { enabledTags: ['distance'] });
+export const autoMinsecContext = (text: string): string =>
+  autoTag(text, { enabledTags: ['minsecContext'] });
 export const autoYearMonth = (text: string): string =>
   autoTag(text, { enabledTags: ['yearMonth'] });
 export const autoGIbun = (text: string): string => autoTag(text, { enabledTags: ['gIbun'] });
@@ -909,3 +1674,15 @@ export const autoCarNumber = (text: string): string =>
 export const autoFlight = (text: string): string => autoTag(text, { enabledTags: ['flight'] });
 export const autoSeat = (text: string): string => autoTag(text, { enabledTags: ['seat'] });
 export const autoLecture = (text: string): string => autoTag(text, { enabledTags: ['lecture'] });
+export const autoFraction = (text: string): string => autoTag(text, { enabledTags: ['fraction'] });
+export const autoTemperature = (text: string): string =>
+  autoTag(text, { enabledTags: ['temperature'] });
+export const autoVolume = (text: string): string => autoTag(text, { enabledTags: ['volume'] });
+export const autoDataCapacity = (text: string): string =>
+  autoTag(text, { enabledTags: ['dataCapacity'] });
+export const autoInch = (text: string): string => autoTag(text, { enabledTags: ['inch'] });
+export const autoSpecification = (text: string): string =>
+  autoTag(text, { enabledTags: ['specification'] });
+export const autoPointP = (text: string): string => autoTag(text, { enabledTags: ['pointP'] });
+export const autoForeignCurrency = (text: string): string =>
+  autoTag(text, { enabledTags: ['foreignCurrency'] });

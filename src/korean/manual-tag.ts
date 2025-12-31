@@ -30,6 +30,11 @@ import { carNumber } from './tags/car-number';
 import { flight } from './tags/flight';
 import { seat } from './tags/seat';
 import { lecture } from './tags/lecture';
+import { fraction } from './tags/fraction';
+import { temperature } from './tags/temperature';
+import { volume } from './tags/volume';
+import { dataCapacity } from './tags/data-capacity';
+import { inch } from './tags/inch';
 
 /**
  * 사용 가능한 태그 함수 매핑
@@ -69,6 +74,11 @@ const TAG_FUNCTIONS: Record<string, TagFunction> = {
   flight: (input) => flight(input),
   seat: (input) => seat(input),
   lecture: (input) => lecture(input),
+  fraction: (input) => fraction(input),
+  temperature: (input) => temperature(input),
+  volume: (input) => volume(input),
+  dataCapacity: (input) => dataCapacity(input),
+  inch: (input) => inch(input),
 };
 
 /**
