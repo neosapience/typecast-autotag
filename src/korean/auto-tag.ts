@@ -240,12 +240,15 @@ const AUTO_TAG_PATTERNS = {
   /**
    * 점수 패턴
    * - N점 (뒤에 다른 단위가 오지 않는 경우)
+   * - N크레딧 (크레딧 단위)
    * - 소수점 지원
    */
   point: {
     patterns: [
       // N점 또는 N.N점 (소수점 지원)
       /\b[\d,]+(?:\.\d+)?\s*점(?!\s*[원])/g,
+      // N크레딧 (크레딧 단위)
+      /[\d,]+(?:\.\d+)?\s*크레딧/g,
     ],
     converter: (match: string) => point(match),
   },
@@ -271,6 +274,7 @@ const AUTO_TAG_PATTERNS = {
    * - Nm, Ns, NmNs, NhNmNs
    * - N분, N초, N분N초, N시간N분
    * - 시간 범위: 1h30m~2h (~ → 에서)
+   * - 소수점 지원: 0.3초, 1.5초 등
    */
   minsec: {
     patterns: [
@@ -283,9 +287,12 @@ const AUTO_TAG_PATTERNS = {
       /\b\d+s\b/gi,
       // 영문 풀 단어: 5minutes, 30seconds, 1hour
       /\b\d+\s*(?:hours?|minutes?|seconds?|mins?|secs?)\b/gi,
-      // 한글: N시간, N분, N초 조합
-      /\d+시간(?:\s*\d+분)?(?:\s*\d+초)?/g,
-      /(?<!\d시간\s*)\d+분(?:\s*\d+초)?/g,
+      // 한글: N시간, N분, N초 조합 (소수점 지원)
+      /\d+시간(?:\s*\d+분)?(?:\s*[\d.]+초)?/g,
+      /(?<!\d시간\s*)\d+분(?:\s*[\d.]+초)?/g,
+      // 소수점 초: 0.3초, 1.5초 등 (정수 초보다 먼저 매칭)
+      /(?<!\d분\s*)[\d,]+\.\d+\s*초(?!\s*[점])/g,
+      // 정수 초: 30초 등
       /(?<!\d분\s*)\d+초(?!\s*[점])/g,
     ],
     converter: (match: string) => minsec(match),

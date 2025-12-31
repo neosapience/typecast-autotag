@@ -1,5 +1,61 @@
 import { numberToKorean, numberToNativeKorean } from '../utils/number-to-korean';
 
+/** 기본 한글 숫자 (0-9) */
+const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+
+/**
+ * 소수를 한글로 변환 (예: 0.3 → 영 쩜 삼, 1.5 → 일 쩜 오)
+ */
+function formatDecimalSeconds(numStr: string): string {
+  const parts = numStr.split('.');
+
+  // 소수점이 없으면 정수로 처리
+  if (parts.length === 1) {
+    const intNum = parseInt(parts[0] ?? '0', 10);
+    if (isNaN(intNum)) {
+      return numStr;
+    }
+    return numberToKorean(intNum);
+  }
+
+  // 소수점이 여러 개인 경우 (예: "1.2.3") 원본 반환
+  if (parts.length !== 2) {
+    return numStr;
+  }
+
+  const integerPart = parts[0] ?? '';
+  const decimalPart = parts[1] ?? '';
+
+  // 소수점 뒤가 비어있는 경우 (예: "1.") 정수로 처리
+  if (decimalPart === '') {
+    const intNum = parseInt(integerPart, 10);
+    if (isNaN(intNum)) {
+      return numStr;
+    }
+    return numberToKorean(intNum);
+  }
+
+  // 정수 부분이 비어있는 경우 (예: ".5") 0으로 처리
+  const intNum = integerPart === '' ? 0 : parseInt(integerPart, 10);
+  if (isNaN(intNum)) {
+    return numStr;
+  }
+
+  // 정수 부분
+  const intKorean = numberToKorean(intNum);
+
+  // 소수 부분: 자릿수별로 읽기
+  const decimalKorean = decimalPart
+    .split('')
+    .map((d) => {
+      const digit = parseInt(d, 10);
+      return DIGITS[digit] ?? d;
+    })
+    .join('');
+
+  return intKorean + ' 쩜 ' + decimalKorean;
+}
+
 /**
  * minsec 함수의 옵션
  */
@@ -40,26 +96,32 @@ function convertSingleMinsec(
   // 공백 제거 및 소문자 변환
   const normalizedInput = input.replace(/\s+/g, '').toLowerCase();
 
-  // 시, 분, 초 파싱 (영어 + 한글 지원)
+  // 시, 분, 초 파싱 (영어 + 한글 지원, 소수점 초 지원)
   const hourMatch = normalizedInput.match(/(\d+)(?:hours?|시간|h)/);
   const minMatch = normalizedInput.match(/(\d+)(?:minutes?|mins?|분|m)/);
-  const secMatch = normalizedInput.match(/(\d+)(?:seconds?|secs?|초|s)/);
+  // 소수점 초 지원: 0.3초, 1.5초 등
+  const secMatch = normalizedInput.match(/([\d.]+)(?:seconds?|secs?|초|s)/);
   const numberOnlyMatch = normalizedInput.match(/^(\d+)$/);
-
-  let hours = hourMatch ? parseInt(hourMatch[1] ?? '0', 10) : 0;
-  let minutes = minMatch ? parseInt(minMatch[1] ?? '0', 10) : 0;
-  let seconds = secMatch
-    ? parseInt(secMatch[1] ?? '0', 10)
-    : numberOnlyMatch
-      ? parseInt(numberOnlyMatch[1] ?? '0', 10)
-      : 0;
 
   const hasAnyMatch = hourMatch || minMatch || secMatch || numberOnlyMatch;
   if (!hasAnyMatch) {
     return { result: input, matched: false };
   }
 
-  if (opts.normalize) {
+  let hours = hourMatch ? parseInt(hourMatch[1] ?? '0', 10) : 0;
+  let minutes = minMatch ? parseInt(minMatch[1] ?? '0', 10) : 0;
+
+  // 초는 소수점이 있을 수 있으므로 문자열로 관리
+  let secondsStr = secMatch
+    ? (secMatch[1] ?? '0')
+    : numberOnlyMatch
+      ? (numberOnlyMatch[1] ?? '0')
+      : '0';
+  const isDecimalSeconds = secondsStr.includes('.');
+
+  // 정규화 옵션 (소수점이 아닌 경우에만 적용)
+  if (opts.normalize && !isDecimalSeconds) {
+    let seconds = parseInt(secondsStr, 10);
     if (seconds >= 60) {
       minutes += Math.floor(seconds / 60);
       seconds = seconds % 60;
@@ -68,6 +130,7 @@ function convertSingleMinsec(
       hours += Math.floor(minutes / 60);
       minutes = minutes % 60;
     }
+    secondsStr = String(seconds);
   }
 
   const parts: string[] = [];
@@ -82,8 +145,14 @@ function convertSingleMinsec(
     parts.push(numberToKorean(minutes) + ' 분');
   }
 
-  if (seconds > 0 || secMatch || numberOnlyMatch) {
-    parts.push(numberToKorean(seconds) + ' 초');
+  // 초 변환 (소수점 지원)
+  const secondsNum = parseFloat(secondsStr);
+  if (secondsNum > 0 || secMatch || numberOnlyMatch) {
+    if (isDecimalSeconds) {
+      parts.push(formatDecimalSeconds(secondsStr) + ' 초');
+    } else {
+      parts.push(numberToKorean(parseInt(secondsStr, 10)) + ' 초');
+    }
   }
 
   return { result: parts.join(' '), matched: true };
@@ -135,24 +204,17 @@ export function minsec(input: string, options?: MinsecOptions): string {
   // 공백 제거 및 소문자 변환
   const normalizedInput = input.replace(/\s+/g, '').toLowerCase();
 
-  // 시, 분, 초 파싱 (영어 + 한글 지원)
+  // 시, 분, 초 파싱 (영어 + 한글 지원, 소수점 초 지원)
   // 시간: h, hour, hours, 시간
   // 분: m, min, minute, minutes, 분
-  // 초: s, sec, second, seconds, 초
+  // 초: s, sec, second, seconds, 초 (소수점 지원)
   const hourMatch = normalizedInput.match(/(\d+)(?:hours?|시간|h)/);
   const minMatch = normalizedInput.match(/(\d+)(?:minutes?|mins?|분|m)/);
-  const secMatch = normalizedInput.match(/(\d+)(?:seconds?|secs?|초|s)/);
+  // 소수점 초 지원: 0.3초, 1.5초 등
+  const secMatch = normalizedInput.match(/([\d.]+)(?:seconds?|secs?|초|s)/);
 
   // 숫자만 있는 경우 초로 해석
   const numberOnlyMatch = normalizedInput.match(/^(\d+)$/);
-
-  let hours = hourMatch ? parseInt(hourMatch[1] ?? '0', 10) : 0;
-  let minutes = minMatch ? parseInt(minMatch[1] ?? '0', 10) : 0;
-  let seconds = secMatch
-    ? parseInt(secMatch[1] ?? '0', 10)
-    : numberOnlyMatch
-      ? parseInt(numberOnlyMatch[1] ?? '0', 10)
-      : 0;
 
   // 어떤 단위도 매칭되지 않고 숫자만도 아닌 경우 원본 반환
   const hasAnyMatch = hourMatch || minMatch || secMatch || numberOnlyMatch;
@@ -160,8 +222,20 @@ export function minsec(input: string, options?: MinsecOptions): string {
     return input;
   }
 
-  // 정규화 옵션이 활성화된 경우
-  if (opts.normalize) {
+  let hours = hourMatch ? parseInt(hourMatch[1] ?? '0', 10) : 0;
+  let minutes = minMatch ? parseInt(minMatch[1] ?? '0', 10) : 0;
+
+  // 초는 소수점이 있을 수 있으므로 문자열로 관리
+  let secondsStr = secMatch
+    ? (secMatch[1] ?? '0')
+    : numberOnlyMatch
+      ? (numberOnlyMatch[1] ?? '0')
+      : '0';
+  const isDecimalSeconds = secondsStr.includes('.');
+
+  // 정규화 옵션이 활성화된 경우 (소수점이 아닌 경우에만 적용)
+  if (opts.normalize && !isDecimalSeconds) {
+    let seconds = parseInt(secondsStr, 10);
     // 초 → 분 변환
     if (seconds >= 60) {
       minutes += Math.floor(seconds / 60);
@@ -172,6 +246,7 @@ export function minsec(input: string, options?: MinsecOptions): string {
       hours += Math.floor(minutes / 60);
       minutes = minutes % 60;
     }
+    secondsStr = String(seconds);
   }
 
   const parts: string[] = [];
@@ -189,8 +264,14 @@ export function minsec(input: string, options?: MinsecOptions): string {
     parts.push(numberToKorean(minutes) + ' 분');
   }
 
-  if (seconds > 0 || secMatch || numberOnlyMatch) {
-    parts.push(numberToKorean(seconds) + ' 초');
+  // 초 변환 (소수점 지원)
+  const secondsNum = parseFloat(secondsStr);
+  if (secondsNum > 0 || secMatch || numberOnlyMatch) {
+    if (isDecimalSeconds) {
+      parts.push(formatDecimalSeconds(secondsStr) + ' 초');
+    } else {
+      parts.push(numberToKorean(parseInt(secondsStr, 10)) + ' 초');
+    }
   }
 
   const timeStr = parts.join(' ');
