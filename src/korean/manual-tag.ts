@@ -18,6 +18,18 @@ import { numberTag } from './tags/number';
 import { duration } from './tags/duration';
 import { floor } from './tags/floor';
 import { account } from './tags/account';
+import { weight } from './tags/weight';
+import { mile } from './tags/mile';
+import { area } from './tags/area';
+import { serial } from './tags/serial';
+import { bakil } from './tags/bakil';
+import { roomNumber } from './tags/room-number';
+import { jong } from './tags/jong';
+import { distance } from './tags/distance';
+import { carNumber } from './tags/car-number';
+import { flight } from './tags/flight';
+import { seat } from './tags/seat';
+import { lecture } from './tags/lecture';
 
 /**
  * 사용 가능한 태그 함수 매핑
@@ -45,6 +57,18 @@ const TAG_FUNCTIONS: Record<string, TagFunction> = {
   duration: (input) => duration(input),
   floor: (input) => floor(input),
   account: (input) => account(input),
+  weight: (input) => weight(input),
+  mile: (input) => mile(input),
+  area: (input) => area(input),
+  serial: (input) => serial(input),
+  bakil: (input) => bakil(input),
+  roomNumber: (input) => roomNumber(input),
+  jong: (input) => jong(input),
+  distance: (input) => distance(input),
+  carNumber: (input) => carNumber(input),
+  flight: (input) => flight(input),
+  seat: (input) => seat(input),
+  lecture: (input) => lecture(input),
 };
 
 /**

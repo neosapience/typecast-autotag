@@ -188,26 +188,38 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 
 ### Auto-tags (Automatically Detected)
 
-| Tag        | Description      | Input               | Output                                            |
-| ---------- | ---------------- | ------------------- | ------------------------------------------------- |
-| `phone`    | Phone numbers    | `010-1234-5678`     | `공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔`      |
-| `datetime` | Date and time    | `2024-01-15T14:30`  | `이천이십사년 일월 십오일 오후 두 시 삼십 분`     |
-| `time`     | Time             | `14:30`             | `오후 두 시 삼십 분`                              |
-| `date`     | Date             | `2024-01-15`        | `이천이십사년 일월 십오일`                        |
-| `money`    | Currency amounts | `50000원`           | `오만 원`                                         |
-| `year`     | Year             | `2024년`            | `이천이십사년`                                    |
-| `month`    | Month            | `12월`              | `십이월`                                          |
-| `day`      | Day              | `25일`              | `이십오일`                                        |
-| `order`    | Ordinal numbers  | `3번째`, `2등`      | `세 번째`, `이 등`                                |
-| `point`    | Points/scores    | `95점`              | `구십오 점`                                       |
-| `piece`    | Counting         | `5개`               | `다섯 개`                                         |
-| `minsec`   | Duration         | `5분30초`           | `오 분 삼십 초`                                   |
-| `ratio`    | Ratio/percent    | `50%`, `1:2`        | `오십 퍼센트`, `일 대 이`                         |
-| `jari`     | Digit places     | `4자리`             | `네 자리`                                         |
-| `number`   | Number (번)      | `3번`               | `삼 번`                                           |
-| `duration` | Period           | `3개월`, `2주`      | `삼 개월`, `이 주`                                |
-| `floor`    | Floor numbers    | `5층`, `B1층`       | `오 층`, `지하 일 층`                             |
-| `account`  | Account numbers  | `123-456-789012`    | `일 이 삼 다시 사 오 육 다시 칠 팔 구 영 일 이`   |
+| Tag          | Description      | Input                | Output                                          |
+| ------------ | ---------------- | -------------------- | ----------------------------------------------- |
+| `phone`      | Phone numbers    | `010-1234-5678`      | `공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔`    |
+| `datetime`   | Date and time    | `2024-01-15T14:30`   | `이천이십사년 일월 십오일 오후 두 시 삼십 분`   |
+| `time`       | Time             | `14:30`              | `오후 두 시 삼십 분`                            |
+| `date`       | Date             | `2024-01-15`         | `이천이십사년 일월 십오일`                      |
+| `money`      | Currency amounts | `50000원`            | `오만 원`                                       |
+| `year`       | Year             | `2024년`             | `이천이십사년`                                  |
+| `month`      | Month            | `12월`               | `십이월`                                        |
+| `day`        | Day              | `25일`               | `이십오일`                                      |
+| `order`      | Ordinal numbers  | `3번째`, `2등`       | `세 번째`, `이 등`                              |
+| `point`      | Points/scores    | `95점`               | `구십오 점`                                     |
+| `piece`      | Counting         | `5개`                | `다섯 개`                                       |
+| `minsec`     | Duration (m/s)   | `5분30초`            | `오 분 삼십 초`                                 |
+| `ratio`      | Ratio/percent    | `50%`, `1:2`         | `오십 퍼센트`, `일 대 이`                       |
+| `jari`       | Digit places     | `4자리`              | `네 자리`                                       |
+| `number`     | Number (번)      | `3번`                | `삼 번`                                         |
+| `duration`   | Period           | `3개월`, `최대 30일` | `삼 개월`, `최대 삼십일`                        |
+| `floor`      | Floor numbers    | `5층`, `B1층`        | `오 층`, `지하 일 층`                           |
+| `account`    | Account numbers  | `123-456-789012`     | `일 이 삼 다시 사 오 육 다시 칠 팔 구 영 일 이` |
+| `weight`     | Weight           | `5kg`, `100g`        | `오 킬로그램`, `백 그램`                        |
+| `mile`       | Mileage          | `500마일`            | `오백 마일`                                     |
+| `area`       | Area             | `84㎡`, `25평`       | `팔십사 제곱미터`, `이십오 평`                  |
+| `serial`     | Serial numbers   | `접수번호: A-1234`   | `접수번호: A-일 이 삼 사`                       |
+| `bakil`      | Stay duration    | `2박3일`             | `이 박 삼 일`                                   |
+| `roomNumber` | Room numbers     | `1205호`             | `일 이 영 오 호`                                |
+| `jong`       | Types/kinds      | `3종`                | `삼 종`                                         |
+| `distance`   | Distance         | `5km`                | `오 킬로미터`                                   |
+| `carNumber`  | Car plates       | `12가 3456`          | `일 이 가 삼 사 오 육`                          |
+| `flight`     | Flight numbers   | `SK301`              | `SK 삼 영 일`                                   |
+| `seat`       | Seat numbers     | `23A`                | `이 삼 A`                                       |
+| `lecture`    | Lecture numbers  | `26강`               | `이십육 강`                                     |
 
 ### Manual-only Tags
 
@@ -355,13 +367,21 @@ src/
     ├── manual-tag.ts           # Manual-tagging logic
     ├── tags/                   # Individual tag converters
     │   ├── account.ts          # Account number conversion
+    │   ├── area.ts             # Area (㎡, 평) conversion
+    │   ├── bakil.ts            # Stay duration (N박M일)
+    │   ├── car-number.ts       # Car plate number conversion
     │   ├── date.ts
     │   ├── datetime.ts
     │   ├── day.ts
     │   ├── digits.ts
+    │   ├── distance.ts         # Distance (km, m) conversion
     │   ├── duration.ts         # Period/duration conversion
+    │   ├── flight.ts           # Flight number conversion
     │   ├── floor.ts            # Floor number conversion
     │   ├── jari.ts             # Digit places conversion
+    │   ├── jong.ts             # Type/kind (N종) conversion
+    │   ├── lecture.ts          # Lecture number (N강) conversion
+    │   ├── mile.ts             # Mileage conversion
     │   ├── minsec.ts
     │   ├── money.ts
     │   ├── month.ts
@@ -372,7 +392,11 @@ src/
     │   ├── piece.ts
     │   ├── point.ts
     │   ├── ratio.ts            # Ratio/percent conversion
+    │   ├── room-number.ts      # Room number (N호) conversion
+    │   ├── seat.ts             # Seat number conversion
+    │   ├── serial.ts           # Serial number conversion
     │   ├── time.ts
+    │   ├── weight.ts           # Weight (kg, g) conversion
     │   └── year.ts
     └── utils/
         └── number-to-korean.ts # Number conversion utilities
