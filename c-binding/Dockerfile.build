@@ -1,53 +1,48 @@
 # TypeCast AutoTag C Library 빌드 환경
-# CentOS 6.9 호환을 위해 musl-libc 사용 (정적 링크)
-#
-# 사용법:
-#   docker build -t typecast-autotag-builder -f Dockerfile.build .
-#   docker run --rm -v $(pwd)/build:/output typecast-autotag-builder
+# CentOS 6.9 호환을 위해 CentOS 6 기반으로 빌드 (glibc 2.12)
+# Duktape 2.7.0 사용 (C99 호환, GCC 4.4 지원)
+# Amazon Linux 2 (glibc 2.26)는 하위 호환됨
 
-FROM alpine:3.19
+FROM --platform=linux/amd64 quay.io/centos/centos:6
 
-# 빌드 도구 설치
-RUN apk add --no-cache \
-    gcc \
-    musl-dev \
-    make \
-    curl \
-    xz \
-    linux-headers
+# CentOS 6 vault 저장소로 변경 (EOL 이후 필요)
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Base.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Base.repo
+
+# 빌드 도구 설치 (GCC 4.4 사용)
+RUN yum install -y gcc make curl xz file
 
 # 작업 디렉토리 설정
 WORKDIR /build
 
-# QuickJS 다운로드 및 빌드 (-fPIC 필수)
-ENV QUICKJS_VERSION=2024-01-13
-RUN curl -L https://bellard.org/quickjs/quickjs-${QUICKJS_VERSION}.tar.xz -o quickjs.tar.xz && \
-    tar -xf quickjs.tar.xz && \
-    rm quickjs.tar.xz && \
-    cd quickjs-${QUICKJS_VERSION} && \
-    sed -i 's/-O2/-O2 -fPIC/g' Makefile && \
-    make libquickjs.a CC=gcc
+# Duktape 2.7.0 다운로드 및 준비
+ENV DUKTAPE_VERSION=2.7.0
+RUN curl -L https://duktape.org/duktape-${DUKTAPE_VERSION}.tar.xz -o duktape.tar.xz && \
+    xz -d duktape.tar.xz && \
+    tar -xf duktape.tar && \
+    rm duktape.tar
 
 # 소스 파일 복사
 COPY src/ /build/src/
 COPY include/ /build/include/
 
-# 공유 라이브러리 빌드 (정적 링크)
-RUN gcc -Wall -Wextra -O2 -fPIC -shared \
+# Duktape 정적 라이브러리 빌드 (-fPIC 필수)
+RUN cd duktape-${DUKTAPE_VERSION}/src && \
+    gcc -std=c99 -O2 -fPIC -c duktape.c -o duktape.o
+
+# 공유 라이브러리 빌드
+RUN gcc -std=c99 -Wall -O2 -fPIC -shared \
     -I/build/include \
-    -I/build/quickjs-${QUICKJS_VERSION} \
+    -I/build/duktape-${DUKTAPE_VERSION}/src \
     /build/src/typecast_autotag.c \
-    /build/quickjs-${QUICKJS_VERSION}/libquickjs.a \
-    -static-libgcc \
-    -Wl,-Bstatic -lpthread \
-    -Wl,-Bdynamic -lm -ldl \
+    /build/duktape-${DUKTAPE_VERSION}/src/duktape.o \
+    -lm \
     -o /build/libtypecast_autotag.so
 
 # 빌드 결과물 확인
-RUN ls -la /build/*.so
+RUN ls -la /build/*.so && \
+    file /build/*.so && \
+    ldd /build/*.so
 
 # 출력 디렉토리로 복사
-CMD cp /build/libtypecast_autotag.so /output/ && \
-    cp /build/include/typecast_autotag.h /output/ && \
-    echo "Build complete! Files copied to /output/"
-
+CMD ["sh", "-c", "cp /build/libtypecast_autotag.so /output/ && cp /build/include/typecast_autotag.h /output/ && echo 'Build complete!' && ldd --version | head -1"]

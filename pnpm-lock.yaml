@@ -8,6 +8,12 @@ importers:
 
   .:
     devDependencies:
+      '@babel/core':
+        specifier: ^7.28.5
+        version: 7.28.5
+      '@babel/preset-env':
+        specifier: ^7.28.5
+        version: 7.28.5(@babel/core@7.28.5)
       '@types/jest':
         specifier: ^29.5.14
         version: 29.5.14
