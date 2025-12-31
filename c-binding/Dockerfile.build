@@ -1,0 +1,53 @@
+# TypeCast AutoTag C Library 빌드 환경
+# CentOS 6.9 호환을 위해 musl-libc 사용 (정적 링크)
+#
+# 사용법:
+#   docker build -t typecast-autotag-builder -f Dockerfile.build .
+#   docker run --rm -v $(pwd)/build:/output typecast-autotag-builder
+
+FROM alpine:3.19
+
+# 빌드 도구 설치
+RUN apk add --no-cache \
+    gcc \
+    musl-dev \
+    make \
+    curl \
+    xz \
+    linux-headers
+
+# 작업 디렉토리 설정
+WORKDIR /build
+
+# QuickJS 다운로드 및 빌드
+ENV QUICKJS_VERSION=2024-01-13
+RUN curl -L https://bellard.org/quickjs/quickjs-${QUICKJS_VERSION}.tar.xz -o quickjs.tar.xz && \
+    tar -xf quickjs.tar.xz && \
+    rm quickjs.tar.xz && \
+    cd quickjs-${QUICKJS_VERSION} && \
+    make libquickjs.a CC=gcc CFLAGS="-Wall -O2 -fPIC"
+
+# 소스 파일 복사
+COPY src/ /build/src/
+COPY include/ /build/include/
+
+# 공유 라이브러리 빌드 (정적 링크)
+RUN gcc -Wall -Wextra -O2 -fPIC -shared \
+    -I/build/include \
+    -I/build/quickjs-${QUICKJS_VERSION} \
+    /build/src/typecast_autotag.c \
+    /build/quickjs-${QUICKJS_VERSION}/libquickjs.a \
+    -static-libgcc \
+    -Wl,-Bstatic -lpthread \
+    -Wl,-Bdynamic -lm -ldl \
+    -o /build/libtypecast_autotag.so
+
+# 빌드 결과물 확인 및 심볼 확인
+RUN ls -la /build/*.so && \
+    file /build/*.so
+
+# 출력 디렉토리로 복사
+CMD cp /build/libtypecast_autotag.so /output/ && \
+    cp /build/include/typecast_autotag.h /output/ && \
+    echo "Build complete! Files copied to /output/"
+
