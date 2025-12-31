@@ -80,8 +80,8 @@ describe('money', () => {
       expect(money(0)).toBe('영 원');
     });
 
-    it('음수는 원본 반환한다', () => {
-      expect(money(-1000)).toBe('-1000');
+    it('음수는 마이너스로 변환한다', () => {
+      expect(money(-1000)).toBe('마이너스 천 원');
     });
 
     it('빈 문자열은 그대로 반환한다', () => {

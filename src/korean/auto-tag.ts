@@ -1,6 +1,6 @@
 import { month } from './tags/month';
 import { day } from './tags/day';
-import { date } from './tags/date';
+import { date, yearMonth } from './tags/date';
 import { time } from './tags/time';
 import { year } from './tags/year';
 import { phone } from './tags/phone';
@@ -13,7 +13,7 @@ import { datetime } from './tags/datetime';
 import { ratio } from './tags/ratio';
 import { jari } from './tags/jari';
 import { numberTag } from './tags/number';
-import { duration } from './tags/duration';
+import { duration, gIbun } from './tags/duration';
 import { floor } from './tags/floor';
 import { account } from './tags/account';
 import { weight } from './tags/weight';
@@ -23,6 +23,7 @@ import { serial, serialNumbersOnly } from './tags/serial';
 import { bakil } from './tags/bakil';
 import { roomNumber } from './tags/room-number';
 import { jong } from './tags/jong';
+import { distance } from './tags/distance';
 
 /**
  * 자동 태깅 옵션
@@ -149,9 +150,15 @@ const AUTO_TAG_PATTERNS = {
    * - 숫자 + 만원/억원/조원/경원/천원 (한글 큰 단위)
    * - ₩숫자
    * - 천단위 구분자 지원
+   * - 음수 금액: -숫자원
+   * - 한글 숫자 혼합: N억 N천만원
    */
   money: {
     patterns: [
+      // 음수 금액: -숫자원
+      /-[\d,]+(?:\.\d+)?\s*원(?!\s*[년월일시분초])/g,
+      // 한글 숫자 혼합: N억 N천만원, N억원
+      /\d+억\s*(?:\d+천만)?(?:\d+백만)?원/g,
       // 숫자 + 만원/억원/조원/경원/천원 (한글 큰 단위)
       /[\d,]+\s*(?:만|억|조|경|천)원(?!\s*[년월일시분초])/g,
       // 숫자 + 원 (천단위 구분자 및 소수점 지원)
@@ -259,9 +266,13 @@ const AUTO_TAG_PATTERNS = {
    * 시분초 패턴 (지속시간)
    * - Nm, Ns, NmNs, NhNmNs
    * - N분, N초, N분N초, N시간N분
+   * - 시간 범위: 1h30m~2h (~ → 에서)
    */
   minsec: {
     patterns: [
+      // 시간 범위: 1h30m~2h, 5m~10m
+      /\b\d+h(?:\d+m)?(?:\d+s)?~\d+h(?:\d+m)?(?:\d+s)?\b/gi,
+      /\b\d+m(?:\d+s)?~\d+m(?:\d+s)?\b/gi,
       // 영문: 1h30m20s, 5m, 30s, 1h30m
       /\b\d+h(?:\d+m)?(?:\d+s)?\b/gi,
       /\b\d+m(?:\d+s)?\b/gi,
@@ -327,18 +338,25 @@ const AUTO_TAG_PATTERNS = {
   /**
    * 기간 패턴
    * - N개월, N주, N주일, N년, N년간, N달, N학기, N분기, N일 (기간)
+   * - N일 이내/이후/이상/이하
    * 주의: piece 태그의 "개"와 충돌하지 않도록 "개월"은 여기서 처리
    * 주의: day 태그의 "N일"과 구분 필요 - "남은 기간: N일", "N일간" 등 기간 맥락
    */
   duration: {
     patterns: [
+      // N일 이내/이후/이상/이하
+      /(?<![0-9])[\d,]+\s*일\s*(?:이내|이후|이상|이하)/g,
       // N개월 (기간)
       /(?<![0-9])[\d,]+\s*개월/g,
       // N주일, N주
       /(?<![0-9])[\d,]+\s*주일?(?![문제])/g,
-      // N년간, N년 (기간으로서의 년, 년도와 구분)
-      // "2년간" 형태만 기간으로 인식, 단순 "N년"은 year 태그에서 처리
+      // N년간 (기간)
       /(?<![0-9])[\d,]+\s*년간/g,
+      // 괄호 안의 N년 (기간): (2년), (30년) 등
+      /\(\s*[\d,]+\s*년\s*\)/g,
+      // N년 (1-99년, 기간으로서의 년 - 2024년 같은 년도와 구분)
+      // 뒤에 간, 도, 생, 월이 오지 않고, 앞에 19/20이 오지 않는 짧은 숫자
+      /(?<![0-9])(?<!19)(?<!20)[1-9]\d?\s*년(?![간도생월])/g,
       // N달 (기간)
       /(?<![0-9])[\d,]+\s*달(?![러력])/g,
       // N학기, N분기
@@ -497,6 +515,46 @@ const AUTO_TAG_PATTERNS = {
       /(?:아침|저녁|새벽|밤|낮)\s*\d{1,2}시(?:\s*\d{1,2}분)?(?:\s*\d{1,2}초)?/g,
     ],
     converter: (match: string) => time(match),
+  },
+
+  /**
+   * 거리 패턴
+   * - N km, N m, N 킬로미터 등
+   */
+  distance: {
+    patterns: [
+      // 거리: 숫자 + km/m/cm/mm/킬로미터/미터/센티미터/밀리미터
+      /[\d,]+(?:\.\d+)?\s*(?:km|킬로미터|센티미터|밀리미터|cm|mm)/gi,
+      // m은 다른 단위와 충돌할 수 있으므로 따로 처리
+      /[\d,]+(?:\.\d+)?\s*미터(?![법])/g,
+    ],
+    converter: (match: string) => distance(match),
+  },
+
+  /**
+   * 년월 패턴
+   * - YYYY-MM, YYYY-MM까지, YYYY-MM부터
+   */
+  yearMonth: {
+    patterns: [
+      // YYYY-MM + 접미사 (까지, 부터 등)
+      /\b\d{4}-\d{2}(?:까지|부터|이후|이전)/g,
+      // YYYY-MM (날짜가 아닌 경우만)
+      /\b\d{4}-\d{2}(?![-/]\d)/g,
+    ],
+    converter: (match: string) => yearMonth(match),
+  },
+
+  /**
+   * 기분 패턴
+   * - N기분 (세금 납부 분기)
+   */
+  gIbun: {
+    patterns: [
+      // N기분
+      /\d+\s*기분/g,
+    ],
+    converter: (match: string) => gIbun(match),
   },
 } as const;
 
@@ -744,3 +802,7 @@ export const autoRoomNumber = (text: string): string =>
 export const autoJong = (text: string): string => autoTag(text, { enabledTags: ['jong'] });
 export const autoTimeOfDay = (text: string): string =>
   autoTag(text, { enabledTags: ['timeOfDay'] });
+export const autoDistance = (text: string): string => autoTag(text, { enabledTags: ['distance'] });
+export const autoYearMonth = (text: string): string =>
+  autoTag(text, { enabledTags: ['yearMonth'] });
+export const autoGIbun = (text: string): string => autoTag(text, { enabledTags: ['gIbun'] });

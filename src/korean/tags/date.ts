@@ -229,3 +229,48 @@ export function date(input: number | string): string {
 
   return result;
 }
+
+/**
+ * YYYY-MM 형식의 년월을 한글로 변환
+ *
+ * @param input - 변환할 년월 문자열 (YYYY-MM, YYYY-MM까지, YYYY-MM부터 등)
+ * @returns 한글 년월 표기
+ *
+ * @example
+ * ```typescript
+ * yearMonth('2028-03까지'); // '이천이십팔년 삼 월까지'
+ * yearMonth('2024-12부터'); // '이천이십사년 십이 월부터'
+ * yearMonth('2025-06');     // '이천이십오년 유 월'
+ * ```
+ */
+export function yearMonth(input: string): string {
+  const trimmed = input.trim();
+  if (trimmed === '') return input;
+
+  // YYYY-MM + optional suffix (까지, 부터, 이후, 이전 등)
+  const match = trimmed.match(/^(\d{4})-(\d{2})(까지|부터|이후|이전)?$/);
+  if (!match) {
+    return input;
+  }
+
+  const yearNum = parseInt(match[1] ?? '', 10);
+  const monthNum = parseInt(match[2] ?? '', 10);
+  const suffix = match[3] ?? '';
+
+  if (isNaN(yearNum) || isNaN(monthNum)) {
+    return input;
+  }
+
+  const yearKorean = numberToKorean(yearNum) + '년';
+
+  let monthKorean: string;
+  if (monthNum === 0) {
+    monthKorean = '영 월';
+  } else if (IRREGULAR_MONTH_READINGS[monthNum]) {
+    monthKorean = IRREGULAR_MONTH_READINGS[monthNum] + ' 월';
+  } else {
+    monthKorean = numberToKorean(monthNum) + ' 월';
+  }
+
+  return yearKorean + ' ' + monthKorean + suffix;
+}

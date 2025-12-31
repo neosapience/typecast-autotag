@@ -53,13 +53,15 @@ const DURATION_UNITS: Record<string, string> = {
  *
  * @example
  * ```typescript
- * duration('3개월');   // '삼 개월'
- * duration('2주');     // '이 주'
- * duration('6개월');   // '육 개월'
- * duration('1년');     // '일 년'
- * duration('2주일');   // '이 주일'
- * duration('4분기');   // '사 분기'
- * duration('1학기');   // '일 학기'
+ * duration('3개월');       // '삼 개월'
+ * duration('2주');         // '이 주'
+ * duration('6개월');       // '육 개월'
+ * duration('1년');         // '일 년'
+ * duration('2주일');       // '이 주일'
+ * duration('4분기');       // '사 분기'
+ * duration('1학기');       // '일 학기'
+ * duration('60일 이내');   // '육십일 이내'
+ * duration('30일 이후');   // '삼십일 이후'
  * ```
  */
 export function duration(input: number | string, options?: DurationOptions): string {
@@ -70,6 +72,42 @@ export function duration(input: number | string, options?: DurationOptions): str
   if (typeof input === 'string') {
     const trimmed = input.trim();
     if (trimmed === '') return input;
+
+    // 괄호 안의 N년 패턴 처리: (2년), (30년) 등
+    const parenYearMatch = trimmed.match(/^\(\s*([\d,]+)\s*년\s*\)$/);
+    if (parenYearMatch) {
+      const numStr = removeThousandSeparators(parenYearMatch[1] ?? '');
+      const num = parseInt(numStr, 10);
+
+      if (isNaN(num) || num < 0) {
+        return String(input);
+      }
+
+      if (num === 0) {
+        return '(영' + space + '년)';
+      }
+
+      return '(' + numberToKorean(num) + space + '년)';
+    }
+
+    // N일 이내/이후/이상/이하 패턴 처리
+    const suffixMatch = trimmed.match(/^([\d,]+)\s*(일)\s*(이내|이후|이상|이하)$/);
+    if (suffixMatch) {
+      const numStr = removeThousandSeparators(suffixMatch[1] ?? '');
+      const unit = suffixMatch[2] ?? '';
+      const suffix = suffixMatch[3] ?? '';
+      const num = parseInt(numStr, 10);
+
+      if (isNaN(num) || num < 0) {
+        return String(input);
+      }
+
+      if (num === 0) {
+        return '영' + unit + ' ' + suffix;
+      }
+
+      return numberToKorean(num) + unit + ' ' + suffix;
+    }
 
     // 기간 단위 패턴 매칭 (더 긴 단위부터 먼저 매칭)
     const unitPattern = Object.keys(DURATION_UNITS)
@@ -103,4 +141,32 @@ export function duration(input: number | string, options?: DurationOptions): str
 
   // 숫자만 입력된 경우는 변환하지 않음 (단위 필요)
   return String(input);
+}
+
+/**
+ * 세금 기분을 한글로 변환
+ *
+ * @param input - 변환할 기분 문자열 (예: "1기분", "2기분")
+ * @returns 한글 기분 표현
+ *
+ * @example
+ * ```typescript
+ * gIbun('1기분');     // '일 기분'
+ * gIbun('2기분');     // '이 기분'
+ * ```
+ */
+export function gIbun(input: string): string {
+  const trimmed = input.trim();
+  if (trimmed === '') return input;
+
+  const match = trimmed.match(/^(\d+)\s*기분$/);
+  if (match) {
+    const num = parseInt(match[1] ?? '', 10);
+    if (isNaN(num) || num < 0) {
+      return input;
+    }
+    return numberToKorean(num) + ' 기분';
+  }
+
+  return input;
 }
