@@ -19,13 +19,14 @@ RUN apk add --no-cache \
 # 작업 디렉토리 설정
 WORKDIR /build
 
-# QuickJS 다운로드 및 빌드
+# QuickJS 다운로드 및 빌드 (-fPIC 필수)
 ENV QUICKJS_VERSION=2024-01-13
 RUN curl -L https://bellard.org/quickjs/quickjs-${QUICKJS_VERSION}.tar.xz -o quickjs.tar.xz && \
     tar -xf quickjs.tar.xz && \
     rm quickjs.tar.xz && \
     cd quickjs-${QUICKJS_VERSION} && \
-    make libquickjs.a CC=gcc CFLAGS="-Wall -O2 -fPIC"
+    sed -i 's/-O2/-O2 -fPIC/g' Makefile && \
+    make libquickjs.a CC=gcc
 
 # 소스 파일 복사
 COPY src/ /build/src/
@@ -42,9 +43,8 @@ RUN gcc -Wall -Wextra -O2 -fPIC -shared \
     -Wl,-Bdynamic -lm -ldl \
     -o /build/libtypecast_autotag.so
 
-# 빌드 결과물 확인 및 심볼 확인
-RUN ls -la /build/*.so && \
-    file /build/*.so
+# 빌드 결과물 확인
+RUN ls -la /build/*.so
 
 # 출력 디렉토리로 복사
 CMD cp /build/libtypecast_autotag.so /output/ && \
