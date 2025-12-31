@@ -67,6 +67,8 @@ function numberToKoreanWithDecimal(numStr: string): string {
  * money('1억원'); // '일 억원'
  * money('1000만원'); // '천 만원'
  * money('100만원'); // '백 만원'
+ * money('-8,000원'); // '마이너스 팔천 원'
+ * money(-5000); // '마이너스 오천 원'
  * ```
  */
 export function money(input: number | string, options?: MoneyOptions): string {
@@ -81,7 +83,37 @@ export function money(input: number | string, options?: MoneyOptions): string {
 
     // "10,000원", "5000", "₩10000" 등의 형식 파싱
     // 통화 기호 제거: ₩, $, ¥, €, £
-    const withoutCurrency = trimmed.replace(/^[₩$¥€£]\s*/, '');
+    let withoutCurrency = trimmed.replace(/^[₩$¥€£]\s*/, '');
+
+    // 음수 처리: -숫자 형태 감지
+    let isNegative = false;
+    if (withoutCurrency.startsWith('-')) {
+      isNegative = true;
+      withoutCurrency = withoutCurrency.slice(1).trim();
+    }
+
+    const negativePrefix = isNegative ? '마이너스 ' : '';
+
+    // 한글 숫자 혼합 형식 처리: "8억 5천만원" → "팔억 오천만원"
+    // 패턴: N억 N천만원 (억 + 천만/백만이 있는 복합 형식만)
+    const koreanMixedMatch = withoutCurrency.match(/^(\d+)억\s*((\d+)천만|(\d+)백만)원$/);
+    if (koreanMixedMatch) {
+      const eok = parseInt(koreanMixedMatch[1] ?? '0', 10);
+      const cheonman = parseInt(koreanMixedMatch[3] ?? '0', 10);
+      const baekman = parseInt(koreanMixedMatch[4] ?? '0', 10);
+
+      const parts: string[] = [];
+      if (eok > 0) {
+        parts.push(numberToKorean(eok) + '억');
+      }
+      if (cheonman > 0) {
+        parts.push(numberToKorean(cheonman) + '천만원');
+      } else if (baekman > 0) {
+        parts.push(numberToKorean(baekman) + '백만원');
+      }
+
+      return negativePrefix + parts.join(' ');
+    }
 
     // 한글 큰 단위 처리: "1000만원" → "천 만원", "1억원" → "일 억원"
     // 숫자+(만|억|조|경|천)원 형식 감지
@@ -96,10 +128,10 @@ export function money(input: number | string, options?: MoneyOptions): string {
       }
 
       if (num === 0) {
-        return '영' + space + bigUnit + '원';
+        return negativePrefix + '영' + space + bigUnit + '원';
       }
 
-      return numberToKorean(num) + space + bigUnit + '원';
+      return negativePrefix + numberToKorean(num) + space + bigUnit + '원';
     }
 
     // 숫자와 단위 분리 (소수점 지원)
@@ -111,7 +143,7 @@ export function money(input: number | string, options?: MoneyOptions): string {
       // 소수점이 포함된 경우
       if (numStr.includes('.')) {
         const korean = numberToKoreanWithDecimal(numStr);
-        return korean + space + parsedUnit;
+        return negativePrefix + korean + space + parsedUnit;
       }
 
       const cleanedNum = removeThousandSeparators(numStr);
@@ -122,18 +154,23 @@ export function money(input: number | string, options?: MoneyOptions): string {
       }
 
       if (num === 0) {
-        return '영' + space + parsedUnit;
+        return negativePrefix + '영' + space + parsedUnit;
       }
 
-      return numberToKorean(num) + space + parsedUnit;
+      return negativePrefix + numberToKorean(num) + space + parsedUnit;
     }
 
     return String(input);
   }
 
   // 숫자 처리
-  if (isNaN(input) || !isFinite(input) || input < 0) {
+  if (isNaN(input) || !isFinite(input)) {
     return String(input);
+  }
+
+  // 음수 처리
+  if (input < 0) {
+    return '마이너스 ' + numberToKorean(-input) + space + unit;
   }
 
   if (input === 0) {
