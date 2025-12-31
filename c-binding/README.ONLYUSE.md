@@ -217,12 +217,11 @@ typecast_free(result);  // 사용 후 반드시 호출!
 
 ## 어떤 함수를 사용해야 하나요?
 
-```mermaid
-flowchart TD
-    A[시작] --> B{텍스트에 이름이<br/>포함되어 있나요?}
-    B -->|예| C[방법 3<br/>하이브리드 사용<br/>typecast_auto_tag_with_manual]
-    B -->|아니오| D[방법 1 - 권장<br/>typecast_auto_tag<br/>완전 자동으로 처리]
-```
+| 상황 | 사용할 함수 | 설명 |
+|------|-------------|------|
+| 텍스트에 **이름이 없는** 경우 | `typecast_auto_tag()` | **권장!** 완전 자동으로 처리 |
+| 텍스트에 **이름이 있는** 경우 | `typecast_auto_tag_with_manual()` | 이름은 태그로, 나머지는 자동 |
+| 기존 시스템과 호환 필요 | `typecast_manual_tag()` | 태그로 지정한 것만 변환 |
 
 **요약:**
 
