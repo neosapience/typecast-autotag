@@ -184,7 +184,7 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 
 <br>
 
-## Supported Tags
+## Supported Tags (32's)
 
 ### Auto-tags (Automatically Detected)
 
