@@ -1,0 +1,9 @@
+# Build output
+dist/
+
+# C binding (separate build system)
+c-binding/
+
+# Dependencies
+node_modules/
+
