@@ -3,7 +3,7 @@
  * 
  * QuickJS를 임베드하여 TTS 문장 변환 기능을 C에서 사용할 수 있게 함
  * 
- * Copyright (c) 2024 TypeCast
+ * Copyright (c) 2025 TypeCast
  */
 
 #include <stdio.h>
