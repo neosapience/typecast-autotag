@@ -109,6 +109,25 @@ export function duration(input: number | string, options?: DurationOptions): str
       return numberToKorean(num) + unit + ' ' + suffix;
     }
 
+    // 최대/최소 N일 패턴 처리
+    const prefixMatch = trimmed.match(/^(최대|최소)\s*([\d,]+)\s*(일)$/);
+    if (prefixMatch) {
+      const prefix = prefixMatch[1] ?? '';
+      const numStr = removeThousandSeparators(prefixMatch[2] ?? '');
+      const unit = prefixMatch[3] ?? '';
+      const num = parseInt(numStr, 10);
+
+      if (isNaN(num) || num < 0) {
+        return String(input);
+      }
+
+      if (num === 0) {
+        return prefix + ' 영' + unit;
+      }
+
+      return prefix + ' ' + numberToKorean(num) + unit;
+    }
+
     // 기간 단위 패턴 매칭 (더 긴 단위부터 먼저 매칭)
     const unitPattern = Object.keys(DURATION_UNITS)
       .sort((a, b) => b.length - a.length) // 긴 것부터 매칭
