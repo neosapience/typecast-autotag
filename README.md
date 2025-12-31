@@ -184,42 +184,47 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 
 <br>
 
-## Supported Tags (32's)
+## Supported Tags (37's)
 
 ### Auto-tags (Automatically Detected)
 
-| Tag          | Description      | Input                | Output                                          |
-| ------------ | ---------------- | -------------------- | ----------------------------------------------- |
-| `phone`      | Phone numbers    | `010-1234-5678`      | `공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔`    |
-| `datetime`   | Date and time    | `2024-01-15T14:30`   | `이천이십사년 일월 십오일 오후 두 시 삼십 분`   |
-| `time`       | Time             | `14:30`              | `오후 두 시 삼십 분`                            |
-| `date`       | Date             | `2024-01-15`         | `이천이십사년 일월 십오일`                      |
-| `money`      | Currency amounts | `50000원`            | `오만 원`                                       |
-| `year`       | Year             | `2024년`             | `이천이십사년`                                  |
-| `month`      | Month            | `12월`               | `십이월`                                        |
-| `day`        | Day              | `25일`               | `이십오일`                                      |
-| `order`      | Ordinal numbers  | `3번째`, `2등`       | `세 번째`, `이 등`                              |
-| `point`      | Points/scores    | `95점`               | `구십오 점`                                     |
-| `piece`      | Counting         | `5개`                | `다섯 개`                                       |
-| `minsec`     | Duration (m/s)   | `5분30초`            | `오 분 삼십 초`                                 |
-| `ratio`      | Ratio/percent    | `50%`, `1:2`         | `오십 퍼센트`, `일 대 이`                       |
-| `jari`       | Digit places     | `4자리`              | `네 자리`                                       |
-| `number`     | Number (번)      | `3번`                | `삼 번`                                         |
-| `duration`   | Period           | `3개월`, `최대 30일` | `삼 개월`, `최대 삼십일`                        |
-| `floor`      | Floor numbers    | `5층`, `B1층`        | `오 층`, `지하 일 층`                           |
-| `account`    | Account numbers  | `123-456-789012`     | `일 이 삼 다시 사 오 육 다시 칠 팔 구 영 일 이` |
-| `weight`     | Weight           | `5kg`, `100g`        | `오 킬로그램`, `백 그램`                        |
-| `mile`       | Mileage          | `500마일`            | `오백 마일`                                     |
-| `area`       | Area             | `84㎡`, `25평`       | `팔십사 제곱미터`, `이십오 평`                  |
-| `serial`     | Serial numbers   | `접수번호: A-1234`   | `접수번호: A-일 이 삼 사`                       |
-| `bakil`      | Stay duration    | `2박3일`             | `이 박 삼 일`                                   |
-| `roomNumber` | Room numbers     | `1205호`             | `일 이 영 오 호`                                |
-| `jong`       | Types/kinds      | `3종`                | `삼 종`                                         |
-| `distance`   | Distance         | `5km`                | `오 킬로미터`                                   |
-| `carNumber`  | Car plates       | `12가 3456`          | `일 이 가 삼 사 오 육`                          |
-| `flight`     | Flight numbers   | `OZ301`              | `OZ 삼 영 일`                                   |
-| `seat`       | Seat numbers     | `23A`                | `이 삼 A`                                       |
-| `lecture`    | Lecture numbers  | `26강`               | `이십육 강`                                     |
+| Tag            | Description      | Input                | Output                                          |
+| -------------- | ---------------- | -------------------- | ----------------------------------------------- |
+| `phone`        | Phone numbers    | `010-1234-5678`      | `공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔`    |
+| `datetime`     | Date and time    | `2024-01-15T14:30`   | `이천이십사년 일월 십오일 오후 두 시 삼십 분`   |
+| `time`         | Time             | `14:30`              | `오후 두 시 삼십 분`                            |
+| `date`         | Date             | `2024-01-15`         | `이천이십사년 일월 십오일`                      |
+| `money`        | Currency amounts | `50000원`            | `오만 원`                                       |
+| `year`         | Year             | `2024년`             | `이천이십사년`                                  |
+| `month`        | Month            | `12월`               | `십이월`                                        |
+| `day`          | Day              | `25일`               | `이십오일`                                      |
+| `order`        | Ordinal numbers  | `3번째`, `2등`       | `세 번째`, `이 등`                              |
+| `point`        | Points/scores    | `95점`               | `구십오 점`                                     |
+| `piece`        | Counting         | `5개`                | `다섯 개`                                       |
+| `minsec`       | Duration (m/s)   | `5분30초`, `100ms`   | `오 분 삼십 초`, `백 밀리초`                    |
+| `ratio`        | Ratio/percent    | `50%`, `1:2`         | `오십 퍼센트`, `일 대 이`                       |
+| `jari`         | Digit places     | `4자리`              | `네 자리`                                       |
+| `number`       | Number (번)      | `3번`                | `삼 번`                                         |
+| `duration`     | Period           | `3개월`, `최대 30일` | `삼 개월`, `최대 삼십일`                        |
+| `floor`        | Floor numbers    | `5층`, `B1층`        | `오 층`, `지하 일 층`                           |
+| `account`      | Account numbers  | `123-456-789012`     | `일 이 삼 다시 사 오 육 다시 칠 팔 구 영 일 이` |
+| `weight`       | Weight           | `5kg`, `100g`        | `오 킬로그램`, `백 그램`                        |
+| `mile`         | Mileage          | `500마일`            | `오백 마일`                                     |
+| `area`         | Area             | `84㎡`, `25평`       | `팔십사 제곱미터`, `이십오 평`                  |
+| `serial`       | Serial numbers   | `접수번호: A-1234`   | `접수번호: A-일 이 삼 사`                       |
+| `bakil`        | Stay duration    | `2박3일`             | `이 박 삼 일`                                   |
+| `roomNumber`   | Room numbers     | `1205호`             | `일 이 영 오 호`                                |
+| `jong`         | Types/kinds      | `3종`                | `삼 종`                                         |
+| `distance`     | Distance         | `5km`                | `오 킬로미터`                                   |
+| `carNumber`    | Car plates       | `12가 3456`          | `일 이 가 삼 사 오 육`                          |
+| `flight`       | Flight numbers   | `OZ301`              | `OZ 삼 영 일`                                   |
+| `seat`         | Seat numbers     | `23A`                | `이 삼 A`                                       |
+| `lecture`      | Lecture numbers  | `26강`               | `이십육 강`                                     |
+| `fraction`     | Fractions        | `1/4`, `3/4`         | `사 분의 일`, `사 분의 삼`                      |
+| `temperature`  | Temperature      | `25℃`, `-5°C`        | `이십오 도`, `영하 오 도`                       |
+| `volume`       | Volume/capacity  | `500ml`, `2L`        | `오백 밀리리터`, `이 리터`                      |
+| `dataCapacity` | Data capacity    | `100GB`, `50Mbps`    | `백 기가바이트`, `오십 메가비피에스`            |
+| `inch`         | Inch             | `55인치`, `6.5"`     | `오십오 인치`, `육 쩜 오 인치`                  |
 
 ### Manual-only Tags
 
@@ -395,7 +400,12 @@ src/
     │   ├── room-number.ts      # Room number (N호) conversion
     │   ├── seat.ts             # Seat number conversion
     │   ├── serial.ts           # Serial number conversion
+    │   ├── temperature.ts      # Temperature (℃, °F) conversion
     │   ├── time.ts
+    │   ├── volume.ts           # Volume (L, ml, m³) conversion
+    │   ├── data-capacity.ts    # Data capacity (GB, Mbps) conversion
+    │   ├── fraction.ts         # Fraction (1/4, 3/4) conversion
+    │   ├── inch.ts             # Inch (55인치, 6.5") conversion
     │   ├── weight.ts           # Weight (kg, g) conversion
     │   └── year.ts
     └── utils/

@@ -189,7 +189,7 @@ describe('SUPPORTED_TAGS', () => {
     expect(SUPPORTED_TAGS).toContain('datetime');
   });
 
-  it('32개의 태그가 지원된다', () => {
-    expect(SUPPORTED_TAGS).toHaveLength(32);
+  it('37개의 태그가 지원된다', () => {
+    expect(SUPPORTED_TAGS).toHaveLength(37);
   });
 });

@@ -1,4 +1,4 @@
-import { numberToKorean } from '../utils/number-to-korean';
+import { numberToKorean, digitToKorean } from '../utils/number-to-korean';
 
 /**
  * distance 함수의 옵션
@@ -31,6 +31,108 @@ const DISTANCE_UNITS: Record<string, string> = {
   센티미터: '센티미터',
   밀리미터: '밀리미터',
 };
+
+/**
+ * 거리 컨텍스트 키워드 (뒤에 오는 단어들)
+ * 이 키워드들이 뒤에 오면 'm'을 '미터'로 해석
+ */
+export const DISTANCE_CONTEXT_AFTER = [
+  // 위치/방향
+  '전방',
+  '후방',
+  '앞',
+  '뒤',
+  '이내',
+  '밖',
+  '반경',
+  '지점',
+  '부근',
+  '근처',
+  '정도',
+  '이상',
+  '이하',
+  '미만',
+  '초과',
+  '내외',
+  '안팎',
+  // 치수/측정
+  '높이',
+  '깊이',
+  '폭',
+  '너비',
+  '길이',
+  '두께',
+  '직경',
+  '반지름',
+  // 이동/방향
+  '직진',
+  '좌회전',
+  '우회전',
+  '진입',
+  '진행',
+  '이동',
+  '도보',
+  '걸어서',
+  // 스포츠/경기
+  '달리기',
+  '수영',
+  '경주',
+  '경기',
+  '레이스',
+  '코스',
+  '트랙',
+  '구간',
+  // 기타
+  '거리',
+  '떨어진',
+  '떨어져',
+  '위치',
+  '상공',
+  '지하',
+  '해발',
+  '수심',
+];
+
+/**
+ * 거리 컨텍스트 키워드 (앞에 오는 단어들)
+ * 이 키워드들이 앞에 오면 'm'을 '미터'로 해석
+ */
+export const DISTANCE_CONTEXT_BEFORE = [
+  // 측정/거리 관련
+  '거리',
+  '반경',
+  '높이',
+  '깊이',
+  '폭',
+  '너비',
+  '길이',
+  '두께',
+  '직경',
+  '반지름',
+  '호스',
+  '주행거리',
+  '이동거리',
+  '남은거리',
+  '총거리',
+  '총',
+  '약',
+  '대략',
+  '최대',
+  '최소',
+  // 스포츠 종목 (100m, 200m, 400m, 800m, 1500m 등)
+  '자유형',
+  '배영',
+  '평영',
+  '접영',
+  '혼영',
+  '계영',
+  '허들',
+  '릴레이',
+  '마라톤',
+  '단거리',
+  '중거리',
+  '장거리',
+];
 
 /**
  * 거리를 한글로 변환
@@ -76,7 +178,7 @@ export function distance(input: string, options?: DistanceOptions): string {
       const intKorean = intNum === 0 ? '영' : numberToKorean(intNum);
       const decKorean = (decPart ?? '')
         .split('')
-        .map((d) => numberToKorean(parseInt(d, 10)))
+        .map((d) => digitToKorean(d))
         .join(' ');
       return intKorean + ' 쩜 ' + decKorean + space + targetUnit;
     }
@@ -95,4 +197,61 @@ export function distance(input: string, options?: DistanceOptions): string {
   }
 
   return input;
+}
+
+/**
+ * 컨텍스트가 포함된 거리 표현을 한글로 변환
+ * 예: "500m 전방" → "오백 미터 전방"
+ *
+ * @param input - 변환할 거리 (컨텍스트 포함 문자열)
+ * @param options - 옵션 (공백 포함 여부)
+ * @returns 한글 거리 표현
+ */
+export function distanceWithContext(input: string, options?: DistanceOptions): string {
+  const includeSpace = options?.includeSpace ?? true;
+  const space = includeSpace ? ' ' : '';
+
+  const trimmed = input.trim();
+  if (trimmed === '') return input;
+
+  // 컨텍스트 키워드 패턴 (뒤에 오는 경우)
+  const afterContextPattern = DISTANCE_CONTEXT_AFTER.join('|');
+
+  // 숫자 + m + 컨텍스트 패턴
+  const matchWithContext = trimmed.match(
+    new RegExp(`^([\\d,]+(?:\\.\\d+)?)\\s*m\\s*(${afterContextPattern})(.*)$`, 'i')
+  );
+
+  if (matchWithContext) {
+    const numStr = removeThousandSeparators(matchWithContext[1] ?? '');
+    const context = matchWithContext[2] ?? '';
+    const rest = matchWithContext[3] ?? '';
+
+    // 소수점 처리
+    if (numStr.includes('.')) {
+      const [intPart, decPart] = numStr.split('.');
+      const intNum = parseInt(intPart ?? '0', 10);
+      const intKorean = intNum === 0 ? '영' : numberToKorean(intNum);
+      const decKorean = (decPart ?? '')
+        .split('')
+        .map((d) => digitToKorean(d))
+        .join(' ');
+      return intKorean + ' 쩜 ' + decKorean + space + '미터 ' + context + rest;
+    }
+
+    const num = parseInt(numStr, 10);
+
+    if (isNaN(num) || num < 0) {
+      return input;
+    }
+
+    if (num === 0) {
+      return '영' + space + '미터 ' + context + rest;
+    }
+
+    return numberToKorean(num) + space + '미터 ' + context + rest;
+  }
+
+  // 일반 거리 변환으로 폴백
+  return distance(input, options);
 }
