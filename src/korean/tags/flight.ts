@@ -15,7 +15,7 @@ export interface FlightOptions {
  * 항공편 번호를 한글로 변환
  *
  * 항공편 번호는 숫자를 개별로 읽습니다:
- * - SK301 → SK 삼 공 일
+ * - OZ301 → OZ 삼 공 일
  * - KE123 → KE 일 이 삼
  * - OZ751 → OZ 칠 오 일
  *
@@ -25,7 +25,7 @@ export interface FlightOptions {
  *
  * @example
  * ```typescript
- * flight('SK301');   // 'SK 삼 공 일'
+ * flight('OZ301');   // 'OZ 삼 공 일'
  * flight('KE123');   // 'KE 일 이 삼'
  * flight('OZ751');   // 'OZ 칠 오 일'
  * ```

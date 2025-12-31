@@ -217,7 +217,7 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 | `jong`       | Types/kinds      | `3종`                | `삼 종`                                         |
 | `distance`   | Distance         | `5km`                | `오 킬로미터`                                   |
 | `carNumber`  | Car plates       | `12가 3456`          | `일 이 가 삼 사 오 육`                          |
-| `flight`     | Flight numbers   | `SK301`              | `SK 삼 영 일`                                   |
+| `flight`     | Flight numbers   | `OZ301`              | `OZ 삼 영 일`                                   |
 | `seat`       | Seat numbers     | `23A`                | `이 삼 A`                                       |
 | `lecture`    | Lecture numbers  | `26강`               | `이십육 강`                                     |
 

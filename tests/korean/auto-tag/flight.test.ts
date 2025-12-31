@@ -24,7 +24,7 @@ describe('flight - 항공편 변환', () => {
 
   describe('소문자 입력', () => {
     it('소문자 항공사코드를 대문자로 변환한다', () => {
-      expect(flight('sk301')).toBe('SK 삼 영 일');
+      expect(flight('oz301')).toBe('OZ 삼 영 일');
       expect(flight('ke123')).toBe('KE 일 이 삼');
     });
   });
