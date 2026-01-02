@@ -42,3 +42,7 @@ c-binding/duktape/
 c-binding/src/autotag_bundle.js
 c-binding/src/autotag_bundle.h
 c-binding/example/example
+
+# Python binding build artifacts
+python-binding/build/
+python-binding/*.egg-info/
