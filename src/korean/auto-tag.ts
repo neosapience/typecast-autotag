@@ -84,6 +84,9 @@ const ABBREVIATION_MAP: Array<[RegExp, string]> = [
   [/\bAR\b/g, '에이알'],
   [/\bTTS\b/g, '티티에스'],
   [/\bSTT\b/g, '에스티티'],
+  // 개별 발음 약어
+  [/\bOTP\b/gi, '오 티 피'],
+  [/\bCCTV\b/gi, '씨 씨 티 비'],
 ];
 
 /**
@@ -378,9 +381,9 @@ const AUTO_TAG_PATTERNS = {
       // 3자리: 110(경찰), 111(간첩), 112(경찰), 113(간첩), 114(안내), 115(전보), 116(전화고장),
       //        117(학교폭력), 118(사이버), 119(소방), 120(정부민원), 122(해양), 123(한전),
       //        125(환경), 128(안보), 129(보건), 131(기상), 132(법률구조), 181(인권), 182(경찰민원)
-      // 4자리: 1330(관광), 1339(응급의료), 1345(출입국), 1366(여성긴급), 1388(청소년), 1393(자살예방)
+      // 4자리: 1330(관광), 1332(금융감독원), 1339(응급의료), 1345(출입국), 1366(여성긴급), 1388(청소년), 1393(자살예방)
       // 뒤에 -숫자가 오면 지번이므로 제외
-      /\b(?:110|111|112|113|114|115|116|117|118|119|120|122|123|125|128|129|131|132|181|182|1330|1339|1345|1366|1388|1393)(?![-]\d)\b/g,
+      /\b(?:110|111|112|113|114|115|116|117|118|119|120|122|123|125|128|129|131|132|181|182|1330|1332|1339|1345|1366|1388|1393)(?![-]\d)\b/g,
     ],
     converter: (match: string) => phone(match),
   },
@@ -1420,6 +1423,31 @@ const AUTO_TAG_PATTERNS = {
       return match;
     },
   },
+
+  /**
+   * 터미널 패턴
+   * - N터미널 (공항 터미널 번호 등)
+   */
+  terminal: {
+    patterns: [
+      // N터미널 (숫자 + 터미널)
+      /(?<![0-9])\d+\s*터미널/g,
+    ],
+    converter: (match: string) => {
+      const numMatch = match.match(/^(\d+)\s*(터미널)$/);
+      if (numMatch) {
+        const digits = numMatch[1] ?? '';
+        const suffix = numMatch[2] ?? '';
+        const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        const koreanDigits = digits
+          .split('')
+          .map((d) => DIGITS[parseInt(d, 10)] ?? d)
+          .join(' ');
+        return koreanDigits + ' ' + suffix;
+      }
+      return match;
+    },
+  },
 } as const;
 
 /**
@@ -1488,9 +1516,21 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
     }
   }
 
-  // 매칭이 없으면 원본 반환
+  // 매칭이 없으면 후처리만 적용
   if (allMatches.length === 0) {
-    return text;
+    let result = text;
+
+    // 특수문자 단위를 발음으로 변환 (후처리)
+    for (const [pattern, replacement] of SPECIAL_UNIT_MAP) {
+      result = result.replace(pattern, replacement);
+    }
+
+    // 기술 약어를 발음으로 변환 (후처리)
+    for (const [pattern, replacement] of ABBREVIATION_MAP) {
+      result = result.replace(pattern, replacement);
+    }
+
+    return result;
   }
 
   // 시작 위치 기준 정렬, 더 긴 매칭 우선
