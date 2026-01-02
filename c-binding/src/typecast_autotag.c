@@ -246,6 +246,49 @@ TYPECAST_API char* typecast_manual_tag(const char *text) {
     return call_js_function("manualTag", text);
 }
 
+/* ============================================
+ * English Language Functions
+ * ============================================ */
+
+/**
+ * Auto tagging for English
+ * 
+ * Automatically recognizes and converts patterns in English text.
+ * 
+ * @param text Text to convert
+ * @return Converted text (must free with typecast_free), NULL on failure
+ */
+TYPECAST_API char* typecast_auto_tag_english(const char *text) {
+    if (!text) return NULL;
+    return call_js_function("autoTagEnglish", text);
+}
+
+/**
+ * Auto tagging with manual tags priority for English
+ * 
+ * Processes manual tags first, then applies auto tagging for English.
+ * 
+ * @param text Text to convert
+ * @return Converted text (must free with typecast_free), NULL on failure
+ */
+TYPECAST_API char* typecast_auto_tag_with_manual_english(const char *text) {
+    if (!text) return NULL;
+    return call_js_function("autoTagWithManualEnglish", text);
+}
+
+/**
+ * Manual tagging only for English
+ * 
+ * Processes only explicitly specified manual tags for English output.
+ * 
+ * @param text Text to convert
+ * @return Converted text (must free with typecast_free), NULL on failure
+ */
+TYPECAST_API char* typecast_manual_tag_english(const char *text) {
+    if (!text) return NULL;
+    return call_js_function("manualTagEnglish", text);
+}
+
 /**
  * Free memory
  * 

@@ -2,7 +2,7 @@
 Tests for Typecast Autotag Python binding.
 
 These tests verify that the Python binding correctly wraps the native library
-and produces the expected output for Korean TTS preprocessing.
+and produces the expected output for Korean and English TTS preprocessing.
 """
 
 import pytest
@@ -12,6 +12,9 @@ from typecast_autotag import (
     auto_tag,
     auto_tag_with_manual,
     manual_tag,
+    auto_tag_en,
+    auto_tag_with_manual_en,
+    manual_tag_en,
     version,
     TypecastAutotag,
     TypecastAutotagError,
@@ -271,6 +274,96 @@ class TestEdgeCases:
         """Test with newlines in text."""
         result = auto_tag("첫 번째 줄\n두 번째 줄")
         assert "줄" in result
+
+
+class TestEnglishAutoTag:
+    """Tests for English auto_tag_en() function."""
+    
+    def setup_method(self):
+        """Initialize library before each test."""
+        initialize()
+    
+    def test_phone_number(self):
+        """Test English phone number conversion."""
+        result = auto_tag_en("Call me at 555-123-4567.")
+        assert "five" in result.lower()
+    
+    def test_money(self):
+        """Test English money amount conversion."""
+        result = auto_tag_en("Total is $500.")
+        assert "hundred" in result.lower() or "dollars" in result.lower()
+    
+    def test_date(self):
+        """Test English date conversion."""
+        result = auto_tag_en("Date is January 15, 2024.")
+        assert "January" in result or "fifteen" in result.lower()
+    
+    def test_time(self):
+        """Test English time conversion."""
+        result = auto_tag_en("Meeting at 2:30 PM.")
+        assert "two" in result.lower() or "thirty" in result.lower() or "PM" in result
+    
+    def test_empty_string(self):
+        """Test empty string input."""
+        result = auto_tag_en("")
+        assert result == ""
+    
+    def test_plain_text(self):
+        """Test text with no patterns to convert."""
+        result = auto_tag_en("Hello world")
+        assert "Hello" in result
+
+
+class TestEnglishManualTag:
+    """Tests for English manual_tag_en() function."""
+    
+    def setup_method(self):
+        """Initialize library before each test."""
+        initialize()
+    
+    def test_name_tag(self):
+        """Test English name tag conversion."""
+        result = manual_tag_en("name(John) hello.")
+        # Name should be spelled out with spaces
+        assert "J" in result or "O" in result
+    
+    def test_phone_tag(self):
+        """Test English phone tag conversion."""
+        result = manual_tag_en("phone(555-123-4567) please call.")
+        assert "five" in result.lower()
+    
+    def test_money_tag(self):
+        """Test English money tag conversion."""
+        result = manual_tag_en("Amount is money(1000).")
+        assert "thousand" in result.lower() or "dollars" in result.lower()
+    
+    def test_digits_tag(self):
+        """Test English digits tag conversion."""
+        result = manual_tag_en("digits(123) is the code.")
+        assert "one" in result.lower()
+        assert "two" in result.lower()
+        assert "three" in result.lower()
+
+
+class TestEnglishAutoTagWithManual:
+    """Tests for English auto_tag_with_manual_en() function."""
+    
+    def setup_method(self):
+        """Initialize library before each test."""
+        initialize()
+    
+    def test_mixed_name_and_money(self):
+        """Test manual name tag with auto money detection."""
+        result = auto_tag_with_manual_en("name(John), balance is $500.")
+        # Name should be processed manually
+        assert "J" in result or "O" in result
+        # Money should be processed automatically
+        assert "hundred" in result.lower() or "dollars" in result.lower()
+    
+    def test_mixed_name_and_phone(self):
+        """Test manual name tag with auto phone detection."""
+        result = auto_tag_with_manual_en("name(Jane), call 555-123-4567.")
+        assert "five" in result.lower()
 
 
 # Additional comprehensive tests for all manual tags

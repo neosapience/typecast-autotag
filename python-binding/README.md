@@ -1,15 +1,25 @@
 # Typecast Autotag Python Binding
 
 Python bindings for the TTS (Text-to-Speech) text preprocessing library.
-Automatically converts various patterns like phone numbers, dates, and amounts into formats suitable for Korean voice synthesis.
+Automatically converts various patterns like phone numbers, dates, and amounts into formats suitable for voice synthesis.
+
+**[한국어 문서](./README.KR.md)**
 
 ## Features
 
+- **Multi-language Support**: Full support for Korean and English text preprocessing
 - **Easy to use**: Simple API with just 3 main functions
 - **Flexible approach**: Supports fully automatic, manual tag, and hybrid modes
 - **Wide pattern support**: Auto-recognition of 35+ patterns including phone, date, time, money, order
 - **Cross-platform**: Supports Linux, Windows, and macOS
 - **No dependencies**: Pure Python with ctypes (no pip packages required)
+
+## Supported Languages
+
+| Language | Status | Example |
+| -------- | ------ | ------- |
+| **Korean** (한국어) | ✅ Full Support | `010-1234-5678` → `공 일 공 다시...` |
+| **English** | ✅ Full Support | `555-123-4567` → `five five five, one two three...` |
 
 ## Installation
 
@@ -40,14 +50,21 @@ pip install typecast-autotag
 ## Quick Start
 
 ```python
-from typecast_autotag import auto_tag
+from typecast_autotag import auto_tag, auto_tag_en
 
-# Automatic pattern recognition and conversion
+# Korean - Automatic pattern recognition and conversion
 result = auto_tag("전화번호는 010-1234-5678입니다.")
 print(result)  # "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다."
 
 result = auto_tag("총 금액은 1500000원입니다.")
 print(result)  # "총 금액은 백오십만 원입니다."
+
+# English - Automatic pattern recognition and conversion
+result_en = auto_tag_en("Call me at 555-123-4567.")
+print(result_en)  # "Call me at five five five, one two three, four five six seven."
+
+result_en = auto_tag_en("Total is $1,500.")
+print(result_en)  # "Total is one thousand five hundred dollars."
 ```
 
 ## API Reference
@@ -66,16 +83,28 @@ cleanup()
 
 ### Conversion Functions
 
+#### Korean (Default)
+
 | Function                 | Description      | Use Case                                           |
 | ------------------------ | ---------------- | -------------------------------------------------- |
 | `auto_tag()`             | Fully automatic  | When you want all patterns processed automatically |
 | `manual_tag()`           | Manual tags only | Legacy system compatibility, explicit control      |
 | `auto_tag_with_manual()` | Hybrid mode      | Mostly automatic + manual tags for supplements     |
 
-### Method 1: Fully Automatic (`auto_tag`)
+#### English
+
+| Function                    | Description      | Use Case                                           |
+| --------------------------- | ---------------- | -------------------------------------------------- |
+| `auto_tag_en()`             | Fully automatic  | When you want all patterns processed automatically |
+| `manual_tag_en()`           | Manual tags only | Legacy system compatibility, explicit control      |
+| `auto_tag_with_manual_en()` | Hybrid mode      | Mostly automatic + manual tags for supplements     |
+
+### Method 1: Fully Automatic (`auto_tag` / `auto_tag_en`)
 
 Automatically recognizes and converts patterns in text.
 **Most convenient method** - sufficient for most cases.
+
+#### Korean Examples
 
 ```python
 from typecast_autotag import auto_tag
@@ -93,7 +122,25 @@ result = auto_tag("회의는 2024-03-15 14:30에 시작합니다.")
 # → "회의는 이천이십사년 삼 월 십오 일 오후 두 시 삼십 분에 시작합니다."
 ```
 
-**Supported Patterns:**
+#### English Examples
+
+```python
+from typecast_autotag import auto_tag_en
+
+# Phone number
+result = auto_tag_en("Call me at 555-123-4567.")
+# → "Call me at five five five, one two three, four five six seven."
+
+# Money amount
+result = auto_tag_en("Total is $1,500.")
+# → "Total is one thousand five hundred dollars."
+
+# Date and time
+result = auto_tag_en("Meeting is at 2:30 PM.")
+# → "Meeting is at two thirty PM."
+```
+
+**Supported Patterns (Korean):**
 
 - Phone numbers: `010-1234-5678`, `02-123-4567`, `1588-1234`
 - Money: `50000원`, `1500만원`, `₩10000`
@@ -104,6 +151,18 @@ result = auto_tag("회의는 2024-03-15 14:30에 시작합니다.")
 - Duration: `3개월`, `2년`, `5일간`
 - Floor: `지하 2층`, `5층`, `B1층`
 - Others: scores, area, distance, weight, mileage, etc.
+
+**Supported Patterns (English):**
+
+- Phone numbers: `555-123-4567`, `(212) 555-1234`, `1-800-555-1234`
+- Money: `$1,500`, `€100`, `50 dollars`
+- Dates: `January 15, 2024`, `2024-01-15`
+- Time: `2:30 PM`, `10:00 AM`
+- Order: `1st place`, `2nd`, `3rd`
+- Ratio: `50%`, `1:2`
+- Duration: `3 months`, `2 years`
+- Floor: `5th floor`, `B1`, `basement level 2`
+- Others: scores, area, distance, weight, temperature, etc.
 
 ### Method 2: Manual Tags Only (`manual_tag`)
 

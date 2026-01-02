@@ -23,13 +23,18 @@ typedef void (*cleanup_fn)(void);
 typedef char* (*tag_fn)(const char*);
 typedef void (*free_fn)(char*);
 
-// Global function pointers
+// Global function pointers - Korean (default)
 static init_fn typecast_init;
 static cleanup_fn typecast_cleanup;
 static tag_fn typecast_auto_tag;
 static tag_fn typecast_manual_tag;
 static tag_fn typecast_auto_tag_with_manual;
 static free_fn typecast_free;
+
+// Global function pointers - English
+static tag_fn typecast_auto_tag_english;
+static tag_fn typecast_manual_tag_english;
+static tag_fn typecast_auto_tag_with_manual_english;
 
 // Test case structure
 typedef struct {
@@ -92,7 +97,7 @@ int main() {
         return 1;
     }
     
-    // Load functions
+    // Load functions - Korean (default)
     typecast_init = (init_fn)dlsym(handle, "typecast_init");
     typecast_cleanup = (cleanup_fn)dlsym(handle, "typecast_cleanup");
     typecast_auto_tag = (tag_fn)dlsym(handle, "typecast_auto_tag");
@@ -100,8 +105,15 @@ int main() {
     typecast_auto_tag_with_manual = (tag_fn)dlsym(handle, "typecast_auto_tag_with_manual");
     typecast_free = (free_fn)dlsym(handle, "typecast_free");
     
+    // Load functions - English
+    typecast_auto_tag_english = (tag_fn)dlsym(handle, "typecast_auto_tag_english");
+    typecast_manual_tag_english = (tag_fn)dlsym(handle, "typecast_manual_tag_english");
+    typecast_auto_tag_with_manual_english = (tag_fn)dlsym(handle, "typecast_auto_tag_with_manual_english");
+    
     if (!typecast_init || !typecast_cleanup || !typecast_auto_tag || 
-        !typecast_manual_tag || !typecast_auto_tag_with_manual || !typecast_free) {
+        !typecast_manual_tag || !typecast_auto_tag_with_manual || !typecast_free ||
+        !typecast_auto_tag_english || !typecast_manual_tag_english || 
+        !typecast_auto_tag_with_manual_english) {
         fprintf(stderr, "Failed to load functions\\n");
         dlclose(handle);
         return 1;
@@ -330,6 +342,70 @@ int main() {
     // Complex tags (phone manual tag + money auto-recognition)
     run_test(&result, "mixed_complex", typecast_auto_tag_with_manual,
              "phone(02-123-4567)로 연락주세요. 금액은 100000원입니다.", "십만", 1);
+    
+    printf("\\n");
+    
+    // ============================================
+    // 4. English autoTag tests
+    // ============================================
+    printf("=== Testing typecast_auto_tag_english ===\\n");
+    
+    // English phone number
+    run_test(&result, "en_auto_phone", typecast_auto_tag_english,
+             "Call me at 123-456-7890", NULL, 1);
+    
+    // English money
+    run_test(&result, "en_auto_money", typecast_auto_tag_english,
+             "The price is $1,234.56", "dollar", 1);
+    
+    // English date
+    run_test(&result, "en_auto_date", typecast_auto_tag_english,
+             "Meeting on 01/15/2024", NULL, 1);
+    
+    // English time
+    run_test(&result, "en_auto_time", typecast_auto_tag_english,
+             "See you at 2:30 PM", NULL, 1);
+    
+    printf("\\n");
+    
+    // ============================================
+    // 5. English manualTag tests
+    // ============================================
+    printf("=== Testing typecast_manual_tag_english ===\\n");
+    
+    // English name tag
+    run_test(&result, "en_name", typecast_manual_tag_english,
+             "name(John Smith) called", NULL, 1);
+    
+    // English phone tag
+    run_test(&result, "en_phone", typecast_manual_tag_english,
+             "phone(123-456-7890)", NULL, 1);
+    
+    // English money tag
+    run_test(&result, "en_money", typecast_manual_tag_english,
+             "money(1000) dollars", NULL, 1);
+    
+    // English date tag
+    run_test(&result, "en_date", typecast_manual_tag_english,
+             "date(2024-12-25)", NULL, 1);
+    
+    // English time tag
+    run_test(&result, "en_time", typecast_manual_tag_english,
+             "time(14:30)", NULL, 1);
+    
+    printf("\\n");
+    
+    // ============================================
+    // 6. English autoTagWithManual tests
+    // ============================================
+    printf("=== Testing typecast_auto_tag_with_manual_english ===\\n");
+    
+    // English mixed mode
+    run_test(&result, "en_mixed_name_money", typecast_auto_tag_with_manual_english,
+             "name(John Doe) paid $500", NULL, 1);
+    
+    run_test(&result, "en_mixed_phone_date", typecast_auto_tag_with_manual_english,
+             "Call phone(555-123-4567) on 01/20/2024", NULL, 1);
     
     printf("\\n");
     

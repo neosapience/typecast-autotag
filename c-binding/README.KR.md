@@ -3,13 +3,23 @@
 TTS(Text-to-Speech) 문장 전처리 라이브러리의 C 바인딩입니다.
 전화번호, 날짜, 금액 등 다양한 패턴을 음성 합성에 적합한 형식으로 자동 변환합니다.
 
+**[English Documentation](./README.md)**
+
 ## 특징
 
+- **다국어 지원**: 한국어와 영어 텍스트 전처리 완벽 지원
 - **간편한 사용**: 단 3개의 함수로 모든 변환 기능 제공
 - **유연한 방식 선택**: 완전 자동, 수동 태그, 하이브리드 방식 지원
 - **다양한 패턴 지원**: 전화번호, 날짜, 시간, 금액, 순서 등 35+ 패턴 자동 인식
 - **크로스 플랫폼**: Linux (.so), Windows (.dll), macOS (.dylib) 지원
 - **높은 호환성**: CentOS 6.9부터 최신 Linux까지 지원 (정적 링크)
+
+## 지원 언어
+
+| 언어 | 상태 | 예시 |
+| ---- | ---- | ---- |
+| **한국어** (Korean) | ✅ 전체 지원 | `010-1234-5678` → `공 일 공 다시...` |
+| **영어** (English) | ✅ 전체 지원 | `555-123-4567` → `five five five, one two three...` |
 
 ## 빠른 시작
 
@@ -35,16 +45,23 @@ int main() {
         return 1;
     }
 
-    // 2. 텍스트 변환
+    // 2. 텍스트 변환 (한국어)
     char *result = typecast_auto_tag("전화번호는 010-1234-5678입니다.");
     if (result) {
         printf("%s\n", result);
         // 출력: "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 입니다."
-
-        typecast_free(result);  // 메모리 해제
+        typecast_free(result);
     }
 
-    // 3. 정리 (프로그램 종료 시)
+    // 3. 텍스트 변환 (영어)
+    char *result_en = typecast_auto_tag_en("Call me at 555-123-4567.");
+    if (result_en) {
+        printf("%s\n", result_en);
+        // 출력: "Call me at five five five, one two three, four five six seven."
+        typecast_free(result_en);
+    }
+
+    // 4. 정리 (프로그램 종료 시)
     typecast_cleanup();
     return 0;
 }
@@ -71,6 +88,8 @@ void typecast_cleanup(void); // 정리
 
 ### 변환 함수
 
+#### 한국어 (기본)
+
 | 함수                              | 설명             | 사용 시나리오                             |
 | --------------------------------- | ---------------- | ----------------------------------------- |
 | `typecast_auto_tag()`             | 완전 자동 처리   | 모든 패턴을 자동으로 처리하고 싶을 때     |
@@ -84,12 +103,28 @@ char* typecast_manual_tag(const char *text);
 void typecast_free(char *str);  // 결과 문자열 해제
 ```
 
+#### 영어
+
+| 함수                                 | 설명             | 사용 시나리오                             |
+| ------------------------------------ | ---------------- | ----------------------------------------- |
+| `typecast_auto_tag_en()`             | 완전 자동 처리   | 모든 패턴을 자동으로 처리하고 싶을 때     |
+| `typecast_manual_tag_en()`           | 수동 태그만 처리 | 기존 시스템 호환, 명시적 제어가 필요할 때 |
+| `typecast_auto_tag_with_manual_en()` | 하이브리드 방식  | 대부분 자동 + 일부 수동 태그로 보완       |
+
+```c
+char* typecast_auto_tag_en(const char *text);
+char* typecast_auto_tag_with_manual_en(const char *text);
+char* typecast_manual_tag_en(const char *text);
+```
+
 ## 사용 방식 상세 설명
 
-### 방식 1: 완전 자동 처리 (`typecast_auto_tag`)
+### 방식 1: 완전 자동 처리 (`typecast_auto_tag` / `typecast_auto_tag_en`)
 
 텍스트에서 패턴을 자동으로 인식하여 변환합니다.
 **가장 간편한 방식**으로 대부분의 경우 이것만으로 충분합니다.
+
+#### 한국어 예시
 
 ```c
 // 입력: "전화번호는 010-1234-5678입니다."
@@ -105,7 +140,23 @@ char *result = typecast_auto_tag("총 금액은 1500000원입니다.");
 char *result = typecast_auto_tag("회의는 2024-03-15 14:30에 시작합니다.");
 ```
 
-**지원 패턴:**
+#### 영어 예시
+
+```c
+// 입력: "Call me at 555-123-4567."
+// 출력: "Call me at five five five, one two three, four five six seven."
+char *result = typecast_auto_tag_en("Call me at 555-123-4567.");
+
+// 입력: "Total is $1,500."
+// 출력: "Total is one thousand five hundred dollars."
+char *result = typecast_auto_tag_en("Total is $1,500.");
+
+// 입력: "Meeting is at 2:30 PM."
+// 출력: "Meeting is at two thirty PM."
+char *result = typecast_auto_tag_en("Meeting is at 2:30 PM.");
+```
+
+**지원 패턴 (한국어):**
 
 - 전화번호: `010-1234-5678`, `02-123-4567`, `1588-1234`
 - 금액: `50000원`, `1500만원`, `₩10000`
@@ -116,6 +167,18 @@ char *result = typecast_auto_tag("회의는 2024-03-15 14:30에 시작합니다.
 - 기간: `3개월`, `2년`, `5일간`
 - 층수: `지하 2층`, `5층`, `B1층`
 - 그 외: 점수, 면적, 거리, 무게, 마일리지 등
+
+**지원 패턴 (영어):**
+
+- 전화번호: `555-123-4567`, `(212) 555-1234`, `1-800-555-1234`
+- 금액: `$1,500`, `€100`, `50 dollars`
+- 날짜: `January 15, 2024`, `2024-01-15`
+- 시간: `2:30 PM`, `10:00 AM`
+- 순서: `1st place`, `2nd`, `3rd`
+- 비율: `50%`, `1:2`
+- 기간: `3 months`, `2 years`
+- 층수: `5th floor`, `B1`, `basement level 2`
+- 그 외: 점수, 면적, 거리, 무게, 온도 등
 
 ### 방식 2: 수동 태그만 처리 (`typecast_manual_tag`)
 
