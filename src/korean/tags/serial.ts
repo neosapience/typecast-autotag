@@ -72,16 +72,18 @@ export function serial(input: string, options?: SerialOptions): string {
 }
 
 /**
- * 일련번호에서 숫자 부분만 추출하여 개별 숫자로 변환
+ * 일련번호에서 숫자 부분과 하이픈을 변환
  *
  * @param input - 변환할 일련번호 (문자열)
  * @param options - 옵션 (구분자)
- * @returns 숫자 부분만 개별 숫자로 변환된 문자열
+ * @returns 숫자와 하이픈이 변환된 문자열
  *
  * @example
  * ```typescript
  * serialNumbersOnly('모델번호: TSP-2024-001');
- * // '모델번호: TSP-이 공 이 사-공 공 일'
+ * // '모델번호: TSP 다시 이 공 이 사 다시 공 공 일'
+ * serialNumbersOnly('계좌번호: 123-45-678901');
+ * // '계좌번호: 일 이 삼 다시 사 오 다시 육 칠 팔 구 공 일'
  * ```
  */
 export function serialNumbersOnly(input: string, options?: SerialOptions): string {
@@ -91,10 +93,15 @@ export function serialNumbersOnly(input: string, options?: SerialOptions): strin
   if (trimmed === '') return input;
 
   // 숫자 연속 부분을 찾아서 개별 숫자로 변환
-  return trimmed.replace(/\d+/g, (match) => {
+  let result = trimmed.replace(/\d+/g, (match) => {
     return match
       .split('')
       .map((d) => digitToKorean(d))
       .join(separator);
   });
+
+  // 하이픈을 "다시"로 변환 (숫자/한글 사이의 하이픈만)
+  result = result.replace(/([가-힣\d])\s*-\s*([가-힣\d])/g, '$1 다시 $2');
+
+  return result;
 }
