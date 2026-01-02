@@ -491,6 +491,7 @@ pnpm release
 ```
 
 This will:
+
 - Run tests and build
 - Bump version based on [Conventional Commits](https://www.conventionalcommits.org/)
 - Generate/update `CHANGELOG.md`
@@ -501,12 +502,12 @@ This will:
 
 The following pre-built binaries are automatically attached to each release:
 
-| Platform | Files |
-| -------- | ----- |
-| macOS | `libtypecast_autotag.dylib` |
-| Linux | `libtypecast_autotag.so`, `libtypecast_autotag_arm64.so`, `libtypecast_autotag_armv7.so`, `libtypecast_autotag_x86_64.so`, `libtypecast_autotag_x86.so` |
-| Windows | `typecast_autotag.dll`, `typecast_autotag.lib`, `typecast_autotag_i686.dll`, `typecast_autotag_i686.lib`, `typecast_autotag_x86_64.dll`, `typecast_autotag_x86_64.lib` |
-| Header | `typecast_autotag.h` |
+| Platform | Files                                                                                                                                                                  |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| macOS    | `libtypecast_autotag.dylib`                                                                                                                                            |
+| Linux    | `libtypecast_autotag.so`, `libtypecast_autotag_arm64.so`, `libtypecast_autotag_armv7.so`, `libtypecast_autotag_x86_64.so`, `libtypecast_autotag_x86.so`                |
+| Windows  | `typecast_autotag.dll`, `typecast_autotag.lib`, `typecast_autotag_i686.dll`, `typecast_autotag_i686.lib`, `typecast_autotag_x86_64.dll`, `typecast_autotag_x86_64.lib` |
+| Header   | `typecast_autotag.h`                                                                                                                                                   |
 
 > **Note:** Make sure to build the C bindings before releasing: `pnpm c-binding:build-all-multiarch`
 
