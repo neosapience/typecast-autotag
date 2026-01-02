@@ -189,15 +189,30 @@ const AUTO_TAG_PATTERNS = {
    * - 긴급번호: 112, 119, 110
    */
   /**
-   * 지번 보호 패턴 (전화번호로 잘못 인식되지 않도록 먼저 매칭)
-   * N동 123-45, N구 123-456 등의 지번은 변환하지 않음
+   * 지번 패턴
+   * N동 123-45, N리 123-456 등의 지번을 개별 숫자로 변환
+   * 행정구역명(동/리) 뒤에 오는 지번만 매칭 (어미 "면"과 구분)
    */
   lotNumber: {
     patterns: [
-      // 동/리 + 숫자-숫자 (지번)
-      /(?:동|리|구|면|읍)\s+\d{1,4}[-]\d{1,4}\b/g,
+      // 동/리 + 숫자-숫자 (지번) - "면", "읍", "구"는 단독으로 잘 오지 않으므로 제외
+      /(?:[가-힣]+동|[가-힣]+리)\s+\d{1,4}[-]\d{1,4}\b/g,
     ],
-    converter: (match: string) => match, // 그대로 유지
+    converter: (match: string) => {
+      // "동 123-45" -> "동 일 이 삼 다시 사 오"
+      const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+      return match.replace(/(\d+)-(\d+)/, (_m, num1: string, num2: string) => {
+        const first = num1
+          .split('')
+          .map((d) => DIGITS[parseInt(d)] ?? d)
+          .join(' ');
+        const second = num2
+          .split('')
+          .map((d) => DIGITS[parseInt(d)] ?? d)
+          .join(' ');
+        return `${first} 다시 ${second}`;
+      });
+    },
   },
 
   /**
