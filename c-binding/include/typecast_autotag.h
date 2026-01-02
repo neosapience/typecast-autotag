@@ -42,7 +42,7 @@ extern "C" {
 #endif
 
 /* Library version */
-#define TYPECAST_VERSION "1.0.0"
+#define TYPECAST_VERSION "1.3.0"
 
 /*
  * DLL Export/Import macros for Windows
