@@ -1,0 +1,347 @@
+# Typecast Autotag Java Binding
+
+Java binding for the TTS (Text-to-Speech) text preprocessing library.
+Automatically converts phone numbers, dates, amounts, and various other patterns into formats suitable for Korean speech synthesis.
+
+## Features
+
+- **Easy to use**: Complete functionality with just 3 main functions
+- **Flexible approach**: Supports fully automatic, manual tags, and hybrid modes
+- **Wide pattern support**: Automatically recognizes 35+ patterns including phone numbers, dates, times, amounts, order, etc.
+- **Cross-platform**: Supports Linux, Windows, and macOS
+- **Java 8 compatible**: Works with Java 8 and above
+- **Thread-safe**: Safe to use in multi-threaded environments
+
+## Requirements
+
+- Java 8 or higher
+- Maven 3.x or Gradle 6.x or higher
+
+### Quick Test
+
+```bash
+# From project root
+pnpm test:java
+
+# Or build
+pnpm java-binding:build
+```
+
+## Installation
+
+### Maven
+
+Add the following dependency to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>ai.typecast</groupId>
+    <artifactId>typecast-autotag</artifactId>
+    <version>1.3.0</version>
+</dependency>
+```
+
+### Gradle
+
+Add the following dependency to your `build.gradle`:
+
+```gradle
+implementation 'ai.typecast:typecast-autotag:1.3.0'
+```
+
+### Local Build and Install
+
+```bash
+cd java-binding
+
+# Copy native libraries
+./scripts/copy-libs.sh
+
+# Build with Maven
+mvn clean package
+
+# Install to local Maven repository
+mvn install
+```
+
+## Quick Start
+
+```java
+import ai.typecast.autotag.TypecastAutotag;
+
+public class Example {
+    public static void main(String[] args) {
+        try {
+            // Automatic pattern recognition and conversion
+            String result = TypecastAutotag.autoTag("전화번호는 010-1234-5678입니다.");
+            System.out.println(result);
+            // Output: "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다."
+
+            String result2 = TypecastAutotag.autoTag("총 금액은 1500000원입니다.");
+            System.out.println(result2);
+            // Output: "총 금액은 백오십만 원입니다."
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+## API Reference
+
+### Initialization and Cleanup
+
+```java
+import ai.typecast.autotag.*;
+
+// Initialize (automatically called on first use)
+TypecastAutotag.initialize();
+
+// Cleanup (optional, releases resources)
+TypecastAutotag.cleanup();
+```
+
+**Note:** In most cases, you don't need to explicitly call `initialize()`. It's automatically called when you first use a conversion function.
+
+### Conversion Functions
+
+| Method                | Description      | Use Case                                                      |
+| --------------------- | ---------------- | ------------------------------------------------------------- |
+| `autoTag()`           | Fully automatic  | When you want all patterns processed automatically            |
+| `manualTag()`         | Manual tags only | Legacy system compatibility, explicit control needed          |
+| `autoTagWithManual()` | Hybrid           | Mostly automatic + supplement with manual tags for edge cases |
+
+### Method 1: Fully Automatic (`autoTag`)
+
+Automatically recognizes and converts patterns in text.
+**Most convenient method** - sufficient for most cases.
+
+```java
+import ai.typecast.autotag.TypecastAutotag;
+
+// Phone number
+String result = TypecastAutotag.autoTag("전화번호는 010-1234-5678입니다.");
+// → "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다."
+
+// Money
+String result2 = TypecastAutotag.autoTag("총 금액은 1500000원입니다.");
+// → "총 금액은 백오십만 원입니다."
+
+// Date and time
+String result3 = TypecastAutotag.autoTag("회의는 2024-03-15 14:30에 시작합니다.");
+// → "회의는 이천이십사년 삼 월 십오 일 오후 두 시 삼십 분에 시작합니다."
+```
+
+**Supported Patterns:**
+
+- Phone numbers: `010-1234-5678`, `02-123-4567`, `1588-1234`
+- Money: `50000원`, `1500만원`, `₩10000`
+- Dates: `2024-03-15`, `2024년 3월 15일`, `20240315`
+- Time: `14:30`, `오후 2시 30분`
+- Order: `1등`, `3번째`, `5위`
+- Ratio: `30%`, `3:7`
+- Period: `3개월`, `2년`, `5일간`
+- Floor: `지하 2층`, `5층`, `B1층`
+- Others: scores, area, distance, weight, mileage, etc.
+
+### Method 2: Manual Tags Only (`manualTag`)
+
+Use this for **legacy system compatibility** or when you need **explicit control**.
+Tag format: `tagName(value)`
+
+```java
+// Name tag
+String result = TypecastAutotag.manualTag("name(김철수)님 안녕하세요.");
+// → "김 철 수님 안녕하세요."
+
+// Phone tag
+String result2 = TypecastAutotag.manualTag("phone(010-1234-5678)로 연락주세요.");
+// → "공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 연락주세요."
+```
+
+**Supported Tags (37 total):**
+
+| Tag                  | Description            | Example                                         |
+| -------------------- | ---------------------- | ----------------------------------------------- |
+| `name(이름)`         | Name reading           | `name(김철수)` → 김 철 수                       |
+| `phone(번호)`        | Phone number reading   | `phone(010-1234-5678)` → 공 일 공 다시...       |
+| `money(금액)`        | Amount reading         | `money(50000)` → 오만 원                        |
+| `date(날짜)`         | Date reading           | `date(2024-03-15)` → 이천이십사년 삼 월 십오 일 |
+| `time(시간)`         | Time reading           | `time(14:30)` → 오후 두 시 삼십 분              |
+| `datetime(날짜시간)` | Date + time reading    | `datetime(2024-03-15T14:30)`                    |
+| `year(연도)`         | Year reading           | `year(2024)` → 이천이십사년                     |
+| `month(월)`          | Month reading          | `month(3)` → 삼월                               |
+| `day(일)`            | Day reading            | `day(15)` → 십오일                              |
+| `order(순서)`        | Ordinal reading        | `order(3)` → 세 번째                            |
+| `point(점수)`        | Score reading          | `point(95)` → 구십오 점                         |
+| `piece(개수)`        | Counter (native)       | `piece(3)` → 세 개                              |
+| `digits(숫자)`       | Read digits one by one | `digits(123)` → 일 이 삼                        |
+| ...and more          |                        |                                                 |
+
+### Method 3: Hybrid Mode (`autoTagWithManual`)
+
+**Supplement auto tagging with manual tags** for edge cases.
+Manual tags are processed first, then auto tagging is applied to the rest.
+
+```java
+// Name with manual tag, amount automatically
+String result = TypecastAutotag.autoTagWithManual("name(김철수)님, 잔액은 50000원입니다.");
+// → "김 철 수님, 잔액은 오만 원입니다."
+
+// Complex example
+String result2 = TypecastAutotag.autoTagWithManual(
+    "name(홍길동)님, 2024-03-15 14:30에 phone(02-123-4567)로 연락드리겠습니다."
+);
+```
+
+## Exception Handling
+
+```java
+import ai.typecast.autotag.*;
+
+try {
+    String result = TypecastAutotag.autoTag("Some text");
+} catch (LibraryNotFoundException e) {
+    System.err.println("Native library not found for platform");
+} catch (InitializationException e) {
+    System.err.println("Library initialization failed");
+} catch (ConversionException e) {
+    System.err.println("Text conversion failed");
+} catch (TypecastAutotagException e) {
+    System.err.println("General library error");
+}
+```
+
+## Platform Support
+
+| Platform | Architecture   | Status              |
+| -------- | -------------- | ------------------- |
+| Linux    | x86_64         | ✅ Supported        |
+| Linux    | x86 (32-bit)   | ✅ Supported        |
+| Linux    | arm64          | ✅ Supported        |
+| Linux    | armv7          | ✅ Supported        |
+| macOS    | x86_64 + arm64 | ✅ Universal Binary |
+| Windows  | x86_64         | ✅ Supported        |
+| Windows  | x86 (32-bit)   | ✅ Supported        |
+
+## Development
+
+### Project Structure
+
+```
+java-binding/
+├── src/
+│   ├── main/
+│   │   ├── java/ai/typecast/autotag/
+│   │   │   ├── TypecastAutotag.java           # Main API class
+│   │   │   ├── NativeLibraryLoader.java       # Native library loader
+│   │   │   ├── TypecastAutotagException.java  # Base exception class
+│   │   │   ├── LibraryNotFoundException.java  # Library not found exception
+│   │   │   ├── InitializationException.java   # Initialization failure exception
+│   │   │   └── ConversionException.java       # Conversion failure exception
+│   │   ├── c/
+│   │   │   └── typecast_autotag_jni.c         # JNI bridge code
+│   │   └── resources/lib/                     # Native libraries
+│   │       ├── linux/                         # Linux libraries
+│   │       ├── darwin/                        # macOS libraries
+│   │       └── windows/                       # Windows libraries
+│   └── test/
+│       └── java/ai/typecast/autotag/
+│           └── TypecastAutotagTest.java       # Unit tests
+├── examples/
+│   └── BasicUsage.java                        # Basic usage example
+├── scripts/
+│   └── copy-libs.sh                           # Library copy script
+├── pom.xml                                    # Maven configuration
+└── README.md                                  # This file
+```
+
+### Build and Test
+
+```bash
+# Copy native libraries
+cd java-binding
+./scripts/copy-libs.sh
+
+# Build with Maven
+mvn clean compile
+
+# Run tests
+mvn test
+
+# Create JAR file
+mvn package
+
+# Install to local Maven repository
+mvn install
+```
+
+### Running Examples
+
+```bash
+# Compile example
+cd java-binding
+javac -cp target/typecast-autotag-1.3.0.jar examples/BasicUsage.java
+
+# Run example
+java -cp target/typecast-autotag-1.3.0.jar:examples BasicUsage
+```
+
+## Troubleshooting
+
+### Library Not Found
+
+```
+LibraryNotFoundException: Library not found in JAR
+```
+
+**Solution:**
+
+1. Ensure native libraries are properly copied:
+   ```bash
+   ./scripts/copy-libs.sh
+   ```
+2. Check JAR contents:
+   ```bash
+   jar tf target/typecast-autotag-1.3.0.jar | grep lib/
+   ```
+
+### Initialization Failure
+
+```
+InitializationException: Failed to initialize Typecast Autotag library
+```
+
+**Solution:**
+
+- Verify your system is a supported platform
+- Check that library files have execute permissions
+- Check logs for detailed error messages
+
+### UnsatisfiedLinkError
+
+```
+java.lang.UnsatisfiedLinkError: no typecast_autotag in java.library.path
+```
+
+**Solution:**
+
+- Verify JAR file includes native libraries
+- Ensure resources are properly included during Maven build
+
+## Performance Considerations
+
+- **Initialization**: Library initialization is performed only once. Subsequent calls are ignored.
+- **Thread Safety**: All methods are thread-safe and can be called concurrently.
+- **Memory**: Native library automatically manages memory.
+
+## Support
+
+If you encounter any issues or need help, please open a GitHub issue.
+
+## Related Projects
+
+- [typecast-autotag](../README.md) - TypeScript/JavaScript version
+- [python-binding](../python-binding/README.md) - Python binding
+- [c-binding](../c-binding/README.md) - C library
