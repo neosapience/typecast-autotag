@@ -51,7 +51,9 @@
     "c-binding:example": "cd c-binding && make example",
     "c-binding:test": "cd c-binding && make test",
     "c-binding:clean": "cd c-binding && make clean",
-    "c-binding:distclean": "cd c-binding && make distclean"
+    "c-binding:distclean": "cd c-binding && make distclean",
+    "release": "dotenv -- release-it",
+    "release:dry": "dotenv -- release-it --dry-run"
   },
   "keywords": [
     "typecast",
@@ -68,10 +70,12 @@
   "devDependencies": {
     "@babel/core": "^7.28.5",
     "@babel/preset-env": "^7.28.5",
+    "@release-it/conventional-changelog": "^10.0.4",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.19.0",
+    "dotenv-cli": "^11.0.0",
     "esbuild": "^0.27.2",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
@@ -80,6 +84,7 @@
     "lint-staged": "^15.2.11",
     "microbundle": "^0.15.1",
     "prettier": "^3.4.2",
+    "release-it": "^19.2.2",
     "ts-jest": "^29.2.5",
     "tsx": "^4.21.0",
     "typescript": "^5.7.2",
