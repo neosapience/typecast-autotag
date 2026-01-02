@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.3.0](https://github.com/neosapience/typecast-autotag/compare/v1.2.0...v1.3.0) (2026-01-02)
+
+
+### Features
+
+* Add Python binding for Typecast Autotag library with comprehensive documentation and examples. Include support for manual and automatic tagging, context management, and multi-platform native library integration. ([2ff3e06](https://github.com/neosapience/typecast-autotag/commit/2ff3e060d0177c75fa56982c7997640c1208476f))
+
 # 1.2.0 (2026-01-02)
 
 

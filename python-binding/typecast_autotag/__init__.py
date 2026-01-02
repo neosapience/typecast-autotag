@@ -44,7 +44,7 @@ from .binding import (
     ConversionError,
 )
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __author__ = "TypeCast"
 __all__ = [
     # Functions
