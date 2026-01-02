@@ -20,6 +20,8 @@
   "scripts": {
     "build": "microbundle --tsconfig tsconfig.build.json",
     "dev": "microbundle watch --tsconfig tsconfig.build.json",
+    "sync:version": "node scripts/sync-version.js",
+    "sync:libs": "bash scripts/post-c-build.sh",
     "test": "pnpm test:jest && pnpm test:e2e && pnpm test:python && pnpm test:java",
     "test:jest": "jest",
     "test:watch": "jest --watch",
@@ -47,8 +49,8 @@
     "c-binding:build-windows": "cd c-binding && docker build -t typecast-autotag-builder-windows -f Dockerfile.build.windows . && docker run --rm -v $(pwd)/build:/output typecast-autotag-builder-windows",
     "c-binding:build-windows-multiarch": "cd c-binding && ./scripts/build-windows-multiarch.sh",
     "c-binding:build-macos": "cd c-binding && ./scripts/build-macos.sh",
-    "c-binding:build-all": "pnpm c-binding:build-linux && pnpm c-binding:build-windows && pnpm c-binding:build-macos",
-    "c-binding:build-all-multiarch": "pnpm c-binding:build-linux-multiarch && pnpm c-binding:build-windows-multiarch && pnpm c-binding:build-macos",
+    "c-binding:build-all": "pnpm c-binding:build-linux && pnpm c-binding:build-windows && pnpm c-binding:build-macos && pnpm sync:libs",
+    "c-binding:build-all-multiarch": "pnpm c-binding:build-linux-multiarch && pnpm c-binding:build-windows-multiarch && pnpm c-binding:build-macos && pnpm sync:libs",
     "c-binding:all": "pnpm c-binding:duktape && pnpm c-binding:bundle && pnpm c-binding:build",
     "c-binding:example": "cd c-binding && make example",
     "c-binding:test": "cd c-binding && make test",
@@ -56,12 +58,12 @@
     "c-binding:distclean": "cd c-binding && make distclean",
     "python-binding:copy-libs": "cd python-binding && ./scripts/copy-libs.sh",
     "python-binding:test": "cd python-binding && python3 -m pip install pytest -q && python3 -m pytest tests/ -v",
-    "python-binding:build": "pnpm python-binding:copy-libs && cd python-binding && python3 -m pip install build -q && python3 -m build",
+    "python-binding:build": "pnpm sync:version && pnpm python-binding:copy-libs && cd python-binding && python3 -m pip install build -q && python3 -m build",
     "java-binding:copy-libs": "cd java-binding && ./scripts/copy-libs.sh",
-    "java-binding:build": "pnpm java-binding:copy-libs && cd java-binding && mvn clean package -DskipTests -Dmaven.javadoc.skip=true",
+    "java-binding:build": "pnpm sync:version && pnpm java-binding:copy-libs && cd java-binding && mvn clean package -DskipTests -Dmaven.javadoc.skip=true",
     "java-binding:test": "cd java-binding && ./scripts/run-test.sh",
-    "release": "dotenv -- release-it",
-    "release:dry": "dotenv -- release-it --dry-run"
+    "release": "pnpm sync:version && dotenv -- release-it",
+    "release:dry": "pnpm sync:version && dotenv -- release-it --dry-run"
   },
   "keywords": [
     "typecast",

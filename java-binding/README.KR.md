@@ -29,39 +29,62 @@ pnpm java-binding:build
 
 ## 설치
 
-### Maven
+### 방법 1: GitHub Releases에서 다운로드 (권장)
 
-`pom.xml`에 다음 의존성을 추가하세요:
+```bash
+# GitHub Releases에서 최신 JAR 다운로드
+# VERSION을 최신 릴리스 버전으로 교체 (예: 1.3.0)
+VERSION=$(curl -s https://api.github.com/repos/neosapience/typecast-autotag/releases/latest | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
+curl -L -o typecast-autotag-${VERSION}.jar \
+  https://github.com/neosapience/typecast-autotag/releases/download/v${VERSION}/typecast-autotag-${VERSION}.jar
+
+# 프로젝트에서 사용
+javac -cp typecast-autotag-${VERSION}.jar YourApp.java
+java -cp typecast-autotag-${VERSION}.jar:. YourApp
+```
+
+또는 Maven 프로젝트에 추가:
 
 ```xml
 <dependency>
     <groupId>ai.typecast</groupId>
     <artifactId>typecast-autotag</artifactId>
-    <version>1.3.0</version>
+    <version>${project.version}</version> <!-- 프로젝트 버전 사용 -->
+    <scope>system</scope>
+    <systemPath>${project.basedir}/lib/typecast-autotag-${project.version}.jar</systemPath>
 </dependency>
 ```
 
-### Gradle
-
-`build.gradle`에 다음 의존성을 추가하세요:
-
-```gradle
-implementation 'ai.typecast:typecast-autotag:1.3.0'
-```
-
-### 로컬 빌드 및 설치
+### 방법 2: 소스에서 빌드
 
 ```bash
+# 저장소 클론
+git clone https://github.com/neosapience/typecast-autotag.git
+cd typecast-autotag
+
+# C 라이브러리 빌드 (필수)
+pnpm install
+pnpm c-binding:build-all
+
+# Java 바인딩 빌드 (버전은 package.json에서 자동 동기화)
+pnpm java-binding:build
+
+# JAR 파일 위치: java-binding/target/typecast-autotag-{VERSION}.jar
+```
+
+### 방법 3: 로컬 Maven 저장소에 설치
+
+```bash
+# 소스에서 빌드 후
 cd java-binding
-
-# 네이티브 라이브러리 복사
-./scripts/copy-libs.sh
-
-# Maven으로 빌드
-mvn clean package
-
-# 로컬 Maven 저장소에 설치
 mvn install
+
+# 그 다음 pom.xml에서 사용 (버전은 pom.xml에서 확인)
+<dependency>
+    <groupId>ai.typecast</groupId>
+    <artifactId>typecast-autotag</artifactId>
+    <version>${typecast-autotag.version}</version> <!-- 설치된 버전 확인 -->
+</dependency>
 ```
 
 ## 빠른 시작
@@ -260,32 +283,53 @@ java-binding/
 ### 빌드 및 테스트
 
 ```bash
-# 네이티브 라이브러리 복사
+# 프로젝트 루트에서 - 모든 것을 자동으로 빌드
+pnpm java-binding:build
+
+# 또는 수동으로:
 cd java-binding
-./scripts/copy-libs.sh
-
-# Maven으로 빌드
-mvn clean compile
-
-# 테스트 실행
-mvn test
-
-# JAR 파일 생성
-mvn package
+./scripts/copy-libs.sh  # 네이티브 라이브러리 복사
+mvn clean package       # JAR 빌드
 
 # 로컬 Maven 저장소에 설치
 mvn install
 ```
 
+### 테스트 실행
+
+```bash
+# 프로젝트 루트에서
+pnpm test:java
+
+# 또는 수동으로:
+cd java-binding
+./scripts/run-test.sh
+```
+
 ### 예제 실행
 
 ```bash
-# 예제 컴파일
 cd java-binding
-javac -cp target/typecast-autotag-1.3.0.jar examples/BasicUsage.java
+javac -cp target/typecast-autotag-*.jar examples/BasicUsage.java
+java -cp target/typecast-autotag-*.jar:examples BasicUsage
+```
 
-# 예제 실행
-java -cp target/typecast-autotag-1.3.0.jar:examples BasicUsage
+### 릴리스 생성
+
+릴리스 담당자를 위한 GitHub Release 생성 방법:
+
+```bash
+# 1. JAR 빌드
+pnpm java-binding:build
+
+# 2. GitHub CLI로 릴리스 생성
+gh release create v1.4.0 \
+  java-binding/target/typecast-autotag-*.jar \
+  --title "v1.4.0" \
+  --notes "릴리스 노트"
+
+# 또는 웹 인터페이스 사용:
+# https://github.com/neosapience/typecast-autotag/releases/new
 ```
 
 ## 문제 해결

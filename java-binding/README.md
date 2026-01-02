@@ -29,39 +29,62 @@ pnpm java-binding:build
 
 ## Installation
 
-### Maven
+### Option 1: Download from GitHub Releases (Recommended)
 
-Add the following dependency to your `pom.xml`:
+```bash
+# Download the latest JAR from GitHub Releases
+# Replace VERSION with the latest release version (e.g., 1.3.0)
+VERSION=$(curl -s https://api.github.com/repos/neosapience/typecast-autotag/releases/latest | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
+curl -L -o typecast-autotag-${VERSION}.jar \
+  https://github.com/neosapience/typecast-autotag/releases/download/v${VERSION}/typecast-autotag-${VERSION}.jar
+
+# Use in your project
+javac -cp typecast-autotag-${VERSION}.jar YourApp.java
+java -cp typecast-autotag-${VERSION}.jar:. YourApp
+```
+
+Or add to your Maven project:
 
 ```xml
 <dependency>
     <groupId>ai.typecast</groupId>
     <artifactId>typecast-autotag</artifactId>
-    <version>1.3.0</version>
+    <version>${project.version}</version> <!-- Use your project's version -->
+    <scope>system</scope>
+    <systemPath>${project.basedir}/lib/typecast-autotag-${project.version}.jar</systemPath>
 </dependency>
 ```
 
-### Gradle
-
-Add the following dependency to your `build.gradle`:
-
-```gradle
-implementation 'ai.typecast:typecast-autotag:1.3.0'
-```
-
-### Local Build and Install
+### Option 2: Build from Source
 
 ```bash
+# Clone the repository
+git clone https://github.com/neosapience/typecast-autotag.git
+cd typecast-autotag
+
+# Build C libraries (required)
+pnpm install
+pnpm c-binding:build-all
+
+# Build Java binding (version auto-synced from package.json)
+pnpm java-binding:build
+
+# JAR file will be at: java-binding/target/typecast-autotag-{VERSION}.jar
+```
+
+### Option 3: Install to Local Maven Repository
+
+```bash
+# After building from source
 cd java-binding
-
-# Copy native libraries
-./scripts/copy-libs.sh
-
-# Build with Maven
-mvn clean package
-
-# Install to local Maven repository
 mvn install
+
+# Then use in your pom.xml (check version in pom.xml)
+<dependency>
+    <groupId>ai.typecast</groupId>
+    <artifactId>typecast-autotag</artifactId>
+    <version>${typecast-autotag.version}</version> <!-- Check installed version -->
+</dependency>
 ```
 
 ## Quick Start
@@ -260,32 +283,53 @@ java-binding/
 ### Build and Test
 
 ```bash
-# Copy native libraries
+# From project root - builds everything automatically
+pnpm java-binding:build
+
+# Or manually:
 cd java-binding
-./scripts/copy-libs.sh
-
-# Build with Maven
-mvn clean compile
-
-# Run tests
-mvn test
-
-# Create JAR file
-mvn package
+./scripts/copy-libs.sh  # Copy native libraries
+mvn clean package       # Build JAR
 
 # Install to local Maven repository
 mvn install
 ```
 
+### Running Tests
+
+```bash
+# From project root
+pnpm test:java
+
+# Or manually:
+cd java-binding
+./scripts/run-test.sh
+```
+
 ### Running Examples
 
 ```bash
-# Compile example
 cd java-binding
-javac -cp target/typecast-autotag-1.3.0.jar examples/BasicUsage.java
+javac -cp target/typecast-autotag-*.jar examples/BasicUsage.java
+java -cp target/typecast-autotag-*.jar:examples BasicUsage
+```
 
-# Run example
-java -cp target/typecast-autotag-1.3.0.jar:examples BasicUsage
+### Creating a Release
+
+For maintainers who need to create a GitHub Release:
+
+```bash
+# 1. Build the JAR
+pnpm java-binding:build
+
+# 2. Create GitHub Release with gh CLI
+gh release create v1.4.0 \
+  java-binding/target/typecast-autotag-*.jar \
+  --title "v1.4.0" \
+  --notes "Release notes here"
+
+# Or use the web interface at:
+# https://github.com/neosapience/typecast-autotag/releases/new
 ```
 
 ## Troubleshooting
