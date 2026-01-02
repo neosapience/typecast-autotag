@@ -1,12 +1,12 @@
 /**
  * Typecast Autotag C Library
  * 
- * Duktape를 임베드하여 TTS 문장 변환 기능을 C에서 사용할 수 있게 함
+ * Embeds Duktape to enable TTS sentence conversion functionality in C
  * 
  * Copyright (c) 2025 TypeCast
  */
 
-/* POSIX strdup을 위해 필요 */
+/* Required for POSIX strdup */
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
@@ -18,28 +18,28 @@
 #include "typecast_autotag.h"
 #include "autotag_bundle.h"
 
-/* 전역 상태 */
+/* Global state */
 static duk_context *g_ctx = NULL;
 static pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int g_initialized = 0;
 
 /**
- * 라이브러리 초기화
+ * Initialize the library
  * 
- * Duktape 힙을 생성하고 JavaScript 코드를 로드합니다.
- * 스레드 안전: 여러 스레드에서 호출해도 안전합니다.
+ * Creates a Duktape heap and loads the JavaScript code.
+ * Thread safety: Safe to call from multiple threads.
  * 
- * @return 0: 성공, -1: 실패
+ * @return 0: success, -1: failure
  */
 int typecast_init(void) {
     pthread_mutex_lock(&g_mutex);
     
     if (g_initialized) {
         pthread_mutex_unlock(&g_mutex);
-        return 0;  /* 이미 초기화됨 */
+        return 0;  /* Already initialized */
     }
     
-    /* Duktape 힙 생성 */
+    /* Create Duktape heap */
     g_ctx = duk_create_heap_default();
     if (!g_ctx) {
         fprintf(stderr, "typecast_init: Failed to create Duktape heap\n");
@@ -47,7 +47,7 @@ int typecast_init(void) {
         return -1;
     }
     
-    /* JavaScript 번들 로드 */
+    /* Load JavaScript bundle */
     duk_push_string(g_ctx, AUTOTAG_JS_BUNDLE);
     if (duk_peval(g_ctx) != 0) {
         const char *err = duk_safe_to_string(g_ctx, -1);
@@ -58,9 +58,9 @@ int typecast_init(void) {
         pthread_mutex_unlock(&g_mutex);
         return -1;
     }
-    duk_pop(g_ctx);  /* eval 결과 제거 */
+    duk_pop(g_ctx);  /* Remove eval result */
     
-    /* typecast 객체 확인 */
+    /* Verify typecast object exists */
     duk_push_global_object(g_ctx);
     if (!duk_get_prop_string(g_ctx, -1, "typecast")) {
         fprintf(stderr, "typecast_init: typecast object not found\n");
@@ -70,7 +70,7 @@ int typecast_init(void) {
         pthread_mutex_unlock(&g_mutex);
         return -1;
     }
-    duk_pop_2(g_ctx);  /* typecast, global 제거 */
+    duk_pop_2(g_ctx);  /* Remove typecast, global */
     
     g_initialized = 1;
     pthread_mutex_unlock(&g_mutex);
@@ -78,9 +78,9 @@ int typecast_init(void) {
 }
 
 /**
- * 라이브러리 정리
+ * Cleanup the library
  * 
- * Duktape 힙과 관련 리소스를 해제합니다.
+ * Releases the Duktape heap and related resources.
  */
 void typecast_cleanup(void) {
     pthread_mutex_lock(&g_mutex);
@@ -100,11 +100,11 @@ void typecast_cleanup(void) {
 }
 
 /**
- * JavaScript 함수 호출 헬퍼
+ * JavaScript function call helper
  * 
- * @param func_name 호출할 함수 이름 (typecast 객체 내)
- * @param text 변환할 텍스트
- * @return 변환된 텍스트 (호출자가 typecast_free로 해제해야 함), 실패 시 NULL
+ * @param func_name Function name to call (within typecast object)
+ * @param text Text to convert
+ * @return Converted text (caller must free with typecast_free), NULL on failure
  */
 static char* call_js_function(const char *func_name, const char *text) {
     char *result = NULL;
@@ -117,7 +117,7 @@ static char* call_js_function(const char *func_name, const char *text) {
         return NULL;
     }
     
-    /* typecast.funcName(text) 호출 */
+    /* Call typecast.funcName(text) */
     duk_push_global_object(g_ctx);
     duk_get_prop_string(g_ctx, -1, "typecast");
     duk_get_prop_string(g_ctx, -1, func_name);
@@ -139,7 +139,7 @@ static char* call_js_function(const char *func_name, const char *text) {
         return NULL;
     }
     
-    /* 결과 문자열 복사 */
+    /* Copy result string */
     if (duk_is_string(g_ctx, -1)) {
         const char *str = duk_get_string(g_ctx, -1);
         if (str) {
@@ -154,12 +154,12 @@ static char* call_js_function(const char *func_name, const char *text) {
 }
 
 /**
- * 자동 태깅
+ * Auto tagging
  * 
- * 텍스트에서 전화번호, 금액, 날짜 등을 자동으로 인식하여 변환합니다.
+ * Automatically recognizes and converts phone numbers, amounts, dates, etc. from text.
  * 
- * @param text 변환할 텍스트
- * @return 변환된 텍스트 (typecast_free로 해제 필요), 실패 시 NULL
+ * @param text Text to convert
+ * @return Converted text (must free with typecast_free), NULL on failure
  */
 char* typecast_auto_tag(const char *text) {
     if (!text) return NULL;
@@ -167,12 +167,12 @@ char* typecast_auto_tag(const char *text) {
 }
 
 /**
- * 수동 태그 우선 자동 태깅
+ * Auto tagging with manual tags priority
  * 
- * 수동 태그를 먼저 처리한 후 나머지에 자동 태깅을 적용합니다.
+ * Processes manual tags first, then applies auto tagging to the rest.
  * 
- * @param text 변환할 텍스트
- * @return 변환된 텍스트 (typecast_free로 해제 필요), 실패 시 NULL
+ * @param text Text to convert
+ * @return Converted text (must free with typecast_free), NULL on failure
  */
 char* typecast_auto_tag_with_manual(const char *text) {
     if (!text) return NULL;
@@ -180,12 +180,12 @@ char* typecast_auto_tag_with_manual(const char *text) {
 }
 
 /**
- * 수동 태깅만
+ * Manual tagging only
  * 
- * 명시적으로 지정된 수동 태그만 처리합니다.
+ * Processes only explicitly specified manual tags.
  * 
- * @param text 변환할 텍스트
- * @return 변환된 텍스트 (typecast_free로 해제 필요), 실패 시 NULL
+ * @param text Text to convert
+ * @return Converted text (must free with typecast_free), NULL on failure
  */
 char* typecast_manual_tag(const char *text) {
     if (!text) return NULL;
@@ -193,11 +193,11 @@ char* typecast_manual_tag(const char *text) {
 }
 
 /**
- * 메모리 해제
+ * Free memory
  * 
- * 라이브러리 함수에서 반환된 문자열을 해제합니다.
+ * Releases strings returned by library functions.
  * 
- * @param str 해제할 문자열
+ * @param str String to free
  */
 void typecast_free(char *str) {
     free(str);
