@@ -20,7 +20,7 @@
   "scripts": {
     "build": "microbundle --tsconfig tsconfig.build.json",
     "dev": "microbundle watch --tsconfig tsconfig.build.json",
-    "test": "pnpm test:jest && pnpm test:e2e && pnpm test:python",
+    "test": "pnpm test:jest && pnpm test:e2e && pnpm test:python && pnpm test:java",
     "test:jest": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -31,6 +31,7 @@
     "test:e2e:windows-multiarch": "pnpm c-binding:bundle && pnpm c-binding:build-windows-multiarch && tsx c-binding/scripts/e2e/index.ts --windows-multiarch",
     "test:e2e:macos": "pnpm c-binding:bundle && pnpm c-binding:build-macos && tsx c-binding/scripts/e2e/index.ts --macos",
     "test:python": "pnpm python-binding:copy-libs && pnpm python-binding:test",
+    "test:java": "pnpm java-binding:copy-libs && pnpm java-binding:test",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
@@ -56,6 +57,9 @@
     "python-binding:copy-libs": "cd python-binding && ./scripts/copy-libs.sh",
     "python-binding:test": "cd python-binding && python3 -m pip install pytest -q && python3 -m pytest tests/ -v",
     "python-binding:build": "pnpm python-binding:copy-libs && cd python-binding && python3 -m pip install build -q && python3 -m build",
+    "java-binding:copy-libs": "cd java-binding && ./scripts/copy-libs.sh",
+    "java-binding:build": "pnpm java-binding:copy-libs && cd java-binding && mvn clean package -DskipTests -Dmaven.javadoc.skip=true",
+    "java-binding:test": "cd java-binding && ./scripts/run-test.sh",
     "release": "dotenv -- release-it",
     "release:dry": "dotenv -- release-it --dry-run"
   },
