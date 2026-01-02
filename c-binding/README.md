@@ -3,13 +3,23 @@
 C bindings for the TTS (Text-to-Speech) text preprocessing library.
 Automatically converts various patterns like phone numbers, dates, and amounts into formats suitable for voice synthesis.
 
+**[한국어 문서](./README.KR.md)**
+
 ## Features
 
+- **Multi-language Support**: Full support for Korean and English text preprocessing
 - **Easy to use**: Complete functionality with just 3 functions
 - **Flexible approach**: Supports fully automatic, manual tag, and hybrid modes
 - **Wide pattern support**: Auto-recognition of 35+ patterns including phone, date, time, money, order
 - **Cross-platform**: Supports Linux (.so), Windows (.dll), and macOS (.dylib)
 - **High compatibility**: Supports from CentOS 6.9 to latest Linux (static linking)
+
+## Supported Languages
+
+| Language | Status | Example |
+| -------- | ------ | ------- |
+| **Korean** (한국어) | ✅ Full Support | `010-1234-5678` → `공 일 공 다시...` |
+| **English** | ✅ Full Support | `555-123-4567` → `five five five, one two three...` |
 
 ## Quick Start
 
@@ -35,16 +45,23 @@ int main() {
         return 1;
     }
 
-    // 2. Convert text
+    // 2. Convert text (Korean)
     char *result = typecast_auto_tag("전화번호는 010-1234-5678입니다.");
     if (result) {
         printf("%s\n", result);
         // Output: "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 입니다."
-
-        typecast_free(result);  // Free memory
+        typecast_free(result);
     }
 
-    // 3. Cleanup (call before program exit)
+    // 3. Convert text (English)
+    char *result_en = typecast_auto_tag_en("Call me at 555-123-4567.");
+    if (result_en) {
+        printf("%s\n", result_en);
+        // Output: "Call me at five five five, one two three, four five six seven."
+        typecast_free(result_en);
+    }
+
+    // 4. Cleanup (call before program exit)
     typecast_cleanup();
     return 0;
 }
@@ -71,6 +88,8 @@ void typecast_cleanup(void); // Cleanup
 
 ### Conversion Functions
 
+#### Korean (Default)
+
 | Function                          | Description      | Use Case                                           |
 | --------------------------------- | ---------------- | -------------------------------------------------- |
 | `typecast_auto_tag()`             | Fully automatic  | When you want all patterns processed automatically |
@@ -84,12 +103,28 @@ char* typecast_manual_tag(const char *text);
 void typecast_free(char *str);  // Free result string
 ```
 
+#### English
+
+| Function                             | Description      | Use Case                                           |
+| ------------------------------------ | ---------------- | -------------------------------------------------- |
+| `typecast_auto_tag_en()`             | Fully automatic  | When you want all patterns processed automatically |
+| `typecast_manual_tag_en()`           | Manual tags only | Legacy system compatibility, explicit control      |
+| `typecast_auto_tag_with_manual_en()` | Hybrid mode      | Mostly automatic + manual tags for supplements     |
+
+```c
+char* typecast_auto_tag_en(const char *text);
+char* typecast_auto_tag_with_manual_en(const char *text);
+char* typecast_manual_tag_en(const char *text);
+```
+
 ## Detailed Usage
 
-### Method 1: Fully Automatic (`typecast_auto_tag`)
+### Method 1: Fully Automatic (`typecast_auto_tag` / `typecast_auto_tag_en`)
 
 Automatically recognizes and converts patterns in text.
 **Most convenient method** - sufficient for most cases.
+
+#### Korean Examples
 
 ```c
 // Input: "전화번호는 010-1234-5678입니다."
@@ -105,7 +140,23 @@ char *result = typecast_auto_tag("총 금액은 1500000원입니다.");
 char *result = typecast_auto_tag("회의는 2024-03-15 14:30에 시작합니다.");
 ```
 
-**Supported Patterns:**
+#### English Examples
+
+```c
+// Input: "Call me at 555-123-4567."
+// Output: "Call me at five five five, one two three, four five six seven."
+char *result = typecast_auto_tag_en("Call me at 555-123-4567.");
+
+// Input: "Total is $1,500."
+// Output: "Total is one thousand five hundred dollars."
+char *result = typecast_auto_tag_en("Total is $1,500.");
+
+// Input: "Meeting is at 2:30 PM."
+// Output: "Meeting is at two thirty PM."
+char *result = typecast_auto_tag_en("Meeting is at 2:30 PM.");
+```
+
+**Supported Patterns (Korean):**
 
 - Phone numbers: `010-1234-5678`, `02-123-4567`, `1588-1234`
 - Money: `50000원`, `1500만원`, `₩10000`
@@ -116,6 +167,18 @@ char *result = typecast_auto_tag("회의는 2024-03-15 14:30에 시작합니다.
 - Duration: `3개월`, `2년`, `5일간`
 - Floor: `지하 2층`, `5층`, `B1층`
 - Others: scores, area, distance, weight, mileage, etc.
+
+**Supported Patterns (English):**
+
+- Phone numbers: `555-123-4567`, `(212) 555-1234`, `1-800-555-1234`
+- Money: `$1,500`, `€100`, `50 dollars`
+- Dates: `January 15, 2024`, `2024-01-15`
+- Time: `2:30 PM`, `10:00 AM`
+- Order: `1st place`, `2nd`, `3rd`
+- Ratio: `50%`, `1:2`
+- Duration: `3 months`, `2 years`
+- Floor: `5th floor`, `B1`, `basement level 2`
+- Others: scores, area, distance, weight, temperature, etc.
 
 ### Method 2: Manual Tags Only (`typecast_manual_tag`)
 

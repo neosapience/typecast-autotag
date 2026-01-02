@@ -164,6 +164,52 @@ TYPECAST_API char* typecast_auto_tag_with_manual(const char *text);
  */
 TYPECAST_API char* typecast_manual_tag(const char *text);
 
+/* ============================================
+ * English Language Functions
+ * ============================================ */
+
+/**
+ * Auto tagging for English (fully automatic processing)
+ * 
+ * Automatically recognizes and converts the following patterns in English text:
+ * - Phone numbers: 123-456-7890 → one two three, four five six, seven eight nine zero
+ * - Amounts: $1,234.56 → one thousand two hundred thirty four dollars and fifty six cents
+ * - Dates: 01/15/2024 → January fifteenth, twenty twenty-four
+ * - Times: 2:30 PM → two thirty PM
+ * - Others: ordinals, percentages, etc.
+ * 
+ * @param text Text to convert (UTF-8 encoding)
+ * @return Converted string (must be freed with typecast_free())
+ *         Returns NULL on failure
+ */
+TYPECAST_API char* typecast_auto_tag_english(const char *text);
+
+/**
+ * Auto tagging + manual tags for English (hybrid approach)
+ * 
+ * Processes manual tags first, then applies auto tagging for English.
+ * 
+ * @param text Text to convert (UTF-8 encoding)
+ * @return Converted string (must be freed with typecast_free())
+ *         Returns NULL on failure
+ */
+TYPECAST_API char* typecast_auto_tag_with_manual_english(const char *text);
+
+/**
+ * Manual tags only for English
+ * 
+ * Processes only tag formats in the text for English output.
+ * 
+ * @param text Text to convert (UTF-8 encoding)
+ * @return Converted string (must be freed with typecast_free())
+ *         Returns NULL on failure
+ * 
+ * Example:
+ *   Input: "phone(123-456-7890) is my number."
+ *   Output: "one two three, four five six, seven eight nine zero is my number."
+ */
+TYPECAST_API char* typecast_manual_tag_english(const char *text);
+
 /**
  * Free memory
  * 

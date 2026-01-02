@@ -1,16 +1,26 @@
 # Typecast Autotag Java Binding
 
 Java binding for the TTS (Text-to-Speech) text preprocessing library.
-Automatically converts phone numbers, dates, amounts, and various other patterns into formats suitable for Korean speech synthesis.
+Automatically converts phone numbers, dates, amounts, and various other patterns into formats suitable for speech synthesis.
+
+**[한국어 문서](./README.KR.md)**
 
 ## Features
 
+- **Multi-language Support**: Full support for Korean and English text preprocessing
 - **Easy to use**: Complete functionality with just 3 main functions
 - **Flexible approach**: Supports fully automatic, manual tags, and hybrid modes
 - **Wide pattern support**: Automatically recognizes 35+ patterns including phone numbers, dates, times, amounts, order, etc.
 - **Cross-platform**: Supports Linux, Windows, and macOS
 - **Java 8 compatible**: Works with Java 8 and above
 - **Thread-safe**: Safe to use in multi-threaded environments
+
+## Supported Languages
+
+| Language | Status | Example |
+| -------- | ------ | ------- |
+| **Korean** (한국어) | ✅ Full Support | `010-1234-5678` → `공 일 공 다시...` |
+| **English** | ✅ Full Support | `555-123-4567` → `five five five, one two three...` |
 
 ## Requirements
 
@@ -95,7 +105,7 @@ import ai.typecast.autotag.TypecastAutotag;
 public class Example {
     public static void main(String[] args) {
         try {
-            // Automatic pattern recognition and conversion
+            // Korean - Automatic pattern recognition and conversion
             String result = TypecastAutotag.autoTag("전화번호는 010-1234-5678입니다.");
             System.out.println(result);
             // Output: "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다."
@@ -103,6 +113,15 @@ public class Example {
             String result2 = TypecastAutotag.autoTag("총 금액은 1500000원입니다.");
             System.out.println(result2);
             // Output: "총 금액은 백오십만 원입니다."
+
+            // English - Automatic pattern recognition and conversion
+            String resultEn = TypecastAutotag.autoTagEn("Call me at 555-123-4567.");
+            System.out.println(resultEn);
+            // Output: "Call me at five five five, one two three, four five six seven."
+
+            String resultEn2 = TypecastAutotag.autoTagEn("Total is $1,500.");
+            System.out.println(resultEn2);
+            // Output: "Total is one thousand five hundred dollars."
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -129,16 +148,28 @@ TypecastAutotag.cleanup();
 
 ### Conversion Functions
 
+#### Korean (Default)
+
 | Method                | Description      | Use Case                                                      |
 | --------------------- | ---------------- | ------------------------------------------------------------- |
 | `autoTag()`           | Fully automatic  | When you want all patterns processed automatically            |
 | `manualTag()`         | Manual tags only | Legacy system compatibility, explicit control needed          |
 | `autoTagWithManual()` | Hybrid           | Mostly automatic + supplement with manual tags for edge cases |
 
-### Method 1: Fully Automatic (`autoTag`)
+#### English
+
+| Method                  | Description      | Use Case                                                      |
+| ----------------------- | ---------------- | ------------------------------------------------------------- |
+| `autoTagEn()`           | Fully automatic  | When you want all patterns processed automatically            |
+| `manualTagEn()`         | Manual tags only | Legacy system compatibility, explicit control needed          |
+| `autoTagWithManualEn()` | Hybrid           | Mostly automatic + supplement with manual tags for edge cases |
+
+### Method 1: Fully Automatic (`autoTag` / `autoTagEn`)
 
 Automatically recognizes and converts patterns in text.
 **Most convenient method** - sufficient for most cases.
+
+#### Korean Examples
 
 ```java
 import ai.typecast.autotag.TypecastAutotag;
@@ -156,7 +187,25 @@ String result3 = TypecastAutotag.autoTag("회의는 2024-03-15 14:30에 시작�
 // → "회의는 이천이십사년 삼 월 십오 일 오후 두 시 삼십 분에 시작합니다."
 ```
 
-**Supported Patterns:**
+#### English Examples
+
+```java
+import ai.typecast.autotag.TypecastAutotag;
+
+// Phone number
+String result = TypecastAutotag.autoTagEn("Call me at 555-123-4567.");
+// → "Call me at five five five, one two three, four five six seven."
+
+// Money
+String result2 = TypecastAutotag.autoTagEn("Total is $1,500.");
+// → "Total is one thousand five hundred dollars."
+
+// Date and time
+String result3 = TypecastAutotag.autoTagEn("Meeting is at 2:30 PM.");
+// → "Meeting is at two thirty PM."
+```
+
+**Supported Patterns (Korean):**
 
 - Phone numbers: `010-1234-5678`, `02-123-4567`, `1588-1234`
 - Money: `50000원`, `1500만원`, `₩10000`
@@ -167,6 +216,18 @@ String result3 = TypecastAutotag.autoTag("회의는 2024-03-15 14:30에 시작�
 - Period: `3개월`, `2년`, `5일간`
 - Floor: `지하 2층`, `5층`, `B1층`
 - Others: scores, area, distance, weight, mileage, etc.
+
+**Supported Patterns (English):**
+
+- Phone numbers: `555-123-4567`, `(212) 555-1234`, `1-800-555-1234`
+- Money: `$1,500`, `€100`, `50 dollars`
+- Dates: `January 15, 2024`, `2024-01-15`
+- Time: `2:30 PM`, `10:00 AM`
+- Order: `1st place`, `2nd`, `3rd`
+- Ratio: `50%`, `1:2`
+- Period: `3 months`, `2 years`
+- Floor: `5th floor`, `B1`, `basement level 2`
+- Others: scores, area, distance, weight, temperature, etc.
 
 ### Method 2: Manual Tags Only (`manualTag`)
 
