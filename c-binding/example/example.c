@@ -1,5 +1,5 @@
 /**
- * TypeCast AutoTag C Library 사용 예제
+ * Typecast Autotag C Library 사용 예제
  * 
  * 이 예제는 라이브러리의 세 가지 주요 함수를 보여줍니다:
  * 1. typecast_auto_tag() - 완전 자동 처리
@@ -34,7 +34,7 @@ static void test_conversion(const char *label, const char *input,
 
 int main(void) {
     printf("===========================================\n");
-    printf("TypeCast AutoTag C Library 사용 예제\n");
+    printf("Typecast Autotag C Library 사용 예제\n");
     printf("버전: %s\n", typecast_version());
     printf("===========================================\n\n");
     

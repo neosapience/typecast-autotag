@@ -1,5 +1,5 @@
 #!/bin/bash
-# TypeCast AutoTag C Library - Linux 빌드 스크립트
+# Typecast Autotag C Library - Linux 빌드 스크립트
 # CentOS 6.9 호환 .so 파일 생성
 
 set -e
@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$ROOT_DIR/build"
 
-echo "=== TypeCast AutoTag C Library Builder ==="
+echo "=== Typecast Autotag C Library Builder ==="
 echo "Target: x86_64 Linux (CentOS 6.9 compatible)"
 echo ""
 
