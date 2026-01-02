@@ -14,7 +14,7 @@ export interface DockerTestResult {
   output: string;
 }
 
-export type PlatformType = 'linux' | 'windows';
+export type PlatformType = 'linux' | 'windows' | 'macos';
 
 export interface TestEnvironment {
   name: string;
@@ -53,14 +53,24 @@ export const WINDOWS_TEST_ENVIRONMENT: TestEnvironment = {
 };
 
 /**
+ * macOS test environment (.dylib, local execution)
+ */
+export const MACOS_TEST_ENVIRONMENT: TestEnvironment = {
+  name: 'macOS (local)',
+  image: '', // Not used for macOS (local execution)
+  platform: 'macos',
+};
+
+/**
  * All test environments
  */
 export const TEST_ENVIRONMENTS: TestEnvironment[] = [...LINUX_TEST_ENVIRONMENTS];
 
 /**
- * All test environments including Windows
+ * All test environments including Windows and macOS
  */
 export const ALL_TEST_ENVIRONMENTS: TestEnvironment[] = [
   ...LINUX_TEST_ENVIRONMENTS,
   WINDOWS_TEST_ENVIRONMENT,
+  MACOS_TEST_ENVIRONMENT,
 ];

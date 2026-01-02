@@ -242,18 +242,39 @@ make docker-build-windows
 # - build/typecast_autotag.h
 ```
 
+### Docker Build - macOS (Universal Binary)
+
+```bash
+cd c-binding
+
+# Build macOS universal binary (x86_64 + arm64)
+# Note: Must be run on macOS
+./scripts/build-macos.sh
+
+# Or use make target
+make macos-universal
+
+# Output files
+# - build/libtypecast_autotag.dylib  (Universal Binary)
+# - build/typecast_autotag.h
+```
+
 ### Build All Platforms
 
 ```bash
 cd c-binding
 
-# Build both Linux and Windows
+# Build Linux, Windows, and macOS
 make all-platforms
 
+# Or use pnpm
+pnpm c-binding:build-all
+
 # Output files
-# - build/libtypecast_autotag.so  (Linux)
-# - build/typecast_autotag.dll    (Windows)
-# - build/typecast_autotag.lib    (Windows import lib)
+# - build/libtypecast_autotag.so     (Linux)
+# - build/libtypecast_autotag.dylib  (macOS)
+# - build/typecast_autotag.dll       (Windows)
+# - build/typecast_autotag.lib       (Windows import lib)
 ```
 
 ### E2E Tests
@@ -326,6 +347,13 @@ All E2E tests passed!
 | `libtypecast_autotag.so` | Shared library |
 | `typecast_autotag.h`     | C header file  |
 
+#### macOS
+
+| File                       | Description                          |
+| -------------------------- | ------------------------------------ |
+| `libtypecast_autotag.dylib`| Dynamic library (Universal Binary)   |
+| `typecast_autotag.h`       | C header file                        |
+
 #### Windows
 
 | File                   | Description                       |
@@ -348,6 +376,17 @@ sudo ldconfig
 gcc -o program program.c -L. -ltypecast_autotag -Wl,-rpath,'$ORIGIN'
 ```
 
+#### macOS
+
+```bash
+# Install to system library directory
+sudo cp libtypecast_autotag.dylib /usr/local/lib/
+sudo cp typecast_autotag.h /usr/local/include/
+
+# Or place with project and use rpath
+clang -o program program.c -L. -ltypecast_autotag -Wl,-rpath,@executable_path
+```
+
 #### Windows
 
 ```bash
@@ -364,12 +403,13 @@ gcc -o program.exe program.c -L. -ltypecast_autotag
 
 ## Target Environments
 
-| Environment    | Architecture | Output File            | Status                     |
-| -------------- | ------------ | ---------------------- | -------------------------- |
-| Amazon Linux 2 | x86_64       | libtypecast_autotag.so | ✅ Supported               |
-| CentOS 6.9     | x86_64       | libtypecast_autotag.so | ✅ Supported (static link) |
-| Windows Server | x86_64       | typecast_autotag.dll   | ✅ Supported               |
-| Windows 10/11  | x86_64       | typecast_autotag.dll   | ✅ Supported               |
+| Environment    | Architecture      | Output File                 | Status                     |
+| -------------- | ----------------- | --------------------------- | -------------------------- |
+| Amazon Linux 2 | x86_64            | libtypecast_autotag.so      | ✅ Supported               |
+| CentOS 6.9     | x86_64            | libtypecast_autotag.so      | ✅ Supported (static link) |
+| macOS          | x86_64 + arm64    | libtypecast_autotag.dylib   | ✅ Supported (Universal)   |
+| Windows Server | x86_64            | typecast_autotag.dll        | ✅ Supported               |
+| Windows 10/11  | x86_64            | typecast_autotag.dll        | ✅ Supported               |
 
 ## Important Notes
 

@@ -4,12 +4,14 @@
  *
  * Tests the built .so file on Amazon Linux 2 and CentOS 6.9.
  * Tests the built .dll file on Windows (via Wine).
+ * Tests the built .dylib file on macOS (local execution).
  * Tests all supported tags and three functions (autoTag, manualTag, autoTagWithManual).
  *
  * Usage:
  *   pnpm test:e2e           # Linux only (default)
- *   pnpm test:e2e:all       # Linux + Windows
  *   pnpm test:e2e:windows   # Windows only
+ *   pnpm test:e2e:macos     # macOS only
+ *   pnpm test:e2e:all       # Linux + Windows + macOS
  */
 
 import { existsSync } from 'fs';
@@ -18,6 +20,7 @@ import { fileURLToPath } from 'url';
 import {
   LINUX_TEST_ENVIRONMENTS,
   WINDOWS_TEST_ENVIRONMENT,
+  MACOS_TEST_ENVIRONMENT,
   ALL_TEST_ENVIRONMENTS,
   type TestEnvironment,
 } from './types.js';
@@ -26,11 +29,12 @@ import { printHeader, printSuccess, printError, printInfo, colors } from './colo
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-type TestMode = 'linux' | 'windows' | 'all';
+type TestMode = 'linux' | 'windows' | 'macos' | 'all';
 
 function getTestMode(): TestMode {
   const arg = process.argv[2];
   if (arg === '--windows' || arg === '-w') return 'windows';
+  if (arg === '--macos' || arg === '-m') return 'macos';
   if (arg === '--all' || arg === '-a') return 'all';
   return 'linux';
 }
@@ -39,6 +43,8 @@ function getEnvironmentsForMode(mode: TestMode): TestEnvironment[] {
   switch (mode) {
     case 'windows':
       return [WINDOWS_TEST_ENVIRONMENT];
+    case 'macos':
+      return [MACOS_TEST_ENVIRONMENT];
     case 'all':
       return ALL_TEST_ENVIRONMENTS;
     case 'linux':
@@ -51,6 +57,7 @@ async function main(): Promise<void> {
   const buildDir = resolve(__dirname, '../../build');
   const linuxLibPath = resolve(buildDir, 'libtypecast_autotag.so');
   const windowsDllPath = resolve(buildDir, 'typecast_autotag.dll');
+  const macosLibPath = resolve(buildDir, 'libtypecast_autotag.dylib');
 
   const mode = getTestMode();
   const environments = getEnvironmentsForMode(mode);
@@ -79,6 +86,14 @@ async function main(): Promise<void> {
     printInfo('Building Windows test Docker image...');
     await buildWindowsTestImage();
     console.log('');
+  }
+
+  if (mode === 'macos' || mode === 'all') {
+    if (!existsSync(macosLibPath)) {
+      printError(`libtypecast_autotag.dylib not found in ${buildDir}`);
+      console.log('Run: pnpm c-binding:build-macos');
+      process.exit(1);
+    }
   }
 
   // Run tests on all environments
