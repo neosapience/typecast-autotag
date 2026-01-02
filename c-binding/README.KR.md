@@ -264,43 +264,92 @@ make macos-universal
 ```bash
 cd c-binding
 
-# Linux, Windows, macOS 모두 빌드
+# Linux, Windows, macOS 모두 빌드 (기본 x86_64만)
 make all-platforms
 
 # 또는 pnpm 사용
 pnpm c-binding:build-all
 
 # 결과물
-# - build/libtypecast_autotag.so     (Linux)
-# - build/libtypecast_autotag.dylib  (macOS)
-# - build/typecast_autotag.dll       (Windows)
+# - build/libtypecast_autotag.so     (Linux x86_64)
+# - build/libtypecast_autotag.dylib  (macOS universal)
+# - build/typecast_autotag.dll       (Windows x86_64)
 # - build/typecast_autotag.lib       (Windows 임포트 라이브러리)
 ```
 
-### E2E 테스트
-
-빌드된 라이브러리를 CentOS 6.9와 Amazon Linux 2에서 자동으로 테스트합니다.
+### 모든 플랫폼 & 모든 아키텍처 빌드
 
 ```bash
 cd c-binding
 
-# E2E 테스트 실행 (Docker 필요)
-./scripts/test-e2e.sh
+# 모든 플랫폼 및 아키텍처 빌드
+make all-multiarch
+
+# 또는 pnpm 사용
+pnpm c-binding:build-all-multiarch
+
+# 결과물 (Linux)
+# - build/libtypecast_autotag_x86_64.so   (Linux x86_64)
+# - build/libtypecast_autotag_x86.so      (Linux x86 32-bit)
+# - build/libtypecast_autotag_arm64.so    (Linux arm64)
+# - build/libtypecast_autotag_armv7.so    (Linux armv7 32-bit)
+# - build/libtypecast_autotag.so          (x86_64 심볼릭 링크)
+
+# 결과물 (Windows)
+# - build/typecast_autotag_x86_64.dll     (Windows x86_64)
+# - build/typecast_autotag_i686.dll       (Windows x86 32-bit)
+# - build/typecast_autotag.dll            (x86_64 복사본)
+
+# 결과물 (macOS)
+# - build/libtypecast_autotag.dylib       (Universal: x86_64 + arm64)
+```
+
+### E2E 테스트
+
+빌드된 라이브러리를 여러 플랫폼과 아키텍처에서 자동으로 테스트합니다.
+
+```bash
+# 프로젝트 루트에서
+
+# 모든 플랫폼 및 아키텍처 테스트 (기본)
+pnpm test:e2e
+
+# Linux만 테스트 (x86_64)
+pnpm test:e2e:linux
+
+# Linux 모든 아키텍처 테스트 (x86_64, x86, arm64, armv7)
+pnpm test:e2e:linux-multiarch
+
+# Windows만 테스트 (x86_64)
+pnpm test:e2e:windows
+
+# Windows 모든 아키텍처 테스트 (x86_64, i686)
+pnpm test:e2e:windows-multiarch
+
+# macOS 테스트 (universal binary, 로컬 실행)
+pnpm test:e2e:macos
 ```
 
 **테스트 범위:**
 
-| 카테고리                        | 테스트 수 | 설명                          |
-| ------------------------------- | --------- | ----------------------------- |
-| `typecast_manual_tag`           | 37        | 모든 수동 태그 (37개)         |
-| `typecast_auto_tag`             | 8         | 자동 인식 패턴                |
-| `typecast_auto_tag_with_manual` | 4         | 수동 + 자동 혼합              |
-| **총합**                        | **50**    | 환경별 50개 테스트 × 2개 환경 |
+| 카테고리                        | 테스트 수 | 설명                  |
+| ------------------------------- | --------- | --------------------- |
+| `typecast_manual_tag`           | 37        | 모든 수동 태그 (37개) |
+| `typecast_auto_tag`             | 8         | 자동 인식 패턴        |
+| `typecast_auto_tag_with_manual` | 4         | 수동 + 자동 혼합      |
+| **총합**                        | **49**    | 환경별 49개 테스트    |
 
-**테스트 환경:**
+**테스트 환경 (멀티 아키텍처):**
 
-- CentOS 6.9 (glibc 2.12)
-- Amazon Linux 2 (glibc 2.26)
+| 플랫폼  | 아키텍처  | 테스트 환경                 |
+| ------- | --------- | --------------------------- |
+| Linux   | x86_64    | Debian Bullseye (amd64)     |
+| Linux   | x86       | Debian Bullseye (i386)      |
+| Linux   | arm64     | Debian Bullseye (arm64)     |
+| Linux   | armv7     | Debian Bullseye (arm/v7)    |
+| Windows | x86_64    | Wine64 on Debian            |
+| Windows | i686      | Wine32 on Debian            |
+| macOS   | universal | 로컬 macOS (x86_64 + arm64) |
 
 **출력 예시:**
 
@@ -351,10 +400,10 @@ All E2E tests passed!
 
 #### macOS
 
-| 파일                        | 설명                           |
-| --------------------------- | ------------------------------ |
-| `libtypecast_autotag.dylib` | 동적 라이브러리 (Universal)    |
-| `typecast_autotag.h`        | C 헤더 파일                    |
+| 파일                        | 설명                        |
+| --------------------------- | --------------------------- |
+| `libtypecast_autotag.dylib` | 동적 라이브러리 (Universal) |
+| `typecast_autotag.h`        | C 헤더 파일                 |
 
 #### Windows
 
@@ -405,13 +454,25 @@ gcc -o program.exe program.c -L. -ltypecast_autotag
 
 ## 타겟 환경
 
-| 환경           | 아키텍처       | 출력 파일                   | 상태                    |
-| -------------- | -------------- | --------------------------- | ----------------------- |
-| Amazon Linux 2 | x86_64         | libtypecast_autotag.so      | ✅ 지원                 |
-| CentOS 6.9     | x86_64         | libtypecast_autotag.so      | ✅ 지원 (정적 링크)     |
-| macOS          | x86_64 + arm64 | libtypecast_autotag.dylib   | ✅ 지원 (Universal)     |
-| Windows Server | x86_64         | typecast_autotag.dll        | ✅ 지원                 |
-| Windows 10/11  | x86_64         | typecast_autotag.dll        | ✅ 지원                 |
+### 기본 빌드 (단일 아키텍처)
+
+| 플랫폼  | 아키텍처       | 출력 파일                 | 상태         |
+| ------- | -------------- | ------------------------- | ------------ |
+| Linux   | x86_64         | libtypecast_autotag.so    | ✅ 지원      |
+| macOS   | x86_64 + arm64 | libtypecast_autotag.dylib | ✅ Universal |
+| Windows | x86_64         | typecast_autotag.dll      | ✅ 지원      |
+
+### 멀티 아키텍처 빌드
+
+| 플랫폼  | 아키텍처     | 출력 파일                     | 상태         |
+| ------- | ------------ | ----------------------------- | ------------ |
+| Linux   | x86_64       | libtypecast_autotag_x86_64.so | ✅ 지원      |
+| Linux   | x86 (32-bit) | libtypecast_autotag_x86.so    | ✅ 지원      |
+| Linux   | arm64        | libtypecast_autotag_arm64.so  | ✅ 지원      |
+| Linux   | armv7        | libtypecast_autotag_armv7.so  | ✅ 지원      |
+| macOS   | x86_64+arm64 | libtypecast_autotag.dylib     | ✅ Universal |
+| Windows | x86_64       | typecast_autotag_x86_64.dll   | ✅ 지원      |
+| Windows | x86 (32-bit) | typecast_autotag_i686.dll     | ✅ 지원      |
 
 ## 주의사항
 

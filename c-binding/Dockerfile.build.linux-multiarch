@@ -1,0 +1,95 @@
+# Typecast Autotag C Library - Linux Multi-Architecture Build
+# Cross-compiles for: x86_64, i686 (x86), aarch64 (arm64), armv7
+# Uses cross-compilers instead of QEMU emulation for reliability
+
+FROM debian:bullseye-slim
+
+# Install build tools and ALL cross-compilers (including x86_64 for ARM hosts)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        libc6-dev \
+        gcc-x86-64-linux-gnu \
+        libc6-dev-amd64-cross \
+        gcc-i686-linux-gnu \
+        libc6-dev-i386-cross \
+        gcc-aarch64-linux-gnu \
+        libc6-dev-arm64-cross \
+        gcc-arm-linux-gnueabihf \
+        libc6-dev-armhf-cross \
+        make \
+        curl \
+        xz-utils \
+        file \
+        ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /build
+
+# Download and prepare Duktape 2.7.0
+ENV DUKTAPE_VERSION=2.7.0
+RUN curl -L https://duktape.org/duktape-${DUKTAPE_VERSION}.tar.xz -o duktape.tar.xz && \
+    xz -d duktape.tar.xz && \
+    tar -xf duktape.tar && \
+    rm duktape.tar
+
+# Copy source files
+COPY src/ /build/src/
+COPY include/ /build/include/
+
+# Build for all architectures
+RUN mkdir -p /build/output
+
+# Build x86_64 (using cross-compiler to ensure correct arch)
+RUN x86_64-linux-gnu-gcc -std=c99 -Wall -O2 -fPIC -shared \
+    -I/build/include \
+    -I/build/duktape-${DUKTAPE_VERSION}/src \
+    /build/src/typecast_autotag.c \
+    /build/duktape-${DUKTAPE_VERSION}/src/duktape.c \
+    -lm -lpthread \
+    -o /build/output/libtypecast_autotag_x86_64.so && \
+    file /build/output/libtypecast_autotag_x86_64.so
+
+# Build i686 (x86 32-bit)
+RUN i686-linux-gnu-gcc -std=c99 -Wall -O2 -fPIC -shared \
+    -I/build/include \
+    -I/build/duktape-${DUKTAPE_VERSION}/src \
+    /build/src/typecast_autotag.c \
+    /build/duktape-${DUKTAPE_VERSION}/src/duktape.c \
+    -lm -lpthread \
+    -o /build/output/libtypecast_autotag_x86.so && \
+    file /build/output/libtypecast_autotag_x86.so
+
+# Build aarch64 (arm64)
+RUN aarch64-linux-gnu-gcc -std=c99 -Wall -O2 -fPIC -shared \
+    -I/build/include \
+    -I/build/duktape-${DUKTAPE_VERSION}/src \
+    /build/src/typecast_autotag.c \
+    /build/duktape-${DUKTAPE_VERSION}/src/duktape.c \
+    -lm -lpthread \
+    -o /build/output/libtypecast_autotag_arm64.so && \
+    file /build/output/libtypecast_autotag_arm64.so
+
+# Build armv7 (arm 32-bit hard float)
+RUN arm-linux-gnueabihf-gcc -std=c99 -Wall -O2 -fPIC -shared \
+    -I/build/include \
+    -I/build/duktape-${DUKTAPE_VERSION}/src \
+    /build/src/typecast_autotag.c \
+    /build/duktape-${DUKTAPE_VERSION}/src/duktape.c \
+    -lm -lpthread \
+    -o /build/output/libtypecast_autotag_armv7.so && \
+    file /build/output/libtypecast_autotag_armv7.so
+
+# Create default (x86_64 copy)
+RUN cp /build/output/libtypecast_autotag_x86_64.so /build/output/libtypecast_autotag.so
+
+# Verify all builds
+RUN echo "=== Build Results ===" && \
+    ls -la /build/output/*.so && \
+    echo "" && \
+    for f in /build/output/*.so; do echo "$(basename $f): $(file $f | sed 's/.*: //')"; done
+
+# Copy to output directory
+CMD ["sh", "-c", "cp /build/output/*.so /output/ && cp /build/include/typecast_autotag.h /output/ && echo 'All Linux architectures built!' && ls -la /output/*.so"]

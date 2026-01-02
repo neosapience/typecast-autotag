@@ -264,26 +264,70 @@ make macos-universal
 ```bash
 cd c-binding
 
-# Build Linux, Windows, and macOS
+# Build Linux, Windows, and macOS (default x86_64 only)
 make all-platforms
 
 # Or use pnpm
 pnpm c-binding:build-all
 
 # Output files
-# - build/libtypecast_autotag.so     (Linux)
-# - build/libtypecast_autotag.dylib  (macOS)
-# - build/typecast_autotag.dll       (Windows)
+# - build/libtypecast_autotag.so     (Linux x86_64)
+# - build/libtypecast_autotag.dylib  (macOS universal)
+# - build/typecast_autotag.dll       (Windows x86_64)
 # - build/typecast_autotag.lib       (Windows import lib)
+```
+
+### Build All Platforms & All Architectures
+
+```bash
+cd c-binding
+
+# Build for all platforms and all architectures
+make all-multiarch
+
+# Or use pnpm
+pnpm c-binding:build-all-multiarch
+
+# Output files (Linux)
+# - build/libtypecast_autotag_x86_64.so   (Linux x86_64)
+# - build/libtypecast_autotag_x86.so      (Linux x86 32-bit)
+# - build/libtypecast_autotag_arm64.so    (Linux arm64)
+# - build/libtypecast_autotag_armv7.so    (Linux armv7 32-bit)
+# - build/libtypecast_autotag.so          (symlink to x86_64)
+
+# Output files (Windows)
+# - build/typecast_autotag_x86_64.dll     (Windows x86_64)
+# - build/typecast_autotag_i686.dll       (Windows x86 32-bit)
+# - build/typecast_autotag.dll            (copy of x86_64)
+
+# Output files (macOS)
+# - build/libtypecast_autotag.dylib       (Universal: x86_64 + arm64)
 ```
 
 ### E2E Tests
 
-Automatically tests the built library on CentOS 6.9 and Amazon Linux 2.
+Automatically tests the built library on multiple platforms and architectures.
 
 ```bash
 # From project root
+
+# Test all platforms and all architectures (default)
 pnpm test:e2e
+
+# Test Linux only (x86_64)
+pnpm test:e2e:linux
+
+# Test Linux all architectures (x86_64, x86, arm64, armv7)
+pnpm test:e2e:linux-multiarch
+
+# Test Windows only (x86_64)
+pnpm test:e2e:windows
+
+# Test Windows all architectures (x86_64, i686)
+pnpm test:e2e:windows-multiarch
+
+# Test macOS (universal binary, local execution)
+pnpm test:e2e:macos
 ```
 
 **Test Coverage:**
@@ -293,12 +337,19 @@ pnpm test:e2e
 | `typecast_manual_tag`           | 37         | All manual tags (37)      |
 | `typecast_auto_tag`             | 8          | Auto-recognition patterns |
 | `typecast_auto_tag_with_manual` | 4          | Manual + auto hybrid      |
-| **Total**                       | **49**     | 49 tests × 2 environments |
+| **Total**                       | **49**     | 49 tests per environment  |
 
-**Test Environments:**
+**Test Environments (Multi-Arch):**
 
-- CentOS 6.9 (glibc 2.12)
-- Amazon Linux 2 (glibc 2.26)
+| Platform | Architecture | Test Environment              |
+| -------- | ------------ | ----------------------------- |
+| Linux    | x86_64       | Debian Bullseye (amd64)       |
+| Linux    | x86          | Debian Bullseye (i386)        |
+| Linux    | arm64        | Debian Bullseye (arm64)       |
+| Linux    | armv7        | Debian Bullseye (arm/v7)      |
+| Windows  | x86_64       | Wine64 on Debian              |
+| Windows  | i686         | Wine32 on Debian              |
+| macOS    | universal    | Local macOS (x86_64 + arm64)  |
 
 **Sample Output:**
 
@@ -403,13 +454,25 @@ gcc -o program.exe program.c -L. -ltypecast_autotag
 
 ## Target Environments
 
-| Environment    | Architecture      | Output File                 | Status                     |
-| -------------- | ----------------- | --------------------------- | -------------------------- |
-| Amazon Linux 2 | x86_64            | libtypecast_autotag.so      | ✅ Supported               |
-| CentOS 6.9     | x86_64            | libtypecast_autotag.so      | ✅ Supported (static link) |
-| macOS          | x86_64 + arm64    | libtypecast_autotag.dylib   | ✅ Supported (Universal)   |
-| Windows Server | x86_64            | typecast_autotag.dll        | ✅ Supported               |
-| Windows 10/11  | x86_64            | typecast_autotag.dll        | ✅ Supported               |
+### Default Build (Single Architecture)
+
+| Platform       | Architecture   | Output File                 | Status       |
+| -------------- | -------------- | --------------------------- | ------------ |
+| Linux          | x86_64         | libtypecast_autotag.so      | ✅ Supported |
+| macOS          | x86_64 + arm64 | libtypecast_autotag.dylib   | ✅ Universal |
+| Windows        | x86_64         | typecast_autotag.dll        | ✅ Supported |
+
+### Multi-Architecture Build
+
+| Platform | Architecture | Output File                      | Status       |
+| -------- | ------------ | -------------------------------- | ------------ |
+| Linux    | x86_64       | libtypecast_autotag_x86_64.so    | ✅ Supported |
+| Linux    | x86 (32-bit) | libtypecast_autotag_x86.so       | ✅ Supported |
+| Linux    | arm64        | libtypecast_autotag_arm64.so     | ✅ Supported |
+| Linux    | armv7        | libtypecast_autotag_armv7.so     | ✅ Supported |
+| macOS    | x86_64+arm64 | libtypecast_autotag.dylib        | ✅ Universal |
+| Windows  | x86_64       | typecast_autotag_x86_64.dll      | ✅ Supported |
+| Windows  | x86 (32-bit) | typecast_autotag_i686.dll        | ✅ Supported |
 
 ## Important Notes
 
