@@ -45,7 +45,8 @@ MINGW_STRIP ?= x86_64-w64-mingw32-strip
 # Detect OS
 UNAME_S := $(shell uname -s)
 
-.PHONY: all clean duktape bundle example test windows docker-build-windows macos
+.PHONY: all clean duktape bundle example test windows docker-build-windows macos \
+       docker-build-linux-multiarch docker-build-windows-multiarch all-multiarch
 
 all: $(SHARED_LIB)
 
@@ -213,7 +214,22 @@ else
 	@exit 1
 endif
 
-# Build all platforms
+# Docker build for Linux multi-architecture (x86_64, x86, arm64, armv7)
+docker-build-linux-multiarch:
+	@echo "Building Linux libraries for multiple architectures..."
+	@./scripts/build-linux-multiarch.sh
+
+# Docker build for Windows multi-architecture (x86_64, x86)
+docker-build-windows-multiarch:
+	@echo "Building Windows DLLs for multiple architectures..."
+	@./scripts/build-windows-multiarch.sh
+
+# Build all architectures for all platforms
+all-multiarch: docker-build-linux-multiarch docker-build-windows-multiarch macos-universal
+	@echo "Built for all platforms and architectures:"
+	@ls -la $(BUILD_DIR)/
+
+# Build all platforms (default architectures only)
 all-platforms: docker-build docker-build-windows macos-universal
 	@echo "Built for all platforms:"
 	@ls -la $(BUILD_DIR)/
@@ -222,7 +238,7 @@ all-platforms: docker-build docker-build-windows macos-universal
 help:
 	@echo "Typecast Autotag C Library Build System"
 	@echo ""
-	@echo "Targets:"
+	@echo "Basic Targets:"
 	@echo "  all                 - Build shared library (default)"
 	@echo "  static              - Build static library"
 	@echo "  macos               - Build macOS dylib (requires macOS)"
@@ -234,12 +250,25 @@ help:
 	@echo "  test                - Run example program"
 	@echo "  clean               - Clean build artifacts"
 	@echo "  distclean           - Clean everything including Duktape"
-	@echo "  docker-build        - Build Linux .so using Docker (CentOS 6.9 compatible)"
-	@echo "  docker-build-windows- Build Windows .dll using Docker (MinGW-w64)"
-	@echo "  all-platforms       - Build for all platforms (Linux + Windows + macOS)"
+	@echo ""
+	@echo "Docker Build Targets (Single Architecture):"
+	@echo "  docker-build        - Build Linux .so using Docker (x86_64)"
+	@echo "  docker-build-windows- Build Windows .dll using Docker (x86_64)"
+	@echo ""
+	@echo "Docker Build Targets (Multi-Architecture):"
+	@echo "  docker-build-linux-multiarch   - Build Linux .so for all architectures"
+	@echo "                                   (x86_64, x86, arm64, armv7)"
+	@echo "  docker-build-windows-multiarch - Build Windows .dll for all architectures"
+	@echo "                                   (x86_64, x86)"
+	@echo ""
+	@echo "Combined Targets:"
+	@echo "  all-platforms       - Build for all platforms (default arch only)"
+	@echo "  all-multiarch       - Build for all platforms AND all architectures"
 	@echo "  help                - Show this help"
 	@echo ""
 	@echo "Output files:"
-	@echo "  Linux:   build/libtypecast_autotag.so"
-	@echo "  macOS:   build/libtypecast_autotag.dylib"
-	@echo "  Windows: build/typecast_autotag.dll, build/typecast_autotag.lib"
+	@echo "  Linux (single):   build/libtypecast_autotag.so"
+	@echo "  Linux (multi):    build/libtypecast_autotag_{x86_64,x86,arm64,armv7}.so"
+	@echo "  macOS:            build/libtypecast_autotag.dylib (universal: x86_64+arm64)"
+	@echo "  Windows (single): build/typecast_autotag.dll"
+	@echo "  Windows (multi):  build/typecast_autotag_{x86_64,i686}.dll"

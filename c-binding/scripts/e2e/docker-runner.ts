@@ -11,6 +11,20 @@ import { C_TEST_PROGRAM_MACOS } from './test-program-macos.js';
 import { printInfo } from './colors.js';
 
 /**
+ * Generate C test program with custom library file name
+ */
+function generateLinuxTestProgram(libraryFile: string): string {
+  return C_TEST_PROGRAM.replace('libtypecast_autotag.so', libraryFile);
+}
+
+/**
+ * Generate Windows test program with custom DLL file name
+ */
+function generateWindowsTestProgram(libraryFile: string): string {
+  return C_TEST_PROGRAM_WINDOWS.replace('typecast_autotag.dll', libraryFile);
+}
+
+/**
  * Runs Linux tests inside a Docker container.
  */
 async function runLinuxDockerTest(
@@ -18,16 +32,26 @@ async function runLinuxDockerTest(
   buildDir: string
 ): Promise<DockerTestResult> {
   try {
-    // Build setup commands
+    // Build setup commands based on image type
+    let installCommand = 'apt-get update && apt-get install -y gcc > /dev/null 2>&1';
+
+    // Check if it's a yum-based image (CentOS/Amazon Linux)
+    if (env.image.includes('centos') || env.image.includes('amazonlinux')) {
+      installCommand = 'yum install -y gcc > /dev/null 2>&1';
+    }
+
     const setupCommands = env.setupCommands?.join(' && ') || 'true';
 
-    // C test program code
-    const testProgram = C_TEST_PROGRAM;
+    // Get library file name
+    const libraryFile = env.libraryFile || 'libtypecast_autotag.so';
+
+    // C test program code with custom library name
+    const testProgram = generateLinuxTestProgram(libraryFile);
 
     // Build Docker command
     const dockerCommand = `
       ${setupCommands}
-      yum install -y gcc > /dev/null 2>&1
+      ${installCommand}
       
       cat > /tmp/test.c << 'TESTCODE'
 ${testProgram}
@@ -37,10 +61,13 @@ TESTCODE
       /tmp/test 2>&1
     `;
 
+    // Get Docker platform
+    const dockerPlatform = env.dockerPlatform || 'linux/amd64';
+
     // Run Docker
     const result = await $`docker run --rm \
       -v ${buildDir}:/lib_check \
-      --platform linux/amd64 \
+      --platform ${dockerPlatform} \
       ${env.image} sh -c ${dockerCommand}`.quiet();
 
     return {
@@ -66,8 +93,16 @@ async function runWindowsDockerTest(
   buildDir: string
 ): Promise<DockerTestResult> {
   try {
-    // Windows test program code
-    const testProgram = C_TEST_PROGRAM_WINDOWS;
+    // Get library file name and determine architecture
+    const libraryFile = env.libraryFile || 'typecast_autotag.dll';
+    const isX86 = env.arch === 'i686' || env.arch === 'x86';
+
+    // Windows test program code with custom DLL name
+    const testProgram = generateWindowsTestProgram(libraryFile);
+
+    // Compiler and Wine commands based on architecture
+    const compiler = isX86 ? 'i686-w64-mingw32-gcc' : 'x86_64-w64-mingw32-gcc';
+    const wine = isX86 ? 'wine' : 'wine64';
 
     // Build Docker command for Wine test
     const dockerCommand = `
@@ -76,14 +111,14 @@ async function runWindowsDockerTest(
 ${testProgram}
 TESTCODE
       
-      # Compile with MinGW (Windows x64 target)
-      x86_64-w64-mingw32-gcc -o /tmp/test.exe /tmp/test.c 2>&1
+      # Compile with MinGW
+      ${compiler} -o /tmp/test.exe /tmp/test.c 2>&1
       
       # Copy DLL to test directory
-      cp /lib_check/typecast_autotag.dll /tmp/
+      cp /lib_check/${libraryFile} /tmp/
       
       # Run with Wine (suppress Wine debug output)
-      cd /tmp && WINEDEBUG=-all wine64 ./test.exe 2>&1
+      cd /tmp && WINEDEBUG=-all ${wine} ./test.exe 2>&1
     `;
 
     // Run Docker with pre-built Wine test image
@@ -187,7 +222,7 @@ export async function runDockerTest(
 }
 
 /**
- * Builds the Windows test Docker image (with Wine and MinGW).
+ * Builds the Windows test Docker image (x86_64 with Wine and MinGW).
  */
 export async function buildWindowsTestImage(): Promise<void> {
   const dockerfilePath = new URL('../../Dockerfile.test.windows', import.meta.url).pathname;

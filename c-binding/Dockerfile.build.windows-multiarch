@@ -1,0 +1,68 @@
+# Typecast Autotag C Library - Windows Multi-Architecture Build
+# Supports: x86_64 (64-bit), x86 (32-bit)
+# Cross-compile on Linux using MinGW-w64
+
+ARG WIN_ARCH=x86_64
+
+FROM --platform=linux/amd64 debian:bullseye-slim
+
+ARG WIN_ARCH
+
+# Install build tools (MinGW-w64 cross-compiler)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        mingw-w64 \
+        curl \
+        xz-utils \
+        file \
+        ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /build
+
+# Download and prepare Duktape 2.7.0
+ENV DUKTAPE_VERSION=2.7.0
+RUN curl -L https://duktape.org/duktape-${DUKTAPE_VERSION}.tar.xz -o duktape.tar.xz && \
+    xz -d duktape.tar.xz && \
+    tar -xf duktape.tar && \
+    rm duktape.tar
+
+# Copy source files
+COPY src/ /build/src/
+COPY include/ /build/include/
+
+# Set cross-compiler based on architecture
+ENV WIN_ARCH=${WIN_ARCH}
+ENV CC_PREFIX=${WIN_ARCH}-w64-mingw32
+
+# Build Duktape object file
+RUN ${CC_PREFIX}-gcc -std=c99 -O2 -c \
+    -I/build/duktape-${DUKTAPE_VERSION}/src \
+    /build/duktape-${DUKTAPE_VERSION}/src/duktape.c \
+    -o /build/duktape.o
+
+# Build Windows DLL
+RUN ${CC_PREFIX}-gcc -std=c99 -Wall -O2 -shared \
+    -DTYPECAST_BUILDING_DLL \
+    -I/build/include \
+    -I/build/duktape-${DUKTAPE_VERSION}/src \
+    /build/src/typecast_autotag.c \
+    /build/duktape.o \
+    -o /build/typecast_autotag.dll \
+    -Wl,--out-implib,/build/typecast_autotag.lib
+
+# Strip debug symbols
+RUN ${CC_PREFIX}-strip /build/typecast_autotag.dll
+
+# Verify build output
+RUN ls -la /build/*.dll /build/*.lib && \
+    file /build/*.dll
+
+# Determine suffix for output file
+ENV OUTPUT_SUFFIX=${WIN_ARCH}
+
+# Copy to output directory with architecture suffix
+CMD ["sh", "-c", "cp /build/typecast_autotag.dll /output/typecast_autotag_${OUTPUT_SUFFIX}.dll && cp /build/typecast_autotag.lib /output/typecast_autotag_${OUTPUT_SUFFIX}.lib && cp /build/include/typecast_autotag.h /output/ && echo \"Windows ${OUTPUT_SUFFIX} build complete!\" && file /output/typecast_autotag_${OUTPUT_SUFFIX}.dll"]
+
