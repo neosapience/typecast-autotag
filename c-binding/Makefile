@@ -1,10 +1,10 @@
 # Typecast Autotag C Library Makefile
 # Uses musl-libc static linking for CentOS 6.9 compatibility
 
-# QuickJS version
-QUICKJS_VERSION := 2024-01-13
-QUICKJS_URL := https://bellard.org/quickjs/quickjs-$(QUICKJS_VERSION).tar.xz
-QUICKJS_DIR := quickjs/quickjs-$(QUICKJS_VERSION)
+# Duktape version
+DUKTAPE_VERSION := 2.7.0
+DUKTAPE_URL := https://duktape.org/duktape-$(DUKTAPE_VERSION).tar.xz
+DUKTAPE_DIR := duktape/duktape-$(DUKTAPE_VERSION)
 
 # Compiler settings
 CC ?= gcc
@@ -23,31 +23,27 @@ BUILD_DIR := build
 WRAPPER_SRC := $(SRC_DIR)/typecast_autotag.c
 BUNDLE_HEADER := $(SRC_DIR)/autotag_bundle.h
 
+# Duktape source files
+DUKTAPE_SRC := $(DUKTAPE_DIR)/src/duktape.c
+
 # Output files
 LIB_NAME := libtypecast_autotag
 SHARED_LIB := $(BUILD_DIR)/$(LIB_NAME).so
 STATIC_LIB := $(BUILD_DIR)/$(LIB_NAME).a
 
-# QuickJS static library
-QUICKJS_LIB := $(QUICKJS_DIR)/libquickjs.a
-
-.PHONY: all clean quickjs bundle example test
+.PHONY: all clean duktape bundle example test
 
 all: $(SHARED_LIB)
 
-# Download and build QuickJS
-$(QUICKJS_DIR):
-	@echo "Downloading QuickJS $(QUICKJS_VERSION)..."
-	@mkdir -p quickjs
-	@curl -L $(QUICKJS_URL) -o quickjs/quickjs.tar.xz
-	@cd quickjs && tar -xf quickjs.tar.xz
-	@rm quickjs/quickjs.tar.xz
+# Download Duktape
+$(DUKTAPE_DIR):
+	@echo "Downloading Duktape $(DUKTAPE_VERSION)..."
+	@mkdir -p duktape
+	@curl -L $(DUKTAPE_URL) -o duktape/duktape.tar.xz
+	@cd duktape && tar -xf duktape.tar.xz
+	@rm duktape/duktape.tar.xz
 
-$(QUICKJS_LIB): $(QUICKJS_DIR)
-	@echo "Building QuickJS..."
-	@cd $(QUICKJS_DIR) && $(MAKE) libquickjs.a CC=$(CC)
-
-quickjs: $(QUICKJS_LIB)
+duktape: $(DUKTAPE_DIR)
 
 # Generate JS bundle
 bundle:
@@ -55,29 +51,34 @@ bundle:
 	@cd .. && node c-binding/scripts/bundle.js
 
 # Build shared library
-$(SHARED_LIB): $(WRAPPER_SRC) $(QUICKJS_LIB) $(BUNDLE_HEADER)
+$(SHARED_LIB): $(WRAPPER_SRC) $(DUKTAPE_DIR) $(BUNDLE_HEADER)
 	@echo "Building shared library..."
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(LDFLAGS) \
 		-I$(INCLUDE_DIR) \
-		-I$(QUICKJS_DIR) \
+		-I$(DUKTAPE_DIR)/src \
 		$(WRAPPER_SRC) \
-		$(QUICKJS_LIB) \
-		-lm -lpthread -ldl \
+		$(DUKTAPE_SRC) \
+		-lm -lpthread \
 		-o $(SHARED_LIB)
 	@echo "Built: $(SHARED_LIB)"
 	@cp $(INCLUDE_DIR)/typecast_autotag.h $(BUILD_DIR)/
 
 # Build static library
-static: $(WRAPPER_SRC) $(QUICKJS_LIB) $(BUNDLE_HEADER)
+static: $(WRAPPER_SRC) $(DUKTAPE_DIR) $(BUNDLE_HEADER)
 	@echo "Building static library..."
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c \
 		-I$(INCLUDE_DIR) \
-		-I$(QUICKJS_DIR) \
+		-I$(DUKTAPE_DIR)/src \
+		$(DUKTAPE_SRC) \
+		-o $(BUILD_DIR)/duktape.o
+	$(CC) $(CFLAGS) -c \
+		-I$(INCLUDE_DIR) \
+		-I$(DUKTAPE_DIR)/src \
 		$(WRAPPER_SRC) \
 		-o $(BUILD_DIR)/typecast_autotag.o
-	$(AR) rcs $(STATIC_LIB) $(BUILD_DIR)/typecast_autotag.o
+	$(AR) rcs $(STATIC_LIB) $(BUILD_DIR)/duktape.o $(BUILD_DIR)/typecast_autotag.o
 	@echo "Built: $(STATIC_LIB)"
 	@cp $(INCLUDE_DIR)/typecast_autotag.h $(BUILD_DIR)/
 
@@ -100,9 +101,9 @@ clean:
 	@rm -rf $(BUILD_DIR)
 	@cd example && $(MAKE) clean 2>/dev/null || true
 
-# Clean everything including QuickJS
+# Clean everything including Duktape
 distclean: clean
-	@rm -rf quickjs
+	@rm -rf duktape
 
 # Copy header files
 install-headers: $(SHARED_LIB)
@@ -121,12 +122,11 @@ help:
 	@echo "Targets:"
 	@echo "  all          - Build shared library (default)"
 	@echo "  static       - Build static library"
-	@echo "  quickjs      - Download and build QuickJS"
+	@echo "  duktape      - Download Duktape"
 	@echo "  bundle       - Generate JS bundle from TypeScript"
 	@echo "  example      - Build example program"
 	@echo "  test         - Run example program"
 	@echo "  clean        - Clean build artifacts"
-	@echo "  distclean    - Clean everything including QuickJS"
+	@echo "  distclean    - Clean everything including Duktape"
 	@echo "  docker-build - Build using Docker for CentOS 6.9 compatibility"
 	@echo "  help         - Show this help"
-

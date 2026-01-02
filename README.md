@@ -348,18 +348,49 @@ import { name, phone, money, date, time } from 'typecast-autotag/korean';
 - Node.js >= 18
 - pnpm 9.x
 
+### Quick Setup
+
+```bash
+# Clone and setup everything (including C binding)
+git clone <repository-url>
+cd typecast-autotag-ts
+pnpm setup
+```
+
 ### Commands
 
-| Command              | Description             |
-| -------------------- | ----------------------- |
-| `pnpm install`       | Install dependencies    |
-| `pnpm dev`           | Watch mode              |
-| `pnpm build`         | Build for production    |
-| `pnpm test`          | Run tests               |
-| `pnpm test:coverage` | Run tests with coverage |
-| `pnpm typecheck`     | Type check              |
-| `pnpm lint`          | Lint code               |
-| `pnpm format`        | Format code             |
+| Command              | Description                              |
+| -------------------- | ---------------------------------------- |
+| `pnpm install`       | Install dependencies                     |
+| `pnpm setup`         | Full setup (install + build + c-binding) |
+| `pnpm dev`           | Watch mode                               |
+| `pnpm build`         | Build for production                     |
+| `pnpm test`          | Run all tests (jest + e2e)               |
+| `pnpm test:jest`     | Run jest tests only                      |
+| `pnpm test:e2e`      | Run e2e tests only                       |
+| `pnpm test:coverage` | Run tests with coverage                  |
+| `pnpm typecheck`     | Type check                               |
+| `pnpm lint`          | Lint code                                |
+| `pnpm format`        | Format code                              |
+
+### C Binding (Optional)
+
+For C/C++ integration, the library can be built as a native shared library. This requires a C compiler (gcc/clang).
+
+| Command                    | Description                                |
+| -------------------------- | ------------------------------------------ |
+| `pnpm c-binding:all`       | Build C library (duktape + bundle + build) |
+| `pnpm c-binding:duktape`   | Download Duktape                           |
+| `pnpm c-binding:bundle`    | Generate JS bundle from TypeScript         |
+| `pnpm c-binding:build`     | Build shared library                       |
+| `pnpm c-binding:example`   | Build example program                      |
+| `pnpm c-binding:test`      | Run example program                        |
+| `pnpm c-binding:clean`     | Clean build artifacts                      |
+| `pnpm c-binding:distclean` | Clean everything including Duktape         |
+
+> **Note:** C binding setup is included in `pnpm setup`. If you don't need C binding, just run `pnpm install && pnpm build` instead.
+
+See [`c-binding/README.md`](./c-binding/README.md) for detailed C library documentation.
 
 ### Project Structure
 

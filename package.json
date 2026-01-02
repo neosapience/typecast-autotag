@@ -9,9 +9,9 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     }
   },
   "files": [
@@ -21,15 +21,26 @@
     "build": "microbundle --tsconfig tsconfig.build.json",
     "dev": "microbundle watch --tsconfig tsconfig.build.json",
     "test": "jest && pnpm test:e2e",
+    "test:jest": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:e2e": "tsx c-binding/scripts/e2e/index.ts",
+    "test:e2e": "pnpm c-binding:bundle && pnpm c-binding:build-linux && tsx c-binding/scripts/e2e/index.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "setup": "pnpm install && pnpm build && pnpm c-binding:all",
+    "c-binding:duktape": "cd c-binding && make duktape",
+    "c-binding:bundle": "node c-binding/scripts/bundle.js",
+    "c-binding:build": "cd c-binding && make",
+    "c-binding:build-linux": "cd c-binding && docker build -t typecast-autotag-builder -f Dockerfile.build . && docker run --rm -v $(pwd)/build:/output typecast-autotag-builder",
+    "c-binding:all": "pnpm c-binding:duktape && pnpm c-binding:bundle && pnpm c-binding:build",
+    "c-binding:example": "cd c-binding && make example",
+    "c-binding:test": "cd c-binding && make test",
+    "c-binding:clean": "cd c-binding && make clean",
+    "c-binding:distclean": "cd c-binding && make distclean"
   },
   "keywords": [
     "typecast",

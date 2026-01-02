@@ -38,7 +38,7 @@ temp/
 
 # C binding build artifacts
 c-binding/build/
-c-binding/quickjs/
+c-binding/duktape/
 c-binding/src/autotag_bundle.js
 c-binding/src/autotag_bundle.h
 c-binding/example/example
