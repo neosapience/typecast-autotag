@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "typecast-autotag"
+version = "1.0.0"
+description = "TTS text preprocessing library - Converts phone numbers, dates, amounts, etc. to formats suitable for speech synthesis"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "TypeCast", email = "support@typecast.ai"}
+]
+keywords = ["tts", "text-to-speech", "preprocessing", "korean", "autotag"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Topic :: Text Processing :: Linguistic",
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/typecast-ai/typecast-autotag-ts"
+Repository = "https://github.com/typecast-ai/typecast-autotag-ts"
+Documentation = "https://github.com/typecast-ai/typecast-autotag-ts#readme"
+
+[tool.setuptools]
+packages = ["typecast_autotag"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+typecast_autotag = [
+    "lib/linux/*.so",
+    "lib/darwin/*.dylib", 
+    "lib/windows/*.dll",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+

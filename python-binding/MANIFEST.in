@@ -1,0 +1,11 @@
+# Include native libraries for all platforms
+recursive-include typecast_autotag/lib *.so *.dylib *.dll
+
+# Include documentation
+include README.md
+include README.KR.md
+include LICENSE
+
+# Include tests
+recursive-include tests *.py
+
