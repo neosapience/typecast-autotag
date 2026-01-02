@@ -1,5 +1,16 @@
 # Changelog
 
+# [1.4.0](https://github.com/neosapience/typecast-autotag/compare/v1.3.0...v1.4.0) (2026-01-02)
+
+
+### Features
+
+* Add English auto-tagging functionality with comprehensive tagging support for various contexts. Implement tagging for dates, times, numbers, and more, along with extensive unit tests to ensure accuracy and reliability. ([cddf520](https://github.com/neosapience/typecast-autotag/commit/cddf520edf8920953a94ab82ff080313ffe79530))
+* Add Korean and English documentation for Typecast Autotag library, enhancing README files with comprehensive language support, installation instructions, and usage examples. Introduce new README.KR.md for Korean users and update existing README.md for clarity and consistency. ([60c6278](https://github.com/neosapience/typecast-autotag/commit/60c6278758496e732f34db95afdd082f9a66919b))
+* Add version synchronization and post-build scripts for Typecast Autotag library. Introduce sync-version.js to update version across bindings and post-c-build.sh to automate native library copying for Python and Java bindings. Update package.json scripts accordingly and increment C binding version to 1.3.0. ([5aa4f80](https://github.com/neosapience/typecast-autotag/commit/5aa4f80d1daa96d8e120a18ca6e8d0ceb91eba5c))
+* Enhance Typecast Autotag library with English support, adding auto-tagging functions for English text processing. Update documentation to reflect new features and improve clarity for both Korean and English usage. ([6cf6248](https://github.com/neosapience/typecast-autotag/commit/6cf6248fb342e8f2ffe9707652d35b551c3e7a03))
+* Introduce Java binding for Typecast Autotag library with comprehensive documentation, examples, and native library integration. Enhance testing capabilities and add support for various platforms. ([bdd0076](https://github.com/neosapience/typecast-autotag/commit/bdd0076ed87844245e11e08103b472d84f65930c))
+
 # [1.3.0](https://github.com/neosapience/typecast-autotag/compare/v1.2.0...v1.3.0) (2026-01-02)
 
 
