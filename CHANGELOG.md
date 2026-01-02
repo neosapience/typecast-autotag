@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.5.0](https://github.com/neosapience/typecast-autotag-ts/compare/v1.4.0...v1.5.0) (2026-01-02)
+
+
+### Features
+
+* Initialize demo project for Typecast Autotag with React, including HTML, CSS, TypeScript configuration, and example usage. Set up Vite for development and build processes. ([4c8dd6f](https://github.com/neosapience/typecast-autotag-ts/commit/4c8dd6fecf3dc2e66a616f6a46a61bc55a2c7b34))
+
 # [1.4.0](https://github.com/neosapience/typecast-autotag-ts/compare/v1.3.0...v1.4.0) (2026-01-02)
 
 
