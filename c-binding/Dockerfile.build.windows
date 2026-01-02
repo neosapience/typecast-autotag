@@ -1,0 +1,62 @@
+# Typecast Autotag C Library - Windows DLL Build Environment
+# Cross-compile Windows DLL on Linux using MinGW-w64
+# Produces x86_64 Windows compatible DLL
+
+FROM --platform=linux/amd64 debian:bullseye-slim
+
+# Install build tools (MinGW-w64 cross-compiler)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        mingw-w64 \
+        curl \
+        xz-utils \
+        file \
+        ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /build
+
+# Download and prepare Duktape 2.7.0
+ENV DUKTAPE_VERSION=2.7.0
+RUN curl -L https://duktape.org/duktape-${DUKTAPE_VERSION}.tar.xz -o duktape.tar.xz && \
+    xz -d duktape.tar.xz && \
+    tar -xf duktape.tar && \
+    rm duktape.tar
+
+# Copy source files
+COPY src/ /build/src/
+COPY include/ /build/include/
+
+# Cross-compiler settings
+ENV CC=x86_64-w64-mingw32-gcc
+ENV AR=x86_64-w64-mingw32-ar
+ENV STRIP=x86_64-w64-mingw32-strip
+
+# Build Duktape object file (Windows x64)
+RUN $CC -std=c99 -O2 -c \
+    -I/build/duktape-${DUKTAPE_VERSION}/src \
+    /build/duktape-${DUKTAPE_VERSION}/src/duktape.c \
+    -o /build/duktape.o
+
+# Build Windows DLL
+RUN $CC -std=c99 -Wall -O2 -shared \
+    -DTYPECAST_BUILDING_DLL \
+    -I/build/include \
+    -I/build/duktape-${DUKTAPE_VERSION}/src \
+    /build/src/typecast_autotag.c \
+    /build/duktape.o \
+    -o /build/typecast_autotag.dll \
+    -Wl,--out-implib,/build/typecast_autotag.lib
+
+# Strip debug symbols for smaller file size
+RUN $STRIP /build/typecast_autotag.dll
+
+# Verify build output
+RUN ls -la /build/*.dll /build/*.lib && \
+    file /build/*.dll
+
+# Copy to output directory
+CMD ["sh", "-c", "cp /build/typecast_autotag.dll /output/ && cp /build/typecast_autotag.lib /output/ && cp /build/include/typecast_autotag.h /output/ && echo 'Windows DLL build complete!'"]
+

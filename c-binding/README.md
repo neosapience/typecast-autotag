@@ -8,6 +8,7 @@ Automatically converts various patterns like phone numbers, dates, and amounts i
 - **Easy to use**: Complete functionality with just 3 functions
 - **Flexible approach**: Supports fully automatic, manual tag, and hybrid modes
 - **Wide pattern support**: Auto-recognition of 35+ patterns including phone, date, time, money, order
+- **Cross-platform**: Supports Linux (.so), Windows (.dll), and macOS (.dylib)
 - **High compatibility**: Supports from CentOS 6.9 to latest Linux (static linking)
 
 ## Quick Start
@@ -211,7 +212,7 @@ make all
 make test
 ```
 
-### Docker Build (CentOS 6.9 Compatible)
+### Docker Build - Linux (CentOS 6.9 Compatible)
 
 ```bash
 cd c-binding
@@ -222,6 +223,37 @@ cd c-binding
 # Output files
 # - build/libtypecast_autotag.so
 # - build/typecast_autotag.h
+```
+
+### Docker Build - Windows DLL
+
+```bash
+cd c-binding
+
+# Build Windows DLL using MinGW-w64 in Docker
+./scripts/build-windows.sh
+
+# Or use make target
+make docker-build-windows
+
+# Output files
+# - build/typecast_autotag.dll   (Windows DLL)
+# - build/typecast_autotag.lib   (Import library for linking)
+# - build/typecast_autotag.h
+```
+
+### Build All Platforms
+
+```bash
+cd c-binding
+
+# Build both Linux and Windows
+make all-platforms
+
+# Output files
+# - build/libtypecast_autotag.so  (Linux)
+# - build/typecast_autotag.dll    (Windows)
+# - build/typecast_autotag.lib    (Windows import lib)
 ```
 
 ### E2E Tests
@@ -287,12 +319,24 @@ All E2E tests passed!
 
 ### Required Files
 
+#### Linux
+
 | File                     | Description    |
 | ------------------------ | -------------- |
 | `libtypecast_autotag.so` | Shared library |
 | `typecast_autotag.h`     | C header file  |
 
+#### Windows
+
+| File                   | Description                       |
+| ---------------------- | --------------------------------- |
+| `typecast_autotag.dll` | Dynamic Link Library              |
+| `typecast_autotag.lib` | Import library (for MSVC linking) |
+| `typecast_autotag.h`   | C header file                     |
+
 ### Installation
+
+#### Linux
 
 ```bash
 # Install to system library directory
@@ -304,12 +348,28 @@ sudo ldconfig
 gcc -o program program.c -L. -ltypecast_autotag -Wl,-rpath,'$ORIGIN'
 ```
 
+#### Windows
+
+```bash
+# Place DLL in application directory or system PATH
+copy typecast_autotag.dll C:\path\to\your\application\
+copy typecast_autotag.h C:\path\to\your\project\include\
+
+# Compile with MSVC
+cl /I. program.c typecast_autotag.lib
+
+# Or with MinGW
+gcc -o program.exe program.c -L. -ltypecast_autotag
+```
+
 ## Target Environments
 
-| Environment    | Architecture | Status                     |
-| -------------- | ------------ | -------------------------- |
-| Amazon Linux 2 | x86_64       | ✅ Supported               |
-| CentOS 6.9     | x86_64       | ✅ Supported (static link) |
+| Environment    | Architecture | Output File            | Status                     |
+| -------------- | ------------ | ---------------------- | -------------------------- |
+| Amazon Linux 2 | x86_64       | libtypecast_autotag.so | ✅ Supported               |
+| CentOS 6.9     | x86_64       | libtypecast_autotag.so | ✅ Supported (static link) |
+| Windows Server | x86_64       | typecast_autotag.dll   | ✅ Supported               |
+| Windows 10/11  | x86_64       | typecast_autotag.dll   | ✅ Supported               |
 
 ## Important Notes
 

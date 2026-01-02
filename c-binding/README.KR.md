@@ -8,6 +8,7 @@ TTS(Text-to-Speech) 문장 전처리 라이브러리의 C 바인딩입니다.
 - **간편한 사용**: 단 3개의 함수로 모든 변환 기능 제공
 - **유연한 방식 선택**: 완전 자동, 수동 태그, 하이브리드 방식 지원
 - **다양한 패턴 지원**: 전화번호, 날짜, 시간, 금액, 순서 등 35+ 패턴 자동 인식
+- **크로스 플랫폼**: Linux (.so), Windows (.dll), macOS (.dylib) 지원
 - **높은 호환성**: CentOS 6.9부터 최신 Linux까지 지원 (정적 링크)
 
 ## 빠른 시작
@@ -211,7 +212,7 @@ make all
 make test
 ```
 
-### Docker 빌드 (CentOS 6.9 호환)
+### Docker 빌드 - Linux (CentOS 6.9 호환)
 
 ```bash
 cd c-binding
@@ -222,6 +223,37 @@ cd c-binding
 # 결과물
 # - build/libtypecast_autotag.so
 # - build/typecast_autotag.h
+```
+
+### Docker 빌드 - Windows DLL
+
+```bash
+cd c-binding
+
+# MinGW-w64를 사용하여 Windows DLL 빌드
+./scripts/build-windows.sh
+
+# 또는 make 타겟 사용
+make docker-build-windows
+
+# 결과물
+# - build/typecast_autotag.dll   (Windows DLL)
+# - build/typecast_autotag.lib   (링크용 임포트 라이브러리)
+# - build/typecast_autotag.h
+```
+
+### 모든 플랫폼 빌드
+
+```bash
+cd c-binding
+
+# Linux와 Windows 모두 빌드
+make all-platforms
+
+# 결과물
+# - build/libtypecast_autotag.so  (Linux)
+# - build/typecast_autotag.dll    (Windows)
+# - build/typecast_autotag.lib    (Windows 임포트 라이브러리)
 ```
 
 ### E2E 테스트
@@ -289,12 +321,24 @@ All E2E tests passed!
 
 ### 필요한 파일
 
+#### Linux
+
 | 파일                     | 설명            |
 | ------------------------ | --------------- |
 | `libtypecast_autotag.so` | 공유 라이브러리 |
 | `typecast_autotag.h`     | C 헤더 파일     |
 
+#### Windows
+
+| 파일                   | 설명                            |
+| ---------------------- | ------------------------------- |
+| `typecast_autotag.dll` | 동적 링크 라이브러리            |
+| `typecast_autotag.lib` | 임포트 라이브러리 (MSVC 링크용) |
+| `typecast_autotag.h`   | C 헤더 파일                     |
+
 ### 설치
+
+#### Linux
 
 ```bash
 # 시스템 라이브러리 디렉토리에 설치
@@ -306,12 +350,28 @@ sudo ldconfig
 gcc -o program program.c -L. -ltypecast_autotag -Wl,-rpath,'$ORIGIN'
 ```
 
+#### Windows
+
+```bash
+# 애플리케이션 디렉토리나 시스템 PATH에 DLL 배치
+copy typecast_autotag.dll C:\path\to\your\application\
+copy typecast_autotag.h C:\path\to\your\project\include\
+
+# MSVC로 컴파일
+cl /I. program.c typecast_autotag.lib
+
+# 또는 MinGW로 컴파일
+gcc -o program.exe program.c -L. -ltypecast_autotag
+```
+
 ## 타겟 환경
 
-| 환경           | 아키텍처 | 상태                |
-| -------------- | -------- | ------------------- |
-| Amazon Linux 2 | x86_64   | ✅ 지원             |
-| CentOS 6.9     | x86_64   | ✅ 지원 (정적 링크) |
+| 환경           | 아키텍처 | 출력 파일              | 상태                |
+| -------------- | -------- | ---------------------- | ------------------- |
+| Amazon Linux 2 | x86_64   | libtypecast_autotag.so | ✅ 지원             |
+| CentOS 6.9     | x86_64   | libtypecast_autotag.so | ✅ 지원 (정적 링크) |
+| Windows Server | x86_64   | typecast_autotag.dll   | ✅ 지원             |
+| Windows 10/11  | x86_64   | typecast_autotag.dll   | ✅ 지원             |
 
 ## 주의사항
 

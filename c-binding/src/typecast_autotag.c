@@ -3,16 +3,71 @@
  * 
  * Embeds Duktape to enable TTS sentence conversion functionality in C
  * 
+ * Platform support:
+ * - Linux/macOS: Uses POSIX threads (pthread)
+ * - Windows: Uses Windows API (Critical Section)
+ * 
  * Copyright (c) 2025 TypeCast
  */
 
-/* Required for POSIX strdup */
-#define _POSIX_C_SOURCE 200809L
+/* Define TYPECAST_BUILDING_DLL when building the library */
+#define TYPECAST_BUILDING_DLL
+
+/* Required for POSIX strdup on non-Windows platforms */
+#if !defined(_WIN32) && !defined(_WIN64)
+    #define _POSIX_C_SOURCE 200809L
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
+
+/*
+ * Platform-specific threading support
+ * Windows: Critical Section (lightweight mutex)
+ * POSIX: pthread_mutex
+ */
+#if defined(_WIN32) || defined(_WIN64)
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+    
+    /* Windows thread synchronization */
+    static CRITICAL_SECTION g_mutex;
+    static volatile LONG g_mutex_initialized = 0;
+    
+    static void platform_mutex_init(void) {
+        if (InterlockedCompareExchange(&g_mutex_initialized, 1, 0) == 0) {
+            InitializeCriticalSection(&g_mutex);
+        }
+    }
+    
+    static void platform_mutex_lock(void) {
+        platform_mutex_init();
+        EnterCriticalSection(&g_mutex);
+    }
+    
+    static void platform_mutex_unlock(void) {
+        LeaveCriticalSection(&g_mutex);
+    }
+    
+    /* Windows strdup equivalent */
+    #ifndef strdup
+        #define strdup _strdup
+    #endif
+#else
+    #include <pthread.h>
+    
+    /* POSIX thread synchronization */
+    static pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
+    
+    static void platform_mutex_lock(void) {
+        pthread_mutex_lock(&g_mutex);
+    }
+    
+    static void platform_mutex_unlock(void) {
+        pthread_mutex_unlock(&g_mutex);
+    }
+#endif
 
 #include "duktape.h"
 #include "typecast_autotag.h"
@@ -20,7 +75,6 @@
 
 /* Global state */
 static duk_context *g_ctx = NULL;
-static pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int g_initialized = 0;
 
 /**
@@ -31,11 +85,11 @@ static int g_initialized = 0;
  * 
  * @return 0: success, -1: failure
  */
-int typecast_init(void) {
-    pthread_mutex_lock(&g_mutex);
+TYPECAST_API int typecast_init(void) {
+    platform_mutex_lock();
     
     if (g_initialized) {
-        pthread_mutex_unlock(&g_mutex);
+        platform_mutex_unlock();
         return 0;  /* Already initialized */
     }
     
@@ -43,7 +97,7 @@ int typecast_init(void) {
     g_ctx = duk_create_heap_default();
     if (!g_ctx) {
         fprintf(stderr, "typecast_init: Failed to create Duktape heap\n");
-        pthread_mutex_unlock(&g_mutex);
+        platform_mutex_unlock();
         return -1;
     }
     
@@ -55,7 +109,7 @@ int typecast_init(void) {
         duk_pop(g_ctx);
         duk_destroy_heap(g_ctx);
         g_ctx = NULL;
-        pthread_mutex_unlock(&g_mutex);
+        platform_mutex_unlock();
         return -1;
     }
     duk_pop(g_ctx);  /* Remove eval result */
@@ -67,13 +121,13 @@ int typecast_init(void) {
         duk_pop_2(g_ctx);
         duk_destroy_heap(g_ctx);
         g_ctx = NULL;
-        pthread_mutex_unlock(&g_mutex);
+        platform_mutex_unlock();
         return -1;
     }
     duk_pop_2(g_ctx);  /* Remove typecast, global */
     
     g_initialized = 1;
-    pthread_mutex_unlock(&g_mutex);
+    platform_mutex_unlock();
     return 0;
 }
 
@@ -82,11 +136,11 @@ int typecast_init(void) {
  * 
  * Releases the Duktape heap and related resources.
  */
-void typecast_cleanup(void) {
-    pthread_mutex_lock(&g_mutex);
+TYPECAST_API void typecast_cleanup(void) {
+    platform_mutex_lock();
     
     if (!g_initialized) {
-        pthread_mutex_unlock(&g_mutex);
+        platform_mutex_unlock();
         return;
     }
     
@@ -96,7 +150,7 @@ void typecast_cleanup(void) {
     }
     
     g_initialized = 0;
-    pthread_mutex_unlock(&g_mutex);
+    platform_mutex_unlock();
 }
 
 /**
@@ -109,11 +163,11 @@ void typecast_cleanup(void) {
 static char* call_js_function(const char *func_name, const char *text) {
     char *result = NULL;
     
-    pthread_mutex_lock(&g_mutex);
+    platform_mutex_lock();
     
     if (!g_initialized || !g_ctx) {
         fprintf(stderr, "typecast: Library not initialized\n");
-        pthread_mutex_unlock(&g_mutex);
+        platform_mutex_unlock();
         return NULL;
     }
     
@@ -125,7 +179,7 @@ static char* call_js_function(const char *func_name, const char *text) {
     if (!duk_is_function(g_ctx, -1)) {
         fprintf(stderr, "typecast: %s is not a function\n", func_name);
         duk_pop_3(g_ctx);
-        pthread_mutex_unlock(&g_mutex);
+        platform_mutex_unlock();
         return NULL;
     }
     
@@ -135,7 +189,7 @@ static char* call_js_function(const char *func_name, const char *text) {
         const char *err = duk_safe_to_string(g_ctx, -1);
         fprintf(stderr, "typecast: %s error: %s\n", func_name, err);
         duk_pop_3(g_ctx);  /* error, typecast, global */
-        pthread_mutex_unlock(&g_mutex);
+        platform_mutex_unlock();
         return NULL;
     }
     
@@ -148,7 +202,7 @@ static char* call_js_function(const char *func_name, const char *text) {
     }
     
     duk_pop_3(g_ctx);  /* result, typecast, global */
-    pthread_mutex_unlock(&g_mutex);
+    platform_mutex_unlock();
     
     return result;
 }
@@ -161,7 +215,7 @@ static char* call_js_function(const char *func_name, const char *text) {
  * @param text Text to convert
  * @return Converted text (must free with typecast_free), NULL on failure
  */
-char* typecast_auto_tag(const char *text) {
+TYPECAST_API char* typecast_auto_tag(const char *text) {
     if (!text) return NULL;
     return call_js_function("autoTag", text);
 }
@@ -174,7 +228,7 @@ char* typecast_auto_tag(const char *text) {
  * @param text Text to convert
  * @return Converted text (must free with typecast_free), NULL on failure
  */
-char* typecast_auto_tag_with_manual(const char *text) {
+TYPECAST_API char* typecast_auto_tag_with_manual(const char *text) {
     if (!text) return NULL;
     return call_js_function("autoTagWithManual", text);
 }
@@ -187,7 +241,7 @@ char* typecast_auto_tag_with_manual(const char *text) {
  * @param text Text to convert
  * @return Converted text (must free with typecast_free), NULL on failure
  */
-char* typecast_manual_tag(const char *text) {
+TYPECAST_API char* typecast_manual_tag(const char *text) {
     if (!text) return NULL;
     return call_js_function("manualTag", text);
 }
@@ -199,6 +253,15 @@ char* typecast_manual_tag(const char *text) {
  * 
  * @param str String to free
  */
-void typecast_free(char *str) {
+TYPECAST_API void typecast_free(char *str) {
     free(str);
+}
+
+/**
+ * Return version information
+ * 
+ * @return Library version string (static string, no need to free)
+ */
+TYPECAST_API const char* typecast_version(void) {
+    return TYPECAST_VERSION;
 }
