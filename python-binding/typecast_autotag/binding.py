@@ -150,6 +150,19 @@ class _TypecastLibrary:
         self._lib.typecast_version.argtypes = []
         self._lib.typecast_version.restype = ctypes.c_char_p
         
+        # English functions
+        # char* typecast_auto_tag_english(const char *text)
+        self._lib.typecast_auto_tag_english.argtypes = [ctypes.c_char_p]
+        self._lib.typecast_auto_tag_english.restype = ctypes.c_char_p
+        
+        # char* typecast_auto_tag_with_manual_english(const char *text)
+        self._lib.typecast_auto_tag_with_manual_english.argtypes = [ctypes.c_char_p]
+        self._lib.typecast_auto_tag_with_manual_english.restype = ctypes.c_char_p
+        
+        # char* typecast_manual_tag_english(const char *text)
+        self._lib.typecast_manual_tag_english.argtypes = [ctypes.c_char_p]
+        self._lib.typecast_manual_tag_english.restype = ctypes.c_char_p
+        
         return self._lib
     
     def initialize(self) -> None:
@@ -276,6 +289,77 @@ class _TypecastLibrary:
         result = lib.typecast_version()
         if result is None:
             return "unknown"
+        return result.decode('utf-8')
+    
+    # English functions
+    def auto_tag_en(self, text: str) -> str:
+        """
+        Automatically recognize and convert patterns in English text.
+        
+        Supported patterns:
+        - Phone numbers: 123-456-7890 → one two three, four five six, ...
+        - Money: $500 → five hundred dollars
+        - Dates: 01/15/2024 → January fifteenth, twenty twenty-four
+        - Time: 2:30 PM → two thirty PM
+        - And more...
+        
+        Args:
+            text: English text to process (UTF-8).
+            
+        Returns:
+            Processed text suitable for TTS.
+            
+        Raises:
+            ConversionError: If conversion fails.
+        """
+        self._ensure_initialized()
+        
+        result = self._lib.typecast_auto_tag_english(text.encode('utf-8'))
+        if result is None:
+            raise ConversionError("auto_tag_en conversion failed")
+        
+        return result.decode('utf-8')
+    
+    def auto_tag_with_manual_en(self, text: str) -> str:
+        """
+        Process manual tags first, then apply auto tagging for English.
+        
+        Args:
+            text: English text with optional manual tags (UTF-8).
+            
+        Returns:
+            Processed text suitable for TTS.
+            
+        Raises:
+            ConversionError: If conversion fails.
+        """
+        self._ensure_initialized()
+        
+        result = self._lib.typecast_auto_tag_with_manual_english(text.encode('utf-8'))
+        if result is None:
+            raise ConversionError("auto_tag_with_manual_en conversion failed")
+        
+        return result.decode('utf-8')
+    
+    def manual_tag_en(self, text: str) -> str:
+        """
+        Process only explicitly specified manual tags for English.
+        
+        Args:
+            text: English text with manual tags (UTF-8).
+            
+        Returns:
+            Processed text suitable for TTS.
+            
+        Raises:
+            ConversionError: If conversion fails.
+        """
+        self._ensure_initialized()
+        
+        result = self._lib.typecast_manual_tag_english(text.encode('utf-8'))
+        if result is None:
+            raise ConversionError("manual_tag_en conversion failed")
+        
         return result.decode('utf-8')
 
 
@@ -413,6 +497,77 @@ def version() -> str:
         Version string of the native library.
     """
     return _library.version()
+
+
+# English functions
+def auto_tag_en(text: str) -> str:
+    """
+    Automatically recognize and convert patterns in English text.
+    
+    Supported patterns:
+    - Phone numbers: 123-456-7890 → one two three, four five six, ...
+    - Money: $500 → five hundred dollars
+    - Dates: 01/15/2024 → January fifteenth, twenty twenty-four
+    - Time: 2:30 PM → two thirty PM
+    - And more...
+    
+    Args:
+        text: English text to process (UTF-8).
+        
+    Returns:
+        Processed text suitable for TTS.
+        
+    Raises:
+        ConversionError: If conversion fails.
+        InitializationError: If library is not initialized and auto-init fails.
+        
+    Example:
+        >>> auto_tag_en("Call me at 123-456-7890.")
+        "Call me at one two three, four five six, seven eight nine zero."
+    """
+    return _library.auto_tag_en(text)
+
+
+def auto_tag_with_manual_en(text: str) -> str:
+    """
+    Process manual tags first, then apply auto tagging for English.
+    
+    Args:
+        text: English text with optional manual tags (UTF-8).
+        
+    Returns:
+        Processed text suitable for TTS.
+        
+    Raises:
+        ConversionError: If conversion fails.
+        InitializationError: If library is not initialized and auto-init fails.
+        
+    Example:
+        >>> auto_tag_with_manual_en("name(John), balance is $500.")
+        "J O H N, balance is five hundred dollars."
+    """
+    return _library.auto_tag_with_manual_en(text)
+
+
+def manual_tag_en(text: str) -> str:
+    """
+    Process only explicitly specified manual tags for English.
+    
+    Args:
+        text: English text with manual tags (UTF-8).
+        
+    Returns:
+        Processed text suitable for TTS.
+        
+    Raises:
+        ConversionError: If conversion fails.
+        InitializationError: If library is not initialized and auto-init fails.
+        
+    Example:
+        >>> manual_tag_en("phone(123-456-7890) is my number.")
+        "one two three, four five six, seven eight nine zero is my number."
+    """
+    return _library.manual_tag_en(text)
 
 
 class TypecastAutotag:
