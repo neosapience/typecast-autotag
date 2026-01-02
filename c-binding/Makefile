@@ -31,6 +31,9 @@ LIB_NAME := libtypecast_autotag
 SHARED_LIB := $(BUILD_DIR)/$(LIB_NAME).so
 STATIC_LIB := $(BUILD_DIR)/$(LIB_NAME).a
 
+# macOS output files
+MACOS_DYLIB := $(BUILD_DIR)/$(LIB_NAME).dylib
+
 # Windows output files (cross-compiled)
 WIN_DLL := $(BUILD_DIR)/typecast_autotag.dll
 WIN_LIB := $(BUILD_DIR)/typecast_autotag.lib
@@ -39,7 +42,10 @@ WIN_LIB := $(BUILD_DIR)/typecast_autotag.lib
 MINGW_CC ?= x86_64-w64-mingw32-gcc
 MINGW_STRIP ?= x86_64-w64-mingw32-strip
 
-.PHONY: all clean duktape bundle example test windows docker-build-windows
+# Detect OS
+UNAME_S := $(shell uname -s)
+
+.PHONY: all clean duktape bundle example test windows docker-build-windows macos
 
 all: $(SHARED_LIB)
 
@@ -148,8 +154,67 @@ docker-build-windows:
 	docker build -t typecast-autotag-builder-windows -f Dockerfile.build.windows .
 	docker run --rm -v $(PWD)/build:/output typecast-autotag-builder-windows
 
+# macOS dylib build (local build, requires macOS)
+macos: $(WRAPPER_SRC) $(DUKTAPE_DIR) $(BUNDLE_HEADER)
+ifeq ($(UNAME_S),Darwin)
+	@echo "Building macOS dylib..."
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -dynamiclib \
+		-DTYPECAST_BUILDING_DLL \
+		-I$(INCLUDE_DIR) \
+		-I$(DUKTAPE_DIR)/src \
+		$(WRAPPER_SRC) \
+		$(DUKTAPE_SRC) \
+		-lm \
+		-install_name @rpath/$(LIB_NAME).dylib \
+		-o $(MACOS_DYLIB)
+	@echo "Built: $(MACOS_DYLIB)"
+	@cp $(INCLUDE_DIR)/typecast_autotag.h $(BUILD_DIR)/
+else
+	@echo "Error: macOS build requires running on macOS"
+	@exit 1
+endif
+
+# macOS universal binary (Intel + Apple Silicon)
+macos-universal: $(WRAPPER_SRC) $(DUKTAPE_DIR) $(BUNDLE_HEADER)
+ifeq ($(UNAME_S),Darwin)
+	@echo "Building macOS universal dylib (x86_64 + arm64)..."
+	@mkdir -p $(BUILD_DIR)
+	@# Build for x86_64
+	$(CC) $(CFLAGS) -dynamiclib -arch x86_64 \
+		-DTYPECAST_BUILDING_DLL \
+		-I$(INCLUDE_DIR) \
+		-I$(DUKTAPE_DIR)/src \
+		$(WRAPPER_SRC) \
+		$(DUKTAPE_SRC) \
+		-lm \
+		-install_name @rpath/$(LIB_NAME).dylib \
+		-o $(BUILD_DIR)/$(LIB_NAME)_x86_64.dylib
+	@# Build for arm64
+	$(CC) $(CFLAGS) -dynamiclib -arch arm64 \
+		-DTYPECAST_BUILDING_DLL \
+		-I$(INCLUDE_DIR) \
+		-I$(DUKTAPE_DIR)/src \
+		$(WRAPPER_SRC) \
+		$(DUKTAPE_SRC) \
+		-lm \
+		-install_name @rpath/$(LIB_NAME).dylib \
+		-o $(BUILD_DIR)/$(LIB_NAME)_arm64.dylib
+	@# Create universal binary
+	lipo -create \
+		$(BUILD_DIR)/$(LIB_NAME)_x86_64.dylib \
+		$(BUILD_DIR)/$(LIB_NAME)_arm64.dylib \
+		-output $(MACOS_DYLIB)
+	@rm $(BUILD_DIR)/$(LIB_NAME)_x86_64.dylib $(BUILD_DIR)/$(LIB_NAME)_arm64.dylib
+	@echo "Built: $(MACOS_DYLIB) (universal binary)"
+	@cp $(INCLUDE_DIR)/typecast_autotag.h $(BUILD_DIR)/
+else
+	@echo "Error: macOS build requires running on macOS"
+	@exit 1
+endif
+
 # Build all platforms
-all-platforms: $(SHARED_LIB) docker-build-windows
+all-platforms: docker-build docker-build-windows macos-universal
 	@echo "Built for all platforms:"
 	@ls -la $(BUILD_DIR)/
 
@@ -160,6 +225,8 @@ help:
 	@echo "Targets:"
 	@echo "  all                 - Build shared library (default)"
 	@echo "  static              - Build static library"
+	@echo "  macos               - Build macOS dylib (requires macOS)"
+	@echo "  macos-universal     - Build macOS universal dylib (x86_64 + arm64)"
 	@echo "  windows             - Build Windows DLL (requires mingw-w64)"
 	@echo "  duktape             - Download Duktape"
 	@echo "  bundle              - Generate JS bundle from TypeScript"
@@ -169,9 +236,10 @@ help:
 	@echo "  distclean           - Clean everything including Duktape"
 	@echo "  docker-build        - Build Linux .so using Docker (CentOS 6.9 compatible)"
 	@echo "  docker-build-windows- Build Windows .dll using Docker (MinGW-w64)"
-	@echo "  all-platforms       - Build for all platforms (Linux + Windows)"
+	@echo "  all-platforms       - Build for all platforms (Linux + Windows + macOS)"
 	@echo "  help                - Show this help"
 	@echo ""
 	@echo "Output files:"
 	@echo "  Linux:   build/libtypecast_autotag.so"
+	@echo "  macOS:   build/libtypecast_autotag.dylib"
 	@echo "  Windows: build/typecast_autotag.dll, build/typecast_autotag.lib"

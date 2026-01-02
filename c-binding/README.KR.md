@@ -242,18 +242,39 @@ make docker-build-windows
 # - build/typecast_autotag.h
 ```
 
+### macOS 빌드 (Universal Binary)
+
+```bash
+cd c-binding
+
+# macOS Universal Binary 빌드 (x86_64 + arm64)
+# 참고: macOS에서만 실행 가능
+./scripts/build-macos.sh
+
+# 또는 make 타겟 사용
+make macos-universal
+
+# 결과물
+# - build/libtypecast_autotag.dylib  (Universal Binary)
+# - build/typecast_autotag.h
+```
+
 ### 모든 플랫폼 빌드
 
 ```bash
 cd c-binding
 
-# Linux와 Windows 모두 빌드
+# Linux, Windows, macOS 모두 빌드
 make all-platforms
 
+# 또는 pnpm 사용
+pnpm c-binding:build-all
+
 # 결과물
-# - build/libtypecast_autotag.so  (Linux)
-# - build/typecast_autotag.dll    (Windows)
-# - build/typecast_autotag.lib    (Windows 임포트 라이브러리)
+# - build/libtypecast_autotag.so     (Linux)
+# - build/libtypecast_autotag.dylib  (macOS)
+# - build/typecast_autotag.dll       (Windows)
+# - build/typecast_autotag.lib       (Windows 임포트 라이브러리)
 ```
 
 ### E2E 테스트
@@ -328,6 +349,13 @@ All E2E tests passed!
 | `libtypecast_autotag.so` | 공유 라이브러리 |
 | `typecast_autotag.h`     | C 헤더 파일     |
 
+#### macOS
+
+| 파일                        | 설명                           |
+| --------------------------- | ------------------------------ |
+| `libtypecast_autotag.dylib` | 동적 라이브러리 (Universal)    |
+| `typecast_autotag.h`        | C 헤더 파일                    |
+
 #### Windows
 
 | 파일                   | 설명                            |
@@ -350,6 +378,17 @@ sudo ldconfig
 gcc -o program program.c -L. -ltypecast_autotag -Wl,-rpath,'$ORIGIN'
 ```
 
+#### macOS
+
+```bash
+# 시스템 라이브러리 디렉토리에 설치
+sudo cp libtypecast_autotag.dylib /usr/local/lib/
+sudo cp typecast_autotag.h /usr/local/include/
+
+# 또는 프로젝트 디렉토리에 함께 배치하고 rpath 사용
+clang -o program program.c -L. -ltypecast_autotag -Wl,-rpath,@executable_path
+```
+
 #### Windows
 
 ```bash
@@ -366,12 +405,13 @@ gcc -o program.exe program.c -L. -ltypecast_autotag
 
 ## 타겟 환경
 
-| 환경           | 아키텍처 | 출력 파일              | 상태                |
-| -------------- | -------- | ---------------------- | ------------------- |
-| Amazon Linux 2 | x86_64   | libtypecast_autotag.so | ✅ 지원             |
-| CentOS 6.9     | x86_64   | libtypecast_autotag.so | ✅ 지원 (정적 링크) |
-| Windows Server | x86_64   | typecast_autotag.dll   | ✅ 지원             |
-| Windows 10/11  | x86_64   | typecast_autotag.dll   | ✅ 지원             |
+| 환경           | 아키텍처       | 출력 파일                   | 상태                    |
+| -------------- | -------------- | --------------------------- | ----------------------- |
+| Amazon Linux 2 | x86_64         | libtypecast_autotag.so      | ✅ 지원                 |
+| CentOS 6.9     | x86_64         | libtypecast_autotag.so      | ✅ 지원 (정적 링크)     |
+| macOS          | x86_64 + arm64 | libtypecast_autotag.dylib   | ✅ 지원 (Universal)     |
+| Windows Server | x86_64         | typecast_autotag.dll        | ✅ 지원                 |
+| Windows 10/11  | x86_64         | typecast_autotag.dll        | ✅ 지원                 |
 
 ## 주의사항
 

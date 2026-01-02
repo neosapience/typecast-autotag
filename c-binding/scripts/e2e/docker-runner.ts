@@ -3,9 +3,11 @@
  */
 
 import { $ } from 'zx';
+import { writeFileSync, unlinkSync } from 'fs';
 import type { DockerTestResult, TestEnvironment } from './types.js';
 import { C_TEST_PROGRAM } from './test-program.js';
 import { C_TEST_PROGRAM_WINDOWS } from './test-program-windows.js';
+import { C_TEST_PROGRAM_MACOS } from './test-program-macos.js';
 import { printInfo } from './colors.js';
 
 /**
@@ -106,6 +108,66 @@ TESTCODE
 }
 
 /**
+ * Runs macOS dylib tests locally (no Docker needed).
+ */
+async function runMacOSLocalTest(
+  env: TestEnvironment,
+  buildDir: string
+): Promise<DockerTestResult> {
+  const testFile = '/tmp/typecast_macos_test.c';
+  const testBinary = '/tmp/typecast_macos_test';
+
+  try {
+    // Check if running on macOS
+    const unameResult = await $`uname -s`.quiet();
+    if (unameResult.stdout.trim() !== 'Darwin') {
+      return {
+        name: env.name,
+        passed: false,
+        output: 'Error: macOS tests can only run on macOS',
+      };
+    }
+
+    // C test program code (uses dlopen with .dylib)
+    const testProgram = C_TEST_PROGRAM_MACOS;
+
+    // Write test program to temp file using Node.js fs
+    writeFileSync(testFile, testProgram, 'utf8');
+
+    // Compile test program (macOS doesn't need -ldl, it's built into the system)
+    await $`gcc -o ${testBinary} ${testFile}`.quiet();
+
+    // Run test with library path
+    const result = await $`DYLD_LIBRARY_PATH=${buildDir} ${testBinary}`.quiet();
+
+    return {
+      name: env.name,
+      passed: result.exitCode === 0,
+      output: result.stdout,
+    };
+  } catch (error) {
+    const errorOutput = error instanceof Error ? error.message : String(error);
+    return {
+      name: env.name,
+      passed: false,
+      output: errorOutput,
+    };
+  } finally {
+    // Cleanup
+    try {
+      unlinkSync(testFile);
+    } catch {
+      /* ignore */
+    }
+    try {
+      unlinkSync(testBinary);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+/**
  * Runs tests inside a Docker container (dispatches to platform-specific runner).
  */
 export async function runDockerTest(
@@ -117,6 +179,8 @@ export async function runDockerTest(
 
   if (env.platform === 'windows') {
     return runWindowsDockerTest(env, buildDir);
+  } else if (env.platform === 'macos') {
+    return runMacOSLocalTest(env, buildDir);
   } else {
     return runLinuxDockerTest(env, buildDir);
   }
