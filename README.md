@@ -460,6 +460,58 @@ src/
 
 <br>
 
+## Releasing
+
+This project uses [release-it](https://github.com/release-it/release-it) for automated GitHub Releases.
+
+### Setup
+
+1. Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+2. Add your GitHub Personal Access Token to `.env`:
+
+```bash
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+```
+
+> Generate a token at [GitHub Settings → Tokens](https://github.com/settings/tokens) with `repo` scope.
+
+### Creating a Release
+
+```bash
+# Dry run (preview without publishing)
+pnpm release:dry
+
+# Create a release
+pnpm release
+```
+
+This will:
+- Run tests and build
+- Bump version based on [Conventional Commits](https://www.conventionalcommits.org/)
+- Generate/update `CHANGELOG.md`
+- Create a Git tag
+- Create a GitHub Release with pre-built C binding binaries attached
+
+### Release Assets
+
+The following pre-built binaries are automatically attached to each release:
+
+| Platform | Files |
+| -------- | ----- |
+| macOS | `libtypecast_autotag.dylib` |
+| Linux | `libtypecast_autotag.so`, `libtypecast_autotag_arm64.so`, `libtypecast_autotag_armv7.so`, `libtypecast_autotag_x86_64.so`, `libtypecast_autotag_x86.so` |
+| Windows | `typecast_autotag.dll`, `typecast_autotag.lib`, `typecast_autotag_i686.dll`, `typecast_autotag_i686.lib`, `typecast_autotag_x86_64.dll`, `typecast_autotag_x86_64.lib` |
+| Header | `typecast_autotag.h` |
+
+> **Note:** Make sure to build the C bindings before releasing: `pnpm c-binding:build-all-multiarch`
+
+<br>
+
 ---
 
 <div align="center">

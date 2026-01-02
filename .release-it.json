@@ -1,0 +1,40 @@
+{
+  "git": {
+    "commitMessage": "chore: release v${version}",
+    "tagName": "v${version}",
+    "tagAnnotation": "Release v${version}",
+    "push": true,
+    "requireCleanWorkingDir": true
+  },
+  "npm": {
+    "publish": false
+  },
+  "github": {
+    "release": true,
+    "releaseName": "v${version}",
+    "assets": [
+      "c-binding/build/libtypecast_autotag.dylib",
+      "c-binding/build/libtypecast_autotag.so",
+      "c-binding/build/libtypecast_autotag_arm64.so",
+      "c-binding/build/libtypecast_autotag_armv7.so",
+      "c-binding/build/libtypecast_autotag_x86_64.so",
+      "c-binding/build/libtypecast_autotag_x86.so",
+      "c-binding/build/typecast_autotag.dll",
+      "c-binding/build/typecast_autotag.lib",
+      "c-binding/build/typecast_autotag_i686.dll",
+      "c-binding/build/typecast_autotag_i686.lib",
+      "c-binding/build/typecast_autotag_x86_64.dll",
+      "c-binding/build/typecast_autotag_x86_64.lib",
+      "c-binding/build/typecast_autotag.h"
+    ]
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "angular",
+      "infile": "CHANGELOG.md"
+    }
+  },
+  "hooks": {
+    "before:init": ["pnpm test:jest", "pnpm build"]
+  }
+}
