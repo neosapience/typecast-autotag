@@ -1,16 +1,16 @@
-# Typecast Autotag C Library 예제 Makefile
+# Typecast Autotag C Library Example Makefile
 
 CC ?= gcc
 CFLAGS := -Wall -Wextra -O2
 LDFLAGS := -L../build -ltypecast_autotag -Wl,-rpath,../build
 
-# 헤더 경로
+# Header path
 INCLUDES := -I../include
 
-# 출력 파일
+# Output file
 TARGET := example
 
-# 소스 파일
+# Source file
 SRC := example.c
 
 .PHONY: all clean run
@@ -30,7 +30,6 @@ endif
 clean:
 	rm -f $(TARGET)
 
-# CentOS 6.9에서 실행할 때 사용
+# Use when running on CentOS 6.9
 run-centos:
 	LD_LIBRARY_PATH=/path/to/lib ./$(TARGET)
-
