@@ -474,6 +474,83 @@ gcc -o program.exe program.c -L. -ltypecast_autotag
 | Windows  | x86_64       | typecast_autotag_x86_64.dll      | ✅ Supported |
 | Windows  | x86 (32-bit) | typecast_autotag_i686.dll        | ✅ Supported |
 
+## Architecture: Duktape Integration
+
+This C library embeds [Duktape](https://duktape.org/), a lightweight JavaScript engine, to execute the TypeScript-based autotag logic within a native C environment.
+
+### What is Duktape?
+
+Duktape is an **embeddable JavaScript engine** written in portable C (C99). It provides a complete ECMAScript E5/E5.1 implementation with selected ES2015+ features.
+
+**Key characteristics:**
+- **Lightweight**: ~160KB code footprint (minimal configuration)
+- **Portable**: Runs on virtually any platform with a C compiler
+- **Embeddable**: Designed to be integrated into C/C++ applications
+- **No external dependencies**: Single source file compilation
+
+### Why Duktape?
+
+| Consideration | Reason |
+| ------------- | ------ |
+| **Code Reuse** | Directly executes the same autotag logic written in TypeScript, eliminating the need to rewrite complex text processing rules in C |
+| **Consistency** | Ensures identical behavior between Node.js (TypeScript) and C library |
+| **Maintainability** | Single source of truth for autotag rules - update once, deploy everywhere |
+| **Cross-platform** | Duktape's portability enables the library to run on Linux, Windows, and macOS |
+| **Lightweight** | Minimal overhead compared to full JavaScript runtimes like V8 |
+
+### Version Information
+
+| Component | Version |
+| --------- | ------- |
+| Duktape | **2.7.0** |
+| ECMAScript | E5/E5.1 (with select ES2015+ features) |
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        C Application                             │
+├─────────────────────────────────────────────────────────────────┤
+│  typecast_auto_tag("010-1234-5678")                             │
+│         │                                                        │
+│         ▼                                                        │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │              Typecast Autotag C Library                  │    │
+│  │  ┌─────────────────────────────────────────────────┐    │    │
+│  │  │           Duktape JavaScript Engine              │    │    │
+│  │  │  ┌─────────────────────────────────────────┐    │    │    │
+│  │  │  │   Bundled TypeScript Autotag Logic      │    │    │    │
+│  │  │  │   (compiled to JavaScript)              │    │    │    │
+│  │  │  └─────────────────────────────────────────┘    │    │    │
+│  │  └─────────────────────────────────────────────────┘    │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│         │                                                        │
+│         ▼                                                        │
+│  "공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔"                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Build-time process:**
+1. TypeScript autotag source code is bundled into a single JavaScript file
+2. The JavaScript is converted to a C header file (`autotag_bundle.h`) as a string literal
+3. At runtime, Duktape evaluates this bundled JavaScript once during `typecast_init()`
+
+**Runtime process:**
+1. `typecast_init()` creates a Duktape heap and loads the JavaScript bundle
+2. Each conversion function (`typecast_auto_tag`, etc.) calls the corresponding JavaScript function
+3. Results are converted from JavaScript strings to C strings
+4. `typecast_cleanup()` destroys the Duktape heap when done
+
+### Source Files
+
+| File | Description |
+| ---- | ----------- |
+| `duktape/duktape-2.7.0/` | Duktape source distribution |
+| `src/typecast_autotag.c` | C library implementation with Duktape integration |
+| `src/bundle-entry.ts` | TypeScript entry point for the JavaScript bundle |
+| `src/autotag_bundle.h` | Generated header containing the bundled JavaScript |
+| `src/autotag_bundle.js` | Generated JavaScript bundle (intermediate file) |
+
 ## Important Notes
 
 1. **Initialization**: Call `typecast_init()` **only once** at program start
