@@ -25,5 +25,5 @@ module.exports = {
     '@typescript-eslint/strict-boolean-expressions': 'off',
     'no-console': 'warn',
   },
-  ignorePatterns: ['dist', 'node_modules', 'coverage', 'jest.config.js', '*.cjs'],
+  ignorePatterns: ['dist', 'node_modules', 'coverage', 'jest.config.js', '*.cjs', 'demo-html'],
 };

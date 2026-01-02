@@ -1,4 +1,4 @@
-import { numberToEnglish } from './utils/number-to-english';
+import { numberToEnglish, numberToOrdinal } from './utils/number-to-english';
 import { month } from './tags/month';
 import { day } from './tags/day';
 import { date, yearMonth } from './tags/date';
@@ -186,22 +186,28 @@ const AUTO_TAG_PATTERNS = {
   /**
    * Tracking/Serial number patterns (before phone to avoid conflicts)
    * Tracking number: NNNN-NNNN-NNNN format
+   * Must contain at least one digit to be considered a tracking number
    */
   trackingNumber: {
     patterns: [
-      // Tracking number label + number
-      /(?:tracking\s*(?:number|#)?|order\s*(?:number|#)?)[:\s]*[A-Za-z0-9]{2,}-?[A-Za-z0-9-]+/gi,
+      // Tracking number label + alphanumeric code (must contain digits)
+      // Requires colon, "number", or "#" to be more specific
+      /(?:tracking\s*(?:number|#|no\.?)|order\s*(?:number|#|no\.?))[:\s]+[A-Za-z0-9][-A-Za-z0-9]+/gi,
       // UPS/FedEx style: 1Z999AA10123456784
       /\b1Z[A-Z0-9]{16}\b/g,
       // USPS style: 9400111899223033
       /\b9[0-9]{15,21}\b/g,
     ],
     converter: (match: string) => {
-      // Extract number part
-      const numMatch = match.match(/([A-Za-z0-9][-A-Za-z0-9]+)$/);
+      // Extract number part (the code after the label)
+      const numMatch = match.match(/[:\s]+([A-Za-z0-9][-A-Za-z0-9]+)$/);
       if (numMatch) {
-        const prefix = match.replace(/([A-Za-z0-9][-A-Za-z0-9]+)$/, '');
         const code = numMatch[1] ?? '';
+        // Only convert if code contains at least one digit
+        if (!/\d/.test(code)) {
+          return match;
+        }
+        const prefix = match.replace(/[:\s]+[A-Za-z0-9][-A-Za-z0-9]+$/, '');
         const DIGITS = [
           'zero',
           'one',
@@ -224,7 +230,7 @@ const AUTO_TAG_PATTERNS = {
             parts.push(c);
           }
         }
-        return prefix + parts.join(' ');
+        return prefix + ' ' + parts.join(' ');
       }
       return match;
     },
@@ -280,6 +286,7 @@ const AUTO_TAG_PATTERNS = {
    * - YYYY-MM-DD, MM/DD/YYYY
    * - English: January 15, 2024, Jan 15, 2024
    * - Ordinal: 15th of January, 2024
+   * - Month + ordinal day (no year): December 25th
    */
   date: {
     patterns: [
@@ -292,6 +299,10 @@ const AUTO_TAG_PATTERNS = {
       /\b(?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+\d{1,2}(?:st|nd|rd|th)?[,\s]+\d{4}\b/gi,
       // Ordinal format: 15th of January, 2024
       /\b\d{1,2}(?:st|nd|rd|th)\s+(?:of\s+)?(?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?[,\s]+\d{4}\b/gi,
+      // Month + ordinal day (no year): December 25th, January 1st
+      /\b(?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+\d{1,2}(?:st|nd|rd|th)\b/gi,
+      // Ordinal day + of + month (no year): 25th of December, 1st of January
+      /\b\d{1,2}(?:st|nd|rd|th)\s+of\s+(?:January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\b/gi,
       // US format: MM/DD/YYYY
       /\b(?:0?[1-9]|1[0-2])\/(?:0?[1-9]|[12]\d|3[01])\/\d{4}\b/g,
       // ISO format: YYYY-MM-DD (not followed by time)
@@ -306,6 +317,24 @@ const AUTO_TAG_PATTERNS = {
           const date2 = date(parts[1] ?? '');
           return date1 + ' to ' + date2;
         }
+      }
+      // Month + ordinal day (no year): December 25th → December twenty-fifth
+      const monthDayMatch = match.match(
+        /^(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+(\d{1,2})(?:st|nd|rd|th)$/i
+      );
+      if (monthDayMatch) {
+        const monthName = monthDayMatch[1] ?? '';
+        const dayNum = parseInt(monthDayMatch[2] ?? '0', 10);
+        return monthName + ' ' + numberToOrdinal(dayNum);
+      }
+      // Ordinal day + of + month (no year): 25th of December → the twenty-fifth of December
+      const dayOfMonthMatch = match.match(
+        /^(\d{1,2})(?:st|nd|rd|th)\s+of\s+(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?$/i
+      );
+      if (dayOfMonthMatch) {
+        const dayNum = parseInt(dayOfMonthMatch[1] ?? '0', 10);
+        const monthName = dayOfMonthMatch[2] ?? '';
+        return 'the ' + numberToOrdinal(dayNum) + ' of ' + monthName;
       }
       return date(match);
     },
@@ -708,16 +737,27 @@ const AUTO_TAG_PATTERNS = {
    * Serial/code patterns
    * - Model number: XXX-NNNN-NNN
    * - Order number: NNNNNNNN-NNNN
+   * Must require "number", "#", "no.", or ":" to avoid false positives
    */
   serial: {
     patterns: [
-      // Serial number label + code
-      /(?:serial|model|product|order|confirmation|reference|id|invoice)\s*(?:number|#|no\.?)?[:\s]+[A-Za-z0-9-]+/gi,
-      // Alphanumeric+hyphen code (at least 1 hyphen, contains numbers)
+      // Serial number label + explicit "number/#/no." + code (must contain digits)
+      /(?:serial|model|product|confirmation|reference|invoice)\s*(?:number|#|no\.?)[:\s]+[A-Za-z0-9][-A-Za-z0-9]+/gi,
+      // With colon: serial: XXX, model: XXX, etc. (must contain digits)
+      /(?:serial|model|product|confirmation|reference|invoice)\s*:[:\s]*[A-Za-z0-9][-A-Za-z0-9]+/gi,
+      // Alphanumeric+hyphen code (at least 1 hyphen, must contain numbers)
       /\b[A-Za-z]{1,5}-\d{4,}-\d{2,}\b/g,
       /\b\d{8,}-\d{4,}\b/g,
     ],
     converter: (match: string) => {
+      // Only convert if the code contains at least one digit
+      const codeMatch = match.match(/[:\s]+([A-Za-z0-9][-A-Za-z0-9]+)$/);
+      if (codeMatch) {
+        const code = codeMatch[1] ?? '';
+        if (!/\d/.test(code)) {
+          return match; // No digits, don't convert
+        }
+      }
       // If label present, keep label and convert number only
       if (/(?:number|#|no\.?)/i.test(match)) {
         return serialNumbersOnly(match);
@@ -963,6 +1003,80 @@ const AUTO_TAG_PATTERNS = {
         if (!isNaN(num)) {
           return numberToEnglish(num) + ' points';
         }
+      }
+      return match;
+    },
+  },
+
+  /**
+   * Card ending digits patterns
+   * - Ending in NNNN, ends in NNNN, last 4 digits NNNN
+   */
+  cardEnding: {
+    patterns: [
+      // Ending in NNNN, ends in NNNN
+      /\b(?:ending|ends)\s+in\s+\d{4}\b/gi,
+      // Last 4 digits: NNNN
+      /\blast\s+(?:4|four)\s+digits[:\s]+\d{4}\b/gi,
+    ],
+    converter: (match: string) => {
+      const numMatch = match.match(/(\d{4})$/);
+      if (numMatch) {
+        const digits = numMatch[1] ?? '';
+        const prefix = match.replace(/\d{4}$/, '');
+        const DIGITS = [
+          'zero',
+          'one',
+          'two',
+          'three',
+          'four',
+          'five',
+          'six',
+          'seven',
+          'eight',
+          'nine',
+        ];
+        const converted = digits
+          .split('')
+          .map((d) => DIGITS[parseInt(d, 10)] ?? d)
+          .join(' ');
+        return prefix + converted;
+      }
+      return match;
+    },
+  },
+
+  /**
+   * Simple digit context patterns
+   * - press N, dial N, enter N, type N, option N, choice N
+   */
+  simpleDigitContext: {
+    patterns: [
+      // press/dial/enter/type + single digit
+      /\b(?:press|dial|enter|type|hit)\s+\d\b/gi,
+      // option/choice + digit
+      /\b(?:option|choice)\s+\d\b/gi,
+      // step N (single digit)
+      /\bstep\s+\d\b/gi,
+    ],
+    converter: (match: string) => {
+      const numMatch = match.match(/(\d)$/);
+      if (numMatch) {
+        const digit = numMatch[1] ?? '';
+        const prefix = match.replace(/\d$/, '');
+        const DIGITS = [
+          'zero',
+          'one',
+          'two',
+          'three',
+          'four',
+          'five',
+          'six',
+          'seven',
+          'eight',
+          'nine',
+        ];
+        return prefix + (DIGITS[parseInt(digit, 10)] ?? digit);
       }
       return match;
     },

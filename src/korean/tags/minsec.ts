@@ -4,6 +4,13 @@ import { numberToKorean, numberToNativeKorean } from '../utils/number-to-korean'
 const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
 
 /**
+ * 천단위 구분자 제거
+ */
+function removeThousandSeparators(str: string): string {
+  return str.replace(/,/g, '');
+}
+
+/**
  * 소수를 한글로 변환 (예: 0.3 → 영 쩜 삼, 1.5 → 일 쩜 오)
  */
 function formatDecimalSeconds(numStr: string): string {
@@ -96,26 +103,26 @@ function convertSingleMinsec(
   // 공백 제거 및 소문자 변환
   const normalizedInput = input.replace(/\s+/g, '').toLowerCase();
 
-  // 시, 분, 초 파싱 (영어 + 한글 지원, 소수점 초 지원)
-  const hourMatch = normalizedInput.match(/(\d+)(?:hours?|시간|h)/);
-  const minMatch = normalizedInput.match(/(\d+)(?:minutes?|mins?|분|m)/);
+  // 시, 분, 초 파싱 (영어 + 한글 지원, 소수점 초 지원, 천단위 구분자 지원)
+  const hourMatch = normalizedInput.match(/([\d,]+)(?:hours?|시간|h)/);
+  const minMatch = normalizedInput.match(/([\d,]+)(?:minutes?|mins?|분|m)/);
   // 소수점 초 지원: 0.3초, 1.5초 등
-  const secMatch = normalizedInput.match(/([\d.]+)(?:seconds?|secs?|초|s)/);
-  const numberOnlyMatch = normalizedInput.match(/^(\d+)$/);
+  const secMatch = normalizedInput.match(/([\d,.]+)(?:seconds?|secs?|초|s)/);
+  const numberOnlyMatch = normalizedInput.match(/^([\d,]+)$/);
 
   const hasAnyMatch = hourMatch || minMatch || secMatch || numberOnlyMatch;
   if (!hasAnyMatch) {
     return { result: input, matched: false };
   }
 
-  let hours = hourMatch ? parseInt(hourMatch[1] ?? '0', 10) : 0;
-  let minutes = minMatch ? parseInt(minMatch[1] ?? '0', 10) : 0;
+  let hours = hourMatch ? parseInt(removeThousandSeparators(hourMatch[1] ?? '0'), 10) : 0;
+  let minutes = minMatch ? parseInt(removeThousandSeparators(minMatch[1] ?? '0'), 10) : 0;
 
-  // 초는 소수점이 있을 수 있으므로 문자열로 관리
+  // 초는 소수점이 있을 수 있으므로 문자열로 관리 (천단위 구분자 제거)
   let secondsStr = secMatch
-    ? (secMatch[1] ?? '0')
+    ? removeThousandSeparators(secMatch[1] ?? '0')
     : numberOnlyMatch
-      ? (numberOnlyMatch[1] ?? '0')
+      ? removeThousandSeparators(numberOnlyMatch[1] ?? '0')
       : '0';
   const isDecimalSeconds = secondsStr.includes('.');
 
@@ -204,17 +211,17 @@ export function minsec(input: string, options?: MinsecOptions): string {
   // 공백 제거 및 소문자 변환
   const normalizedInput = input.replace(/\s+/g, '').toLowerCase();
 
-  // 시, 분, 초 파싱 (영어 + 한글 지원, 소수점 초 지원)
+  // 시, 분, 초 파싱 (영어 + 한글 지원, 소수점 초 지원, 천단위 구분자 지원)
   // 시간: h, hour, hours, 시간
   // 분: m, min, minute, minutes, 분
   // 초: s, sec, second, seconds, 초 (소수점 지원)
-  const hourMatch = normalizedInput.match(/(\d+)(?:hours?|시간|h)/);
-  const minMatch = normalizedInput.match(/(\d+)(?:minutes?|mins?|분|m)/);
+  const hourMatch = normalizedInput.match(/([\d,]+)(?:hours?|시간|h)/);
+  const minMatch = normalizedInput.match(/([\d,]+)(?:minutes?|mins?|분|m)/);
   // 소수점 초 지원: 0.3초, 1.5초 등
-  const secMatch = normalizedInput.match(/([\d.]+)(?:seconds?|secs?|초|s)/);
+  const secMatch = normalizedInput.match(/([\d,.]+)(?:seconds?|secs?|초|s)/);
 
   // 숫자만 있는 경우 초로 해석
-  const numberOnlyMatch = normalizedInput.match(/^(\d+)$/);
+  const numberOnlyMatch = normalizedInput.match(/^([\d,]+)$/);
 
   // 어떤 단위도 매칭되지 않고 숫자만도 아닌 경우 원본 반환
   const hasAnyMatch = hourMatch || minMatch || secMatch || numberOnlyMatch;
@@ -222,14 +229,14 @@ export function minsec(input: string, options?: MinsecOptions): string {
     return input;
   }
 
-  let hours = hourMatch ? parseInt(hourMatch[1] ?? '0', 10) : 0;
-  let minutes = minMatch ? parseInt(minMatch[1] ?? '0', 10) : 0;
+  let hours = hourMatch ? parseInt(removeThousandSeparators(hourMatch[1] ?? '0'), 10) : 0;
+  let minutes = minMatch ? parseInt(removeThousandSeparators(minMatch[1] ?? '0'), 10) : 0;
 
-  // 초는 소수점이 있을 수 있으므로 문자열로 관리
+  // 초는 소수점이 있을 수 있으므로 문자열로 관리 (천단위 구분자 제거)
   let secondsStr = secMatch
-    ? (secMatch[1] ?? '0')
+    ? removeThousandSeparators(secMatch[1] ?? '0')
     : numberOnlyMatch
-      ? (numberOnlyMatch[1] ?? '0')
+      ? removeThousandSeparators(numberOnlyMatch[1] ?? '0')
       : '0';
   const isDecimalSeconds = secondsStr.includes('.');
 
