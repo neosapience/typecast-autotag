@@ -39,15 +39,30 @@ autoTag('전화번호는 010-1234-5678입니다.');
 
 ## Installation
 
+GitHub 저장소에서 직접 설치합니다:
+
 ```bash
 # pnpm (recommended)
-pnpm add typecast-autotag
+pnpm add git+https://github.com/neosapience/typecast-autotag-ts.git
 
 # npm
-npm install typecast-autotag
+npm install git+https://github.com/neosapience/typecast-autotag-ts.git
 
 # yarn
-yarn add typecast-autotag
+yarn add git+https://github.com/neosapience/typecast-autotag-ts.git
+```
+
+특정 브랜치 또는 태그를 설치하려면:
+
+```bash
+# 특정 브랜치 설치
+pnpm add git+https://github.com/neosapience/typecast-autotag-ts.git#branch-name
+
+# 특정 태그/버전 설치
+pnpm add git+https://github.com/neosapience/typecast-autotag-ts.git#v1.1.0
+
+# 특정 커밋 설치
+pnpm add git+https://github.com/neosapience/typecast-autotag-ts.git#commit-hash
 ```
 
 <br>
