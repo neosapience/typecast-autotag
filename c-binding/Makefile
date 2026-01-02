@@ -31,7 +31,15 @@ LIB_NAME := libtypecast_autotag
 SHARED_LIB := $(BUILD_DIR)/$(LIB_NAME).so
 STATIC_LIB := $(BUILD_DIR)/$(LIB_NAME).a
 
-.PHONY: all clean duktape bundle example test
+# Windows output files (cross-compiled)
+WIN_DLL := $(BUILD_DIR)/typecast_autotag.dll
+WIN_LIB := $(BUILD_DIR)/typecast_autotag.lib
+
+# MinGW cross-compiler (for Windows DLL on Linux/macOS)
+MINGW_CC ?= x86_64-w64-mingw32-gcc
+MINGW_STRIP ?= x86_64-w64-mingw32-strip
+
+.PHONY: all clean duktape bundle example test windows docker-build-windows
 
 all: $(SHARED_LIB)
 
@@ -115,18 +123,55 @@ docker-build:
 	docker build -t typecast-autotag-builder -f Dockerfile.build .
 	docker run --rm -v $(PWD)/build:/output typecast-autotag-builder
 
+# Windows DLL build (using MinGW cross-compiler locally)
+windows: $(WRAPPER_SRC) $(DUKTAPE_DIR) $(BUNDLE_HEADER)
+	@echo "Building Windows DLL..."
+	@mkdir -p $(BUILD_DIR)
+	@# Check if MinGW is available
+	@which $(MINGW_CC) > /dev/null 2>&1 || (echo "Error: MinGW not found. Install mingw-w64 or use 'make docker-build-windows'" && exit 1)
+	$(MINGW_CC) -std=c99 -Wall -O2 -shared \
+		-DTYPECAST_BUILDING_DLL \
+		-I$(INCLUDE_DIR) \
+		-I$(DUKTAPE_DIR)/src \
+		$(WRAPPER_SRC) \
+		$(DUKTAPE_SRC) \
+		-o $(WIN_DLL) \
+		-Wl,--out-implib,$(WIN_LIB)
+	$(MINGW_STRIP) $(WIN_DLL)
+	@echo "Built: $(WIN_DLL)"
+	@echo "Built: $(WIN_LIB)"
+	@cp $(INCLUDE_DIR)/typecast_autotag.h $(BUILD_DIR)/
+
+# Docker build for Windows DLL (MinGW-w64 in container)
+docker-build-windows:
+	@echo "Building Windows DLL with Docker (MinGW-w64)..."
+	docker build -t typecast-autotag-builder-windows -f Dockerfile.build.windows .
+	docker run --rm -v $(PWD)/build:/output typecast-autotag-builder-windows
+
+# Build all platforms
+all-platforms: $(SHARED_LIB) docker-build-windows
+	@echo "Built for all platforms:"
+	@ls -la $(BUILD_DIR)/
+
 # Help
 help:
 	@echo "Typecast Autotag C Library Build System"
 	@echo ""
 	@echo "Targets:"
-	@echo "  all          - Build shared library (default)"
-	@echo "  static       - Build static library"
-	@echo "  duktape      - Download Duktape"
-	@echo "  bundle       - Generate JS bundle from TypeScript"
-	@echo "  example      - Build example program"
-	@echo "  test         - Run example program"
-	@echo "  clean        - Clean build artifacts"
-	@echo "  distclean    - Clean everything including Duktape"
-	@echo "  docker-build - Build using Docker for CentOS 6.9 compatibility"
-	@echo "  help         - Show this help"
+	@echo "  all                 - Build shared library (default)"
+	@echo "  static              - Build static library"
+	@echo "  windows             - Build Windows DLL (requires mingw-w64)"
+	@echo "  duktape             - Download Duktape"
+	@echo "  bundle              - Generate JS bundle from TypeScript"
+	@echo "  example             - Build example program"
+	@echo "  test                - Run example program"
+	@echo "  clean               - Clean build artifacts"
+	@echo "  distclean           - Clean everything including Duktape"
+	@echo "  docker-build        - Build Linux .so using Docker (CentOS 6.9 compatible)"
+	@echo "  docker-build-windows- Build Windows .dll using Docker (MinGW-w64)"
+	@echo "  all-platforms       - Build for all platforms (Linux + Windows)"
+	@echo "  help                - Show this help"
+	@echo ""
+	@echo "Output files:"
+	@echo "  Linux:   build/libtypecast_autotag.so"
+	@echo "  Windows: build/typecast_autotag.dll, build/typecast_autotag.lib"

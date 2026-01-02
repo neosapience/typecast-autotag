@@ -6,6 +6,11 @@
  * 
  * Copyright (c) 2025 TypeCast
  * 
+ * Platform support:
+ * - Linux: .so (shared library)
+ * - Windows: .dll (dynamic link library)
+ * - macOS: .dylib (dynamic library)
+ * 
  * Usage example:
  * 
  *   #include "typecast_autotag.h"
@@ -39,6 +44,29 @@ extern "C" {
 /* Library version */
 #define TYPECAST_VERSION "1.0.0"
 
+/*
+ * DLL Export/Import macros for Windows
+ * 
+ * When building the library: define TYPECAST_BUILDING_DLL
+ * When using the library: do not define anything (or define TYPECAST_STATIC for static linking)
+ */
+#if defined(_WIN32) || defined(_WIN64)
+    #ifdef TYPECAST_STATIC
+        #define TYPECAST_API
+    #elif defined(TYPECAST_BUILDING_DLL)
+        #define TYPECAST_API __declspec(dllexport)
+    #else
+        #define TYPECAST_API __declspec(dllimport)
+    #endif
+#else
+    /* For GCC/Clang, use visibility attribute for symbol export */
+    #if defined(__GNUC__) && __GNUC__ >= 4
+        #define TYPECAST_API __attribute__((visibility("default")))
+    #else
+        #define TYPECAST_API
+    #endif
+#endif
+
 /**
  * Initialize the library
  * 
@@ -50,7 +78,7 @@ extern "C" {
  * 
  * @return 0: success, -1: failure
  */
-int typecast_init(void);
+TYPECAST_API int typecast_init(void);
 
 /**
  * Cleanup the library
@@ -58,7 +86,7 @@ int typecast_init(void);
  * Releases all allocated resources.
  * Call at program exit.
  */
-void typecast_cleanup(void);
+TYPECAST_API void typecast_cleanup(void);
 
 /**
  * Auto tagging (fully automatic processing)
@@ -78,7 +106,7 @@ void typecast_cleanup(void);
  * - When you want all patterns processed automatically
  * - When the input text has no manual tags
  */
-char* typecast_auto_tag(const char *text);
+TYPECAST_API char* typecast_auto_tag(const char *text);
 
 /**
  * Auto tagging + manual tags (hybrid approach)
@@ -101,7 +129,7 @@ char* typecast_auto_tag(const char *text);
  *   Input: "name(김철수)님, 잔액은 50000원입니다."
  *   Output: "김 철 수님, 잔액은 오만 원입니다."
  */
-char* typecast_auto_tag_with_manual(const char *text);
+TYPECAST_API char* typecast_auto_tag_with_manual(const char *text);
 
 /**
  * Manual tags only (legacy compatible approach)
@@ -134,7 +162,7 @@ char* typecast_auto_tag_with_manual(const char *text);
  *   Input: "phone(010-1234-5678)로 연락주세요."
  *   Output: "공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 연락주세요."
  */
-char* typecast_manual_tag(const char *text);
+TYPECAST_API char* typecast_manual_tag(const char *text);
 
 /**
  * Free memory
@@ -144,14 +172,14 @@ char* typecast_manual_tag(const char *text);
  * 
  * @param str String to free (NULL is also accepted)
  */
-void typecast_free(char *str);
+TYPECAST_API void typecast_free(char *str);
 
 /**
  * Return version information
  * 
  * @return Library version string (static string, no need to free)
  */
-const char* typecast_version(void);
+TYPECAST_API const char* typecast_version(void);
 
 #ifdef __cplusplus
 }
