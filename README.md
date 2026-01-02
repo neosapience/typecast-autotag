@@ -25,38 +25,38 @@
 
 This library supports **multiple languages** for TTS text preprocessing:
 
-| Language | Status | Module |
-| -------- | ------ | ------ |
-| **Korean** (한국어) | ✅ Full Support | `korean` |
-| **English** | ✅ Full Support | `english` |
+| Language            | Status          | Module    |
+| ------------------- | --------------- | --------- |
+| **Korean** (한국어) | ✅ Full Support | `korean`  |
+| **English**         | ✅ Full Support | `english` |
 
 ## Supported Environments
 
 ### Development Languages
 
-| Language | Version | Package |
-| -------- | ------- | ------- |
-| **Node.js** | ≥18 | `typecast-autotag` (npm/pnpm) |
-| **Browser** | Modern | `typecast-autotag` (ESM/UMD) |
-| **Python** | ≥3.8 | `typecast-autotag` (pip) |
-| **Java** | ≥8 | `typecast-autotag` (Maven) |
-| **C/C++** | Any | Native library |
+| Language    | Version | Package                       |
+| ----------- | ------- | ----------------------------- |
+| **Node.js** | ≥18     | `typecast-autotag` (npm/pnpm) |
+| **Browser** | Modern  | `typecast-autotag` (ESM/UMD)  |
+| **Python**  | ≥3.8    | `typecast-autotag` (pip)      |
+| **Java**    | ≥8      | `typecast-autotag` (Maven)    |
+| **C/C++**   | Any     | Native library                |
 
 ### Server Platforms
 
-| Platform | Status |
-| -------- | ------ |
-| **Linux** | ✅ Supported (CentOS 6.9+, Amazon Linux 2+, Ubuntu, Debian, etc.) |
-| **macOS** | ✅ Supported (Intel & Apple Silicon) |
-| **Windows** | ✅ Supported (Windows 10+) |
+| Platform    | Status                                                            |
+| ----------- | ----------------------------------------------------------------- |
+| **Linux**   | ✅ Supported (CentOS 6.9+, Amazon Linux 2+, Ubuntu, Debian, etc.) |
+| **macOS**   | ✅ Supported (Intel & Apple Silicon)                              |
+| **Windows** | ✅ Supported (Windows 10+)                                        |
 
 ### Server Architectures
 
-| Architecture | Status |
-| ------------ | ------ |
-| **x86_64** (AMD64) | ✅ Supported |
-| **x86** (32-bit) | ✅ Supported |
-| **arm64** (AArch64) | ✅ Supported |
+| Architecture           | Status       |
+| ---------------------- | ------------ |
+| **x86_64** (AMD64)     | ✅ Supported |
+| **x86** (32-bit)       | ✅ Supported |
+| **arm64** (AArch64)    | ✅ Supported |
 | **armv7** (32-bit ARM) | ✅ Supported |
 
 ---
@@ -200,10 +200,10 @@ autoTag('$500, 555-1234', { language: 'en', enabledTags: ['phone'] });
 // → '$500, five five five, one two three four'
 ```
 
-| Option        | Type       | Default | Description                       |
-| ------------- | ---------- | ------- | --------------------------------- |
-| `language`    | `'ko'｜'en'` | `'ko'`  | Language to use                   |
-| `enabledTags` | `string[]` | all     | Tag types to enable               |
+| Option        | Type         | Default | Description         |
+| ------------- | ------------ | ------- | ------------------- |
+| `language`    | `'ko'｜'en'` | `'ko'`  | Language to use     |
+| `enabledTags` | `string[]`   | all     | Tag types to enable |
 
 </details>
 
@@ -291,61 +291,61 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 
 ### English Auto-tags (Automatically Detected)
 
-| Tag            | Description      | Input                | Output                                              |
-| -------------- | ---------------- | -------------------- | --------------------------------------------------- |
-| `phone`        | Phone numbers    | `555-123-4567`       | `five five five, one two three, four five six seven` |
-| `datetime`     | Date and time    | `2024-01-15T14:30`   | `January fifteenth, twenty twenty-four, two thirty PM` |
-| `time`         | Time             | `2:30 PM`            | `two thirty PM`                                     |
-| `date`         | Date             | `January 15, 2024`   | `January fifteenth, twenty twenty-four`             |
-| `money`        | Currency amounts | `$1,500`             | `one thousand five hundred dollars`                 |
-| `year`         | Year             | `year 2024`          | `year twenty twenty-four`                           |
-| `month`        | Month            | `January`            | `January`                                           |
-| `day`          | Day              | `the 15th`           | `the fifteenth`                                     |
-| `order`        | Ordinal numbers  | `1st place`          | `first place`                                       |
-| `point`        | Points/scores    | `95 points`          | `ninety-five points`                                |
-| `piece`        | Counting         | `5 items`            | `five items`                                        |
-| `minsec`       | Duration (m/s)   | `5m30s`, `100ms`     | `five minutes thirty seconds`, `one hundred milliseconds` |
-| `ratio`        | Ratio/percent    | `50%`, `1:2`         | `fifty percent`, `one to two`                       |
-| `duration`     | Period           | `3 months`           | `three months`                                      |
-| `floor`        | Floor numbers    | `5th floor`, `B1`    | `fifth floor`, `basement one`                       |
-| `weight`       | Weight           | `5kg`, `100lb`       | `five kilograms`, `one hundred pounds`              |
-| `distance`     | Distance         | `5km`, `100m`        | `five kilometers`, `one hundred meters`             |
-| `temperature`  | Temperature      | `25°C`, `-5°F`       | `twenty-five degrees Celsius`, `minus five degrees Fahrenheit` |
-| `volume`       | Volume/capacity  | `500ml`, `2L`        | `five hundred milliliters`, `two liters`            |
-| `dataCapacity` | Data capacity    | `100GB`, `50Mbps`    | `one hundred gigabytes`, `fifty megabits per second` |
-| `inch`         | Inch             | `55 inches`          | `fifty-five inches`                                 |
+| Tag            | Description      | Input              | Output                                                         |
+| -------------- | ---------------- | ------------------ | -------------------------------------------------------------- |
+| `phone`        | Phone numbers    | `555-123-4567`     | `five five five, one two three, four five six seven`           |
+| `datetime`     | Date and time    | `2024-01-15T14:30` | `January fifteenth, twenty twenty-four, two thirty PM`         |
+| `time`         | Time             | `2:30 PM`          | `two thirty PM`                                                |
+| `date`         | Date             | `January 15, 2024` | `January fifteenth, twenty twenty-four`                        |
+| `money`        | Currency amounts | `$1,500`           | `one thousand five hundred dollars`                            |
+| `year`         | Year             | `year 2024`        | `year twenty twenty-four`                                      |
+| `month`        | Month            | `January`          | `January`                                                      |
+| `day`          | Day              | `the 15th`         | `the fifteenth`                                                |
+| `order`        | Ordinal numbers  | `1st place`        | `first place`                                                  |
+| `point`        | Points/scores    | `95 points`        | `ninety-five points`                                           |
+| `piece`        | Counting         | `5 items`          | `five items`                                                   |
+| `minsec`       | Duration (m/s)   | `5m30s`, `100ms`   | `five minutes thirty seconds`, `one hundred milliseconds`      |
+| `ratio`        | Ratio/percent    | `50%`, `1:2`       | `fifty percent`, `one to two`                                  |
+| `duration`     | Period           | `3 months`         | `three months`                                                 |
+| `floor`        | Floor numbers    | `5th floor`, `B1`  | `fifth floor`, `basement one`                                  |
+| `weight`       | Weight           | `5kg`, `100lb`     | `five kilograms`, `one hundred pounds`                         |
+| `distance`     | Distance         | `5km`, `100m`      | `five kilometers`, `one hundred meters`                        |
+| `temperature`  | Temperature      | `25°C`, `-5°F`     | `twenty-five degrees Celsius`, `minus five degrees Fahrenheit` |
+| `volume`       | Volume/capacity  | `500ml`, `2L`      | `five hundred milliliters`, `two liters`                       |
+| `dataCapacity` | Data capacity    | `100GB`, `50Mbps`  | `one hundred gigabytes`, `fifty megabits per second`           |
+| `inch`         | Inch             | `55 inches`        | `fifty-five inches`                                            |
 
 ### Korean Auto-tags (Automatically Detected)
 
-| Tag            | Description      | Input                | Output                                          |
-| -------------- | ---------------- | -------------------- | ----------------------------------------------- |
-| `phone`        | Phone numbers    | `010-1234-5678`      | `공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔`    |
-| `datetime`     | Date and time    | `2024-01-15T14:30`   | `이천이십사년 일월 십오일 오후 두 시 삼십 분`   |
-| `time`         | Time             | `14:30`              | `오후 두 시 삼십 분`                            |
-| `date`         | Date             | `2024-01-15`         | `이천이십사년 일월 십오일`                      |
-| `money`        | Currency amounts | `50000원`            | `오만 원`                                       |
-| `year`         | Year             | `2024년`             | `이천이십사년`                                  |
-| `month`        | Month            | `12월`               | `십이월`                                        |
-| `day`          | Day              | `25일`               | `이십오일`                                      |
-| `order`        | Ordinal numbers  | `3번째`, `2등`       | `세 번째`, `이 등`                              |
-| `point`        | Points/scores    | `95점`               | `구십오 점`                                     |
-| `piece`        | Counting         | `5개`                | `다섯 개`                                       |
-| `minsec`       | Duration (m/s)   | `5분30초`, `100ms`   | `오 분 삼십 초`, `백 밀리초`                    |
-| `ratio`        | Ratio/percent    | `50%`, `1:2`         | `오십 퍼센트`, `일 대 이`                       |
-| `duration`     | Period           | `3개월`              | `삼 개월`                                       |
-| `floor`        | Floor numbers    | `5층`, `B1층`        | `오 층`, `지하 일 층`                           |
-| `weight`       | Weight           | `5kg`, `100g`        | `오 킬로그램`, `백 그램`                        |
-| `distance`     | Distance         | `5km`                | `오 킬로미터`                                   |
-| `temperature`  | Temperature      | `25℃`, `-5°C`        | `이십오 도`, `영하 오 도`                       |
-| `volume`       | Volume/capacity  | `500ml`, `2L`        | `오백 밀리리터`, `이 리터`                      |
-| `dataCapacity` | Data capacity    | `100GB`, `50Mbps`    | `백 기가바이트`, `오십 메가비피에스`            |
-| `inch`         | Inch             | `55인치`             | `오십오 인치`                                   |
+| Tag            | Description      | Input              | Output                                        |
+| -------------- | ---------------- | ------------------ | --------------------------------------------- |
+| `phone`        | Phone numbers    | `010-1234-5678`    | `공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔`  |
+| `datetime`     | Date and time    | `2024-01-15T14:30` | `이천이십사년 일월 십오일 오후 두 시 삼십 분` |
+| `time`         | Time             | `14:30`            | `오후 두 시 삼십 분`                          |
+| `date`         | Date             | `2024-01-15`       | `이천이십사년 일월 십오일`                    |
+| `money`        | Currency amounts | `50000원`          | `오만 원`                                     |
+| `year`         | Year             | `2024년`           | `이천이십사년`                                |
+| `month`        | Month            | `12월`             | `십이월`                                      |
+| `day`          | Day              | `25일`             | `이십오일`                                    |
+| `order`        | Ordinal numbers  | `3번째`, `2등`     | `세 번째`, `이 등`                            |
+| `point`        | Points/scores    | `95점`             | `구십오 점`                                   |
+| `piece`        | Counting         | `5개`              | `다섯 개`                                     |
+| `minsec`       | Duration (m/s)   | `5분30초`, `100ms` | `오 분 삼십 초`, `백 밀리초`                  |
+| `ratio`        | Ratio/percent    | `50%`, `1:2`       | `오십 퍼센트`, `일 대 이`                     |
+| `duration`     | Period           | `3개월`            | `삼 개월`                                     |
+| `floor`        | Floor numbers    | `5층`, `B1층`      | `오 층`, `지하 일 층`                         |
+| `weight`       | Weight           | `5kg`, `100g`      | `오 킬로그램`, `백 그램`                      |
+| `distance`     | Distance         | `5km`              | `오 킬로미터`                                 |
+| `temperature`  | Temperature      | `25℃`, `-5°C`      | `이십오 도`, `영하 오 도`                     |
+| `volume`       | Volume/capacity  | `500ml`, `2L`      | `오백 밀리리터`, `이 리터`                    |
+| `dataCapacity` | Data capacity    | `100GB`, `50Mbps`  | `백 기가바이트`, `오십 메가비피에스`          |
+| `inch`         | Inch             | `55인치`           | `오십오 인치`                                 |
 
 ### Manual-only Tags
 
-| Tag      | Description         | English Syntax   | Korean Syntax    |
-| -------- | ------------------- | ---------------- | ---------------- |
-| `name`   | Name (char-by-char) | `name(John)` → `J O H N` | `name(김철수)` → `김 철 수` |
+| Tag      | Description         | English Syntax                        | Korean Syntax                  |
+| -------- | ------------------- | ------------------------------------- | ------------------------------ |
+| `name`   | Name (char-by-char) | `name(John)` → `J O H N`              | `name(김철수)` → `김 철 수`    |
 | `digits` | Digit-by-digit      | `digits(1234)` → `one two three four` | `digits(1234)` → `일 이 삼 사` |
 
 > **Tip:** All auto-tags can also be used as manual tags with explicit syntax.
@@ -428,18 +428,24 @@ Perfect for converting structured data to natural speech in automated phone syst
 
 ```typescript
 // English
-const script = autoTagWithManual(`
+const script = autoTagWithManual(
+  `
   Hello, name(${customerName}).
   Your order will be delivered on ${deliveryDate}.
   For questions, call ${supportPhone}.
-`, { language: 'en' });
+`,
+  { language: 'en' }
+);
 
 // Korean
-const script = autoTagWithManual(`
+const script = autoTagWithManual(
+  `
   안녕하세요, name(${customerName})님.
   주문하신 상품이 ${deliveryDate}에 배송될 예정입니다.
   문의사항은 ${supportPhone}으로 연락주세요.
-`, { language: 'ko' });
+`,
+  { language: 'ko' }
+);
 ```
 
 ### IVR Systems
@@ -510,11 +516,11 @@ pnpm setup
 
 ### Other Bindings
 
-| Language | Documentation |
-| -------- | ------------- |
-| C/C++    | [c-binding/README.md](./c-binding/README.md) |
+| Language | Documentation                                          |
+| -------- | ------------------------------------------------------ |
+| C/C++    | [c-binding/README.md](./c-binding/README.md)           |
 | Python   | [python-binding/README.md](./python-binding/README.md) |
-| Java     | [java-binding/README.md](./java-binding/README.md) |
+| Java     | [java-binding/README.md](./java-binding/README.md)     |
 
 ### Project Structure
 
