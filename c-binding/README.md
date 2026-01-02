@@ -198,8 +198,8 @@ char *result = typecast_auto_tag_with_manual(
 ```bash
 cd c-binding
 
-# Download and build QuickJS
-make quickjs
+# Download Duktape
+make duktape
 
 # Generate JS bundle
 make bundle
