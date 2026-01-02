@@ -20,9 +20,10 @@
   "scripts": {
     "build": "microbundle --tsconfig tsconfig.build.json",
     "dev": "microbundle watch --tsconfig tsconfig.build.json",
-    "test": "jest",
+    "test": "jest && pnpm test:e2e",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:e2e": "tsx c-binding/scripts/e2e/index.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
@@ -58,7 +59,9 @@
     "microbundle": "^0.15.1",
     "prettier": "^3.4.2",
     "ts-jest": "^29.2.5",
-    "typescript": "^5.7.2"
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.2",
+    "zx": "^8.8.5"
   },
   "lint-staged": {
     "*.ts": [

@@ -1,5 +1,5 @@
 /**
- * TypeCast AutoTag - Multilingual Auto-Tagging Library
+ * Typecast Autotag - Multilingual Auto-Tagging Library
  *
  * Automatically recognizes patterns like phone numbers, dates, times, and amounts
  * in text and converts them to TTS-friendly formats.

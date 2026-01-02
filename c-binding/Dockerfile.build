@@ -1,36 +1,36 @@
-# TypeCast AutoTag C Library 빌드 환경
-# CentOS 6.9 호환을 위해 CentOS 6 기반으로 빌드 (glibc 2.12)
-# Duktape 2.7.0 사용 (C99 호환, GCC 4.4 지원)
-# Amazon Linux 2 (glibc 2.26)는 하위 호환됨
+# Typecast Autotag C Library Build Environment
+# Build on CentOS 6 base for CentOS 6.9 compatibility (glibc 2.12)
+# Uses Duktape 2.7.0 (C99 compatible, GCC 4.4 supported)
+# Amazon Linux 2 (glibc 2.26) is backward compatible
 
 FROM --platform=linux/amd64 quay.io/centos/centos:6
 
-# CentOS 6 vault 저장소로 변경 (EOL 이후 필요)
+# Switch to CentOS 6 vault repository (required after EOL)
 RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Base.repo && \
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Base.repo
 
-# 빌드 도구 설치 (GCC 4.4 사용)
+# Install build tools (using GCC 4.4)
 RUN yum install -y gcc make curl xz file
 
-# 작업 디렉토리 설정
+# Set working directory
 WORKDIR /build
 
-# Duktape 2.7.0 다운로드 및 준비
+# Download and prepare Duktape 2.7.0
 ENV DUKTAPE_VERSION=2.7.0
 RUN curl -L https://duktape.org/duktape-${DUKTAPE_VERSION}.tar.xz -o duktape.tar.xz && \
     xz -d duktape.tar.xz && \
     tar -xf duktape.tar && \
     rm duktape.tar
 
-# 소스 파일 복사
+# Copy source files
 COPY src/ /build/src/
 COPY include/ /build/include/
 
-# Duktape 정적 라이브러리 빌드 (-fPIC 필수)
+# Build Duktape static library (-fPIC required)
 RUN cd duktape-${DUKTAPE_VERSION}/src && \
     gcc -std=c99 -O2 -fPIC -c duktape.c -o duktape.o
 
-# 공유 라이브러리 빌드
+# Build shared library
 RUN gcc -std=c99 -Wall -O2 -fPIC -shared \
     -I/build/include \
     -I/build/duktape-${DUKTAPE_VERSION}/src \
@@ -39,10 +39,10 @@ RUN gcc -std=c99 -Wall -O2 -fPIC -shared \
     -lm \
     -o /build/libtypecast_autotag.so
 
-# 빌드 결과물 확인
+# Verify build output
 RUN ls -la /build/*.so && \
     file /build/*.so && \
     ldd /build/*.so
 
-# 출력 디렉토리로 복사
+# Copy to output directory
 CMD ["sh", "-c", "cp /build/libtypecast_autotag.so /output/ && cp /build/include/typecast_autotag.h /output/ && echo 'Build complete!' && ldd --version | head -1"]

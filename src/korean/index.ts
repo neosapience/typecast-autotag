@@ -1,5 +1,5 @@
 /**
- * Korean language module for TypeCast AutoTag
+ * Korean language module for Typecast Autotag
  *
  * Exports all Korean-specific auto-tagging and manual-tagging functions.
  */

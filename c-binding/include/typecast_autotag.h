@@ -1,5 +1,5 @@
 /**
- * TypeCast AutoTag C Library
+ * Typecast Autotag C Library
  * 
  * TTS 문장 전처리 라이브러리
  * 전화번호, 날짜, 금액 등을 음성 합성에 적합한 형식으로 변환합니다.

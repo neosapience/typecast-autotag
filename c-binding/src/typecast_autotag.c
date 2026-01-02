@@ -1,5 +1,5 @@
 /**
- * TypeCast AutoTag C Library
+ * Typecast Autotag C Library
  * 
  * Duktape를 임베드하여 TTS 문장 변환 기능을 C에서 사용할 수 있게 함
  * 

@@ -1,4 +1,4 @@
-# TypeCast AutoTag C Library 예제 Makefile
+# Typecast Autotag C Library 예제 Makefile
 
 CC ?= gcc
 CFLAGS := -Wall -Wextra -O2

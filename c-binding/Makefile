@@ -1,41 +1,41 @@
-# TypeCast AutoTag C Library Makefile
-# CentOS 6.9 호환을 위해 musl-libc 정적 링크 사용
+# Typecast Autotag C Library Makefile
+# Uses musl-libc static linking for CentOS 6.9 compatibility
 
-# QuickJS 버전
+# QuickJS version
 QUICKJS_VERSION := 2024-01-13
 QUICKJS_URL := https://bellard.org/quickjs/quickjs-$(QUICKJS_VERSION).tar.xz
 QUICKJS_DIR := quickjs/quickjs-$(QUICKJS_VERSION)
 
-# 컴파일러 설정
+# Compiler settings
 CC ?= gcc
 AR ?= ar
 
-# 기본 플래그
+# Default flags
 CFLAGS := -Wall -Wextra -O2 -fPIC
 LDFLAGS := -shared
 
-# 디렉토리
+# Directories
 SRC_DIR := src
 INCLUDE_DIR := include
 BUILD_DIR := build
 
-# 소스 파일
+# Source files
 WRAPPER_SRC := $(SRC_DIR)/typecast_autotag.c
 BUNDLE_HEADER := $(SRC_DIR)/autotag_bundle.h
 
-# 출력 파일
+# Output files
 LIB_NAME := libtypecast_autotag
 SHARED_LIB := $(BUILD_DIR)/$(LIB_NAME).so
 STATIC_LIB := $(BUILD_DIR)/$(LIB_NAME).a
 
-# QuickJS 정적 라이브러리
+# QuickJS static library
 QUICKJS_LIB := $(QUICKJS_DIR)/libquickjs.a
 
 .PHONY: all clean quickjs bundle example test
 
 all: $(SHARED_LIB)
 
-# QuickJS 다운로드 및 빌드
+# Download and build QuickJS
 $(QUICKJS_DIR):
 	@echo "Downloading QuickJS $(QUICKJS_VERSION)..."
 	@mkdir -p quickjs
@@ -49,12 +49,12 @@ $(QUICKJS_LIB): $(QUICKJS_DIR)
 
 quickjs: $(QUICKJS_LIB)
 
-# JS 번들 생성
+# Generate JS bundle
 bundle:
 	@echo "Bundling TypeScript..."
 	@cd .. && node c-binding/scripts/bundle.js
 
-# 공유 라이브러리 빌드
+# Build shared library
 $(SHARED_LIB): $(WRAPPER_SRC) $(QUICKJS_LIB) $(BUNDLE_HEADER)
 	@echo "Building shared library..."
 	@mkdir -p $(BUILD_DIR)
@@ -68,7 +68,7 @@ $(SHARED_LIB): $(WRAPPER_SRC) $(QUICKJS_LIB) $(BUNDLE_HEADER)
 	@echo "Built: $(SHARED_LIB)"
 	@cp $(INCLUDE_DIR)/typecast_autotag.h $(BUILD_DIR)/
 
-# 정적 라이브러리 빌드
+# Build static library
 static: $(WRAPPER_SRC) $(QUICKJS_LIB) $(BUNDLE_HEADER)
 	@echo "Building static library..."
 	@mkdir -p $(BUILD_DIR)
@@ -81,12 +81,12 @@ static: $(WRAPPER_SRC) $(QUICKJS_LIB) $(BUNDLE_HEADER)
 	@echo "Built: $(STATIC_LIB)"
 	@cp $(INCLUDE_DIR)/typecast_autotag.h $(BUILD_DIR)/
 
-# 예제 빌드
+# Build example
 example: $(SHARED_LIB)
 	@echo "Building example..."
 	@cd example && $(MAKE)
 
-# 테스트 실행
+# Run tests
 test: example
 	@echo "Running example..."
 ifeq ($(shell uname),Darwin)
@@ -95,28 +95,28 @@ else
 	@cd example && LD_LIBRARY_PATH=../$(BUILD_DIR) ./example
 endif
 
-# 정리
+# Clean build artifacts
 clean:
 	@rm -rf $(BUILD_DIR)
 	@cd example && $(MAKE) clean 2>/dev/null || true
 
-# QuickJS까지 정리
+# Clean everything including QuickJS
 distclean: clean
 	@rm -rf quickjs
 
-# 헤더 파일 복사
+# Copy header files
 install-headers: $(SHARED_LIB)
 	@cp $(INCLUDE_DIR)/typecast_autotag.h $(BUILD_DIR)/
 
-# Docker를 통한 정적 빌드 (CentOS 6.9 호환)
+# Docker build for static linking (CentOS 6.9 compatible)
 docker-build:
 	@echo "Building with Docker (musl-libc for CentOS 6.9 compatibility)..."
 	docker build -t typecast-autotag-builder -f Dockerfile.build .
 	docker run --rm -v $(PWD)/build:/output typecast-autotag-builder
 
-# 도움말
+# Help
 help:
-	@echo "TypeCast AutoTag C Library Build System"
+	@echo "Typecast Autotag C Library Build System"
 	@echo ""
 	@echo "Targets:"
 	@echo "  all          - Build shared library (default)"
