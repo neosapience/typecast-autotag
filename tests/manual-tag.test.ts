@@ -59,7 +59,7 @@ describe('manualTag', () => {
     });
 
     it('digits 태그를 변환한다', () => {
-      expect(manualTag('인증번호: digits(1234)')).toBe('인증번호: 1 . 2 . 3 . 4');
+      expect(manualTag('인증번호: digits(1234)')).toBe('인증번호: 일 . 이 . 삼 . 사');
     });
 
     it('minsec 태그를 변환한다', () => {

@@ -160,7 +160,7 @@ int main() {
     
     // digits tag
     run_test(&result, "digits", typecast_manual_tag,
-             "digits(123)", "1 . 2 . 3", 1);
+             "digits(123)", "일 . 이 . 삼", 1);
     
     // minsec tag (output varies by time format)
     run_test(&result, "minsec", typecast_manual_tag,

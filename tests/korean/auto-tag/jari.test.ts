@@ -15,19 +15,19 @@ describe('autoTag - jari (자리 자동 태깅)', () => {
 
   describe('자리 수 + 후행 숫자', () => {
     it('자리 수와 후행 숫자를 함께 변환한다', () => {
-      expect(autoJari('4자리 5678')).toBe('네자리 오육칠팔');
-      expect(autoJari('4자리 1234')).toBe('네자리 일이삼사');
+      expect(autoJari('4자리 5678')).toBe('네자리 오 . 육 . 칠 . 팔');
+      expect(autoJari('4자리 1234')).toBe('네자리 일 . 이 . 삼 . 사');
     });
 
     it('0이 포함된 후행 숫자를 변환한다', () => {
-      expect(autoJari('4자리 1023')).toBe('네자리 일영이삼');
-      expect(autoJari('4자리 0000')).toBe('네자리 영영영영');
+      expect(autoJari('4자리 1023')).toBe('네자리 일 . 영 . 이 . 삼');
+      expect(autoJari('4자리 0000')).toBe('네자리 영 . 영 . 영 . 영');
     });
   });
 
   describe('접두사 포함', () => {
     it('끝 자리 패턴을 변환한다', () => {
-      expect(autoJari('끝 4자리 5678')).toBe('끝 네자리 오육칠팔');
+      expect(autoJari('끝 4자리 5678')).toBe('끝 네자리 오 . 육 . 칠 . 팔');
     });
 
     it('마지막 자리 패턴을 변환한다', () => {
@@ -38,7 +38,7 @@ describe('autoTag - jari (자리 자동 태깅)', () => {
   describe('실제 문맥', () => {
     it('계좌번호 안내 문맥을 변환한다', () => {
       expect(autoJari('등록된 계좌: 국민은행 끝 4자리 5678')).toBe(
-        '등록된 계좌: 국민은행 끝 네자리 오육칠팔'
+        '등록된 계좌: 국민은행 끝 네자리 오 . 육 . 칠 . 팔'
       );
     });
 

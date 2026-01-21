@@ -152,10 +152,10 @@ class TestManualTag:
     def test_digits_tag(self):
         """Test digits tag conversion."""
         result = manual_tag("digits(123) 번호입니다.")
-        # Digits are kept as-is with dots
-        assert "1" in result
-        assert "2" in result
-        assert "3" in result
+        # Digits are converted to Korean with dots
+        assert "일" in result
+        assert "이" in result
+        assert "삼" in result
         assert "." in result
     
     def test_point_tag(self):
