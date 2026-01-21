@@ -6,7 +6,7 @@ import { digitToKorean } from '../utils/number-to-korean';
 export interface SeatOptions {
   /**
    * 숫자 사이 구분자
-   * @default ' '
+   * @default ' . '
    */
   separator?: string;
 }
@@ -15,8 +15,8 @@ export interface SeatOptions {
  * 좌석번호를 한글로 변환
  *
  * 좌석번호는 숫자를 개별로 읽습니다:
- * - 23A → 이 삼 A
- * - 15F → 일 오 F
+ * - 23A → 이 . 삼 A
+ * - 15F → 일 . 오 F
  * - 7C → 칠 C
  *
  * @param input - 변환할 좌석번호 (문자열)
@@ -25,13 +25,13 @@ export interface SeatOptions {
  *
  * @example
  * ```typescript
- * seat('23A');   // '이 삼 A'
- * seat('15F');   // '일 오 F'
+ * seat('23A');   // '이 . 삼 A'
+ * seat('15F');   // '일 . 오 F'
  * seat('7C');    // '칠 C'
  * ```
  */
 export function seat(input: string, options?: SeatOptions): string {
-  const separator = options?.separator ?? ' ';
+  const separator = options?.separator ?? ' . ';
 
   const trimmed = input.trim();
   if (trimmed === '') return input;

@@ -6,7 +6,7 @@ import { digitToPhoneKorean } from '../utils/number-to-korean';
 export interface RoomNumberOptions {
   /**
    * 숫자 사이 구분자
-   * @default ' '
+   * @default ' . '
    */
   separator?: string;
 }
@@ -15,8 +15,8 @@ export interface RoomNumberOptions {
  * 호실 번호를 한글로 변환
  *
  * 호실 번호는 숫자를 개별로 읽습니다:
- * - 1205호 → 일 이 공 오 호
- * - 302호 → 삼 공 이 호
+ * - 1205호 → 일 . 이 . 공 . 오 호
+ * - 302호 → 삼 . 공 . 이 호
  *
  * @param input - 변환할 호실 번호 (문자열)
  * @param options - 옵션 (구분자)
@@ -24,13 +24,13 @@ export interface RoomNumberOptions {
  *
  * @example
  * ```typescript
- * roomNumber('1205호');  // '일 이 공 오 호'
- * roomNumber('302호');   // '삼 공 이 호'
- * roomNumber('501');     // '오 공 일'
+ * roomNumber('1205호');  // '일 . 이 . 공 . 오 호'
+ * roomNumber('302호');   // '삼 . 공 . 이 호'
+ * roomNumber('501');     // '오 . 공 . 일'
  * ```
  */
 export function roomNumber(input: string, options?: RoomNumberOptions): string {
-  const separator = options?.separator ?? ' ';
+  const separator = options?.separator ?? ' . ';
 
   const trimmed = input.trim();
   if (trimmed === '') return input;

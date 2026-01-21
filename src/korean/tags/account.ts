@@ -17,9 +17,9 @@ export interface AccountOptions {
  *
  * @example
  * ```typescript
- * account('123-456-789012'); // '일 이 삼 다시 사 오 육 다시 칠 팔 구 공 일 이'
- * account('110-123-456789'); // '일 일 공 다시 일 이 삼 다시 사 오 육 칠 팔 구'
- * account('123-456-789012', { includeSeparatorWord: false }); // '일 이 삼 사 오 육 칠 팔 구 공 일 이'
+ * account('123-456-789012'); // '일 . 이 . 삼 다시 사 . 오 . 육 다시 칠 . 팔 . 구 . 공 . 일 . 이'
+ * account('110-123-456789'); // '일 . 일 . 공 다시 일 . 이 . 삼 다시 사 . 오 . 육 . 칠 . 팔 . 구'
+ * account('123-456-789012', { includeSeparatorWord: false }); // '일 . 이 . 삼 사 . 오 . 육 칠 . 팔 . 구 . 공 . 일 . 이'
  * ```
  */
 export function account(input: string, options?: AccountOptions): string {
@@ -51,7 +51,7 @@ export function account(input: string, options?: AccountOptions): string {
         // 그 외 문자는 그대로 유지
         return char;
       })
-      .join(' ');
+      .join(' . ');
   });
 
   return convertedGroups.join(separator);

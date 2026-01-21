@@ -12,7 +12,7 @@ export interface JariOptions {
 
   /**
    * 후행 숫자 사이 구분자
-   * @default ''
+   * @default ' . '
    */
   digitSeparator?: string;
 }
@@ -56,8 +56,8 @@ function digitsToKorean(digits: string, separator: string = ''): string {
  * @example
  * ```typescript
  * jari('4자리');           // '네자리'
- * jari('4자리 5678');      // '네자리 오육칠팔'
- * jari('끝 4자리 5678');   // '끝 네자리 오육칠팔'
+ * jari('4자리 5678');      // '네자리 오 . 육 . 칠 . 팔'
+ * jari('끝 4자리 5678');   // '끝 네자리 오 . 육 . 칠 . 팔'
  * jari('1자리');           // '한자리'
  * jari('10자리');          // '열자리'
  * jari('13자리');          // '열세자리'
@@ -65,7 +65,7 @@ function digitsToKorean(digits: string, separator: string = ''): string {
  */
 export function jari(input: string, options?: JariOptions): string {
   const includeSpaceBeforeJari = options?.includeSpaceBeforeJari ?? false;
-  const digitSeparator = options?.digitSeparator ?? '';
+  const digitSeparator = options?.digitSeparator ?? ' . ';
 
   const trimmed = input.trim();
   if (trimmed === '') return input;

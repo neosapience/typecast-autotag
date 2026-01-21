@@ -6,7 +6,7 @@ import { digitToPhoneKorean } from '../utils/number-to-korean';
 export interface FlightOptions {
   /**
    * 숫자 사이 구분자
-   * @default ' '
+   * @default ' . '
    */
   separator?: string;
 }
@@ -15,9 +15,9 @@ export interface FlightOptions {
  * 항공편 번호를 한글로 변환
  *
  * 항공편 번호는 숫자를 개별로 읽습니다:
- * - OZ301 → OZ 삼 공 일
- * - KE123 → KE 일 이 삼
- * - OZ751 → OZ 칠 오 일
+ * - OZ301 → OZ 삼 . 공 . 일
+ * - KE123 → KE 일 . 이 . 삼
+ * - OZ751 → OZ 칠 . 오 . 일
  *
  * @param input - 변환할 항공편 번호 (문자열)
  * @param options - 옵션 (구분자)
@@ -25,13 +25,13 @@ export interface FlightOptions {
  *
  * @example
  * ```typescript
- * flight('OZ301');   // 'OZ 삼 공 일'
- * flight('KE123');   // 'KE 일 이 삼'
- * flight('OZ751');   // 'OZ 칠 오 일'
+ * flight('OZ301');   // 'OZ 삼 . 공 . 일'
+ * flight('KE123');   // 'KE 일 . 이 . 삼'
+ * flight('OZ751');   // 'OZ 칠 . 오 . 일'
  * ```
  */
 export function flight(input: string, options?: FlightOptions): string {
-  const separator = options?.separator ?? ' ';
+  const separator = options?.separator ?? ' . ';
 
   const trimmed = input.trim();
   if (trimmed === '') return input;
