@@ -2,70 +2,74 @@ import { digits } from '../../../src/korean/tags/digits';
 
 describe('digits', () => {
   describe('기본 동작', () => {
-    it('숫자를 한 자리씩 끊어서 반환한다', () => {
-      expect(digits(123456)).toBe('1 . 2 . 3 . 4 . 5 . 6');
+    it('숫자를 한 자리씩 한글로 변환하여 반환한다', () => {
+      expect(digits(123456)).toBe('일 . 이 . 삼 . 사 . 오 . 육');
     });
 
     it('문자열 숫자도 처리한다', () => {
-      expect(digits('789')).toBe('7 . 8 . 9');
+      expect(digits('789')).toBe('칠 . 팔 . 구');
     });
 
     it('0도 처리한다', () => {
-      expect(digits('0')).toBe('0');
+      expect(digits('0')).toBe('공');
     });
 
     it('number 타입 0도 처리한다', () => {
-      expect(digits(0)).toBe('0');
+      expect(digits(0)).toBe('공');
     });
 
     it('모든 숫자를 처리한다', () => {
-      expect(digits('1234567890')).toBe('1 . 2 . 3 . 4 . 5 . 6 . 7 . 8 . 9 . 0');
+      expect(digits('1234567890')).toBe('일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 . 구 . 공');
     });
 
     it('앞자리 0이 있는 문자열도 처리한다', () => {
-      expect(digits('007')).toBe('0 . 0 . 7');
+      expect(digits('007')).toBe('공 . 공 . 칠');
     });
 
     it('긴 숫자 문자열을 처리한다', () => {
       expect(digits('56901846001013')).toBe(
-        '5 . 6 . 9 . 0 . 1 . 8 . 4 . 6 . 0 . 0 . 1 . 0 . 1 . 3'
+        '오 . 육 . 구 . 공 . 일 . 팔 . 사 . 육 . 공 . 공 . 일 . 공 . 일 . 삼'
       );
+    });
+
+    it('사용자 예시: 0213015를 한글로 변환한다', () => {
+      expect(digits('0213015')).toBe('공 . 이 . 일 . 삼 . 공 . 일 . 오');
     });
   });
 
   describe('커스텀 구분자', () => {
     it('커스텀 구분자를 사용할 수 있다', () => {
-      expect(digits('123', ', ')).toBe('1, 2, 3');
+      expect(digits('123', ', ')).toBe('일, 이, 삼');
     });
 
     it('빈 구분자도 사용할 수 있다', () => {
-      expect(digits('123', '')).toBe('123');
+      expect(digits('123', '')).toBe('일이삼');
     });
 
     it('공백 구분자를 사용할 수 있다', () => {
-      expect(digits('123', ' ')).toBe('1 2 3');
+      expect(digits('123', ' ')).toBe('일 이 삼');
     });
 
     it('하이픈 구분자를 사용할 수 있다', () => {
-      expect(digits('123', '-')).toBe('1-2-3');
+      expect(digits('123', '-')).toBe('일-이-삼');
     });
   });
 
   describe('숫자가 아닌 문자 처리', () => {
     it('음수 부호는 그대로 유지한다', () => {
-      expect(digits('-123')).toBe('- . 1 . 2 . 3');
+      expect(digits('-123')).toBe('- . 일 . 이 . 삼');
     });
 
     it('소수점은 그대로 유지한다', () => {
-      expect(digits('1.5')).toBe('1 . . . 5');
+      expect(digits('1.5')).toBe('일 . . . 오');
     });
 
     it('숫자가 아닌 문자가 섞여 있어도 처리한다', () => {
-      expect(digits('12a34')).toBe('1 . 2 . a . 3 . 4');
+      expect(digits('12a34')).toBe('일 . 이 . a . 삼 . 사');
     });
 
     it('공백이 포함된 문자열도 처리한다', () => {
-      expect(digits('1 2 3')).toBe('1 .   . 2 .   . 3');
+      expect(digits('1 2 3')).toBe('일 .   . 이 .   . 삼');
     });
   });
 
@@ -74,22 +78,22 @@ describe('digits', () => {
       expect(digits('')).toBe('');
     });
 
-    it('한 자리 숫자는 그대로 반환한다', () => {
-      expect(digits('5')).toBe('5');
+    it('한 자리 숫자는 한글로 변환하여 반환한다', () => {
+      expect(digits('5')).toBe('오');
     });
   });
 
   describe('실제 사용 사례', () => {
     it('전화번호 길이의 숫자를 처리한다', () => {
-      expect(digits('01012345678')).toBe('0 . 1 . 0 . 1 . 2 . 3 . 4 . 5 . 6 . 7 . 8');
+      expect(digits('01012345678')).toBe('공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔');
     });
 
     it('주민등록번호 앞자리 길이의 숫자를 처리한다', () => {
-      expect(digits('940101')).toBe('9 . 4 . 0 . 1 . 0 . 1');
+      expect(digits('940101')).toBe('구 . 사 . 공 . 일 . 공 . 일');
     });
 
     it('카드 끝자리 숫자를 처리한다', () => {
-      expect(digits('1234')).toBe('1 . 2 . 3 . 4');
+      expect(digits('1234')).toBe('일 . 이 . 삼 . 사');
     });
   });
 });

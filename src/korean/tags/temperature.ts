@@ -49,18 +49,19 @@ function numberToKoreanWithDecimal(numStr: string): string {
  * 온도를 한글로 변환
  *
  * 다양한 온도 표기를 지원합니다:
- * - 섭씨: 20℃, 20°C, 20도
+ * - 섭씨: 20℃, 20°C, 20도, 20 (단위 없으면 섭씨로 처리)
  * - 화씨: 68℉, 68°F
  * - 켈빈: 273K
  * - 음수 온도: -5℃ → 영하 오 도
  *
- * @param input - 변환할 온도 (문자열)
+ * @param input - 변환할 온도 (문자열 또는 숫자)
  * @param options - 옵션 (공백 포함 여부)
  * @returns 한글 온도 표현
  *
  * @example
  * ```typescript
  * temperature('20℃');      // '이십 도'
+ * temperature(25);          // '이십오 도'
  * temperature('-5℃');      // '영하 오 도'
  * temperature('20°C');     // '이십 도'
  * temperature('68℉');      // '육십팔 화씨'
@@ -69,20 +70,20 @@ function numberToKoreanWithDecimal(numStr: string): string {
  * temperature('20도');     // '이십 도'
  * ```
  */
-export function temperature(input: string, options?: TemperatureOptions): string {
+export function temperature(input: number | string, options?: TemperatureOptions): string {
   const includeSpace = options?.includeSpace ?? true;
   const space = includeSpace ? ' ' : '';
 
-  const trimmed = input.trim();
-  if (trimmed === '') return input;
+  const trimmed = String(input).trim();
+  if (trimmed === '') return String(input);
 
-  // 온도 패턴: [+-]?숫자[.소수] + 단위
+  // 온도 패턴: [+-]?숫자[.소수] + 단위 (단위는 선택적)
   // 단위: ℃, ℉, °C, °F, K, 도, 켈빈
-  const match = trimmed.match(/^([+-]?[\d,]+(?:\.\d+)?)\s*(℃|℉|°[CcFf]|[CcFfKk]|도|켈빈)$/);
+  const match = trimmed.match(/^([+-]?[\d,]+(?:\.\d+)?)\s*(℃|℉|°[CcFf]|[CcFfKk]|도|켈빈)?$/);
 
   if (match) {
     let numStr = match[1]?.replace(/,/g, '') ?? '';
-    const unit = match[2] ?? '';
+    const unit = match[2] ?? ''; // 단위가 없으면 빈 문자열 (섭씨로 처리)
 
     // 음수 처리
     const isNegative = numStr.startsWith('-');
@@ -111,7 +112,7 @@ export function temperature(input: string, options?: TemperatureOptions): string
     return koreanNum + space + targetUnit;
   }
 
-  return input;
+  return String(input);
 }
 
 /**
