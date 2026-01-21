@@ -88,7 +88,7 @@ gcc -o test test.c -L. -ltypecast_autotag -Wl,-rpath,.
 
 ```
 Initialization successful!
-Conversion result: 전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 입니다.
+Conversion result: 전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 입니다.
 Cleanup complete!
 ```
 
@@ -138,12 +138,12 @@ typecast_cleanup();
 
 ```c
 char *result = typecast_auto_tag("전화번호는 010-1234-5678입니다.");
-// Result: "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 입니다."
+// Result: "전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 입니다."
 ```
 
 **Automatically recognized patterns:**
 
-- Phone: `010-1234-5678` → 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔
+- Phone: `010-1234-5678` → 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔
 - Money: `50000원` → 오만 원
 - Date: `2024-03-15` → 이천이십사년 삼 월 십오 일
 - Time: `14:30` → 오후 두 시 삼십 분
@@ -161,15 +161,15 @@ Use when you want to precisely specify and convert certain parts.
 
 ```c
 char *result = typecast_manual_tag("name(김철수)님 안녕하세요.");
-// Result: "김 철 수님 안녕하세요."
+// Result: "김 . 철 . 수 님 안녕하세요."
 ```
 
 **Available Tags (37 total):**
 
 | Tag                    | Purpose       | Example                                             |
 | ---------------------- | ------------- | --------------------------------------------------- |
-| `name(name)`           | Read name     | `name(김철수)` → 김 철 수                           |
-| `phone(number)`        | Phone number  | `phone(010-1234-5678)` → 공 일 공 다시...           |
+| `name(name)`           | Read name     | `name(김철수)` → 김 . 철 . 수                       |
+| `phone(number)`        | Phone number  | `phone(010-1234-5678)` → 공 . 일 . 공 . 일 . 이...  |
 | `money(amount)`        | Amount        | `money(50000)` → 오만 원                            |
 | `date(date)`           | Date          | `date(2024-03-15)` → 이천이십사년 삼 월 십오 일     |
 | `time(time)`           | Time          | `time(14:30)` → 오후 두 시 삼십 분                  |
@@ -178,7 +178,7 @@ char *result = typecast_manual_tag("name(김철수)님 안녕하세요.");
 | `month(month)`         | Month         | `month(3)` → 삼월                                   |
 | `day(day)`             | Day           | `day(15)` → 십오일                                  |
 | `order(order)`         | Order         | `order(3)` → 세 번째                                |
-| `digits(number)`       | Digit by digit| `digits(123)` → 일 이 삼                            |
+| `digits(number)`       | Digit by digit| `digits(123)` → 1 . 2 . 3                           |
 | `number(number)`       | Number        | `number(7)` → 칠 번                                 |
 | `point(score)`         | Score         | `point(95)` → 구십오 점                             |
 | `piece(count)`         | Count         | `piece(3)` → 세 개                                  |
@@ -214,7 +214,7 @@ Use when you want automatic conversion but need tags for **things hard to recogn
 
 ```c
 char *result = typecast_auto_tag_with_manual("name(김철수)님, 잔액은 50000원입니다.");
-// Result: "김 철 수님, 잔액은 오만 원 입니다."
+// Result: "김 . 철 . 수 님, 잔액은 오만 원 입니다."
 ```
 
 > **Explanation:** `name(김철수)` is processed as a tag, while `50000원` is automatically recognized and converted.
@@ -271,7 +271,7 @@ int main() {
 
     char *result = typecast_auto_tag_with_manual(text);
     printf("TTS text: %s\n", result);
-    // Output: "김 철 수님, 현재 잔액은 백오십만 원 입니다. 문의사항은 일 오 팔 팔 다시 일 이 삼 사 로 연락주세요."
+    // Output: "김 . 철 . 수 님, 현재 잔액은 백오십만 원 입니다. 문의사항은 일 . 오 . 팔 . 팔 . 일 . 이 . 삼 . 사 로 연락주세요."
 
     typecast_free(result);
     typecast_cleanup();
@@ -287,7 +287,7 @@ char *result = typecast_auto_tag_with_manual(
     "예약일시는 2024-03-15 14:30입니다. "
     "예약번호는 1234입니다."
 );
-// Output: "홍 길 동님의 예약이 확인되었습니다.
+// Output: "홍 . 길 . 동 님의 예약이 확인되었습니다.
 //          예약일시는 이천이십사년 삼 월 십오 일 오후 두 시 삼십 분 입니다.
 //          예약번호는 천이백삼십사 입니다."
 ```
