@@ -1,4 +1,4 @@
-import { digitToKorean } from '../utils/number-to-korean';
+import { digitToPhoneKorean } from '../utils/number-to-korean';
 
 /**
  * carNumber 함수의 옵션
@@ -53,14 +53,14 @@ export function carNumber(input: string, options?: CarNumberOptions): string {
     }
 
     // 앞 숫자를 개별로 변환
-    const frontDigits = frontNum.split('').map((d) => digitToKorean(d));
+    const frontDigits = frontNum.split('').map((d) => digitToPhoneKorean(d));
     parts.push(...frontDigits);
 
     // 한글 문자 추가
     parts.push(letter);
 
     // 뒤 숫자를 개별로 변환
-    const backDigits = backNum.split('').map((d) => digitToKorean(d));
+    const backDigits = backNum.split('').map((d) => digitToPhoneKorean(d));
     parts.push(...backDigits);
 
     return parts.join(separator);

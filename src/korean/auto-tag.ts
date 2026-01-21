@@ -209,7 +209,7 @@ const AUTO_TAG_PATTERNS = {
     ],
     converter: (match: string) => {
       // "동 123-45" -> "동 일 이 삼 다시 사 오"
-      const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+      const DIGITS = ['공', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
       return match.replace(/(\d+)-(\d+)/, (_m, num1: string, num2: string) => {
         const first = num1
           .split('')
@@ -239,7 +239,7 @@ const AUTO_TAG_PATTERNS = {
       if (numMatch) {
         const prefix = match.replace(/\d+$/, '');
         const digits = numMatch[1] ?? '';
-        const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        const DIGITS = ['공', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
         const koreanDigits = digits
           .split('')
           .map((d) => DIGITS[parseInt(d, 10)] ?? d)
@@ -266,7 +266,7 @@ const AUTO_TAG_PATTERNS = {
       if (numMatch) {
         const prefix = match.replace(/([A-Z\d][-A-Z\d]+)$/, '');
         const code = numMatch[1] ?? '';
-        const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        const DIGITS = ['공', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
         const parts: string[] = [];
         let currentLetters = '';
         for (const c of code) {
@@ -309,7 +309,7 @@ const AUTO_TAG_PATTERNS = {
       if (numMatch) {
         const prefix = match.replace(/([A-Z가-힣]{1,3}[-]?\d{1,4})$/i, '');
         const code = numMatch[1] ?? '';
-        const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        const DIGITS = ['공', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
         const parts: string[] = [];
         let currentLetters = '';
         for (const c of code) {
@@ -360,7 +360,7 @@ const AUTO_TAG_PATTERNS = {
           .split('')
           .map((c) => {
             if (c === '-') return ' 다시 ';
-            const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+            const DIGITS = ['공', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
             return DIGITS[parseInt(c, 10)] ?? c;
           })
           .join(' ')
@@ -1025,6 +1025,32 @@ const AUTO_TAG_PATTERNS = {
   },
 
   /**
+   * 건물 동 번호 패턴
+   * - N동 (아파트, 건물 동 번호 - 개별 숫자로 읽기)
+   */
+  buildingNumber: {
+    patterns: [
+      // N동 (2자리 이상의 숫자 + 동, 뒤에 숫자나 이/삼 등이 오지 않는 경우)
+      // "서초동", "역삼동" 등 행정구역명 제외 (한글+동)
+      /(?<![가-힣0-9])\d{2,}\s*동(?!\d)/g,
+    ],
+    converter: (match: string) => {
+      const DIGITS = ['공', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+      const numMatch = match.match(/^(\d+)\s*(동)$/);
+      if (numMatch) {
+        const digits = numMatch[1] ?? '';
+        const suffix = numMatch[2] ?? '';
+        const koreanDigits = digits
+          .split('')
+          .map((d) => DIGITS[parseInt(d, 10)] ?? d)
+          .join(' ');
+        return koreanDigits + ' ' + suffix;
+      }
+      return match;
+    },
+  },
+
+  /**
    * 호실 번호 패턴
    * - N호 (객실, 호실 번호 - 개별 숫자로 읽기)
    */
@@ -1109,10 +1135,12 @@ const AUTO_TAG_PATTERNS = {
    */
   carNumber: {
     patterns: [
-      // 차량번호 레이블 + 차량번호
-      /차량번호[:\s]*(?:[가-힣]{2})?\d{2,3}[가-힣]\s?\d{4}/g,
-      // 지역명(선택) + 숫자2-3자리 + 한글1자 + 공백(선택) + 숫자4자리
-      /(?:[가-힣]{2})?\d{2,3}[가-힣]\s?\d{4}/g,
+      // 차량번호 레이블 + 차량번호 (차량번호에 사용되는 한글만 매칭)
+      // 한국 차량번호 가운데 글자: 가나다라마바사아자허하호배 거너더러머버서어저 고노도로모보소오조 구누두루무부수우주
+      /차량번호[:\s]*(?:[가-힣]{2})?\d{2,3}[가나다라마바사아자허하호배거너더러머버서어저고노도로모보소오조구누두루무부수우주]\s?\d{4}/g,
+      // 지역명(선택) + 숫자2-3자리 + 차량번호 한글1자 + 공백(선택) + 숫자4자리
+      // "동", "층" 등 주소에 사용되는 글자 제외
+      /(?:[가-힣]{2})?\d{2,3}[가나다라마바사아자허하호배거너더러머버서어저고노도로모보소오조구누두루무부수우주]\s?\d{4}/g,
     ],
     converter: (match: string) => {
       // 차량번호 레이블이 있는 경우 레이블 유지

@@ -1,4 +1,4 @@
-import { digitToKorean } from '../utils/number-to-korean';
+import { digitToPhoneKorean } from '../utils/number-to-korean';
 
 /**
  * flight 함수의 옵션
@@ -45,7 +45,7 @@ export function flight(input: string, options?: FlightOptions): string {
     const parts: string[] = [airline];
 
     // 숫자를 개별로 변환
-    const digits = flightNum.split('').map((d) => digitToKorean(d));
+    const digits = flightNum.split('').map((d) => digitToPhoneKorean(d));
     parts.push(...digits);
 
     return parts.join(separator);

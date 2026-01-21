@@ -23,7 +23,7 @@ describe('carNumber - 차량번호 변환', () => {
     it('다양한 차량 용도 문자를 처리한다', () => {
       expect(carNumber('12가 1234')).toBe('일 이 가 일 이 삼 사');
       expect(carNumber('34나 5678')).toBe('삼 사 나 오 육 칠 팔');
-      expect(carNumber('56다 9012')).toBe('오 육 다 구 영 일 이');
+      expect(carNumber('56다 9012')).toBe('오 육 다 구 공 일 이');
     });
   });
 
