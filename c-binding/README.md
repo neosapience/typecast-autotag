@@ -18,7 +18,7 @@ Automatically converts various patterns like phone numbers, dates, and amounts i
 
 | Language | Status | Example |
 | -------- | ------ | ------- |
-| **Korean** (한국어) | ✅ Full Support | `010-1234-5678` → `공 일 공 다시...` |
+| **Korean** (한국어) | ✅ Full Support | `010-1234-5678` → `공 . 일 . 공 . 일 . 이 . 삼 . 사...` |
 | **English** | ✅ Full Support | `555-123-4567` → `five five five, one two three...` |
 
 ## Quick Start
@@ -49,7 +49,7 @@ int main() {
     char *result = typecast_auto_tag("전화번호는 010-1234-5678입니다.");
     if (result) {
         printf("%s\n", result);
-        // Output: "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 입니다."
+        // Output: "전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 입니다."
         typecast_free(result);
     }
 
@@ -128,7 +128,7 @@ Automatically recognizes and converts patterns in text.
 
 ```c
 // Input: "전화번호는 010-1234-5678입니다."
-// Output: "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 입니다."
+// Output: "전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 입니다."
 char *result = typecast_auto_tag("전화번호는 010-1234-5678입니다.");
 
 // Input: "총 금액은 1500000원입니다."
@@ -187,11 +187,11 @@ Tag format: `tagName(value)`
 
 ```c
 // Input: "name(김철수)님 안녕하세요."
-// Output: "김 철 수님 안녕하세요."
+// Output: "김 . 철 . 수 님 안녕하세요."
 char *result = typecast_manual_tag("name(김철수)님 안녕하세요.");
 
 // Input: "phone(010-1234-5678)로 연락주세요."
-// Output: "공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 연락주세요."
+// Output: "공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 로 연락주세요."
 char *result = typecast_manual_tag("phone(010-1234-5678)로 연락주세요.");
 ```
 
@@ -199,8 +199,8 @@ char *result = typecast_manual_tag("phone(010-1234-5678)로 연락주세요.");
 
 | Tag                  | Description         | Example                                         |
 | -------------------- | ------------------- | ----------------------------------------------- |
-| `name(name)`         | Read name           | `name(김철수)` → 김 철 수                       |
-| `phone(number)`      | Read phone number   | `phone(010-1234-5678)` → 공 일 공 다시...       |
+| `name(name)`         | Read name           | `name(김철수)` → 김 . 철 . 수                   |
+| `phone(number)`      | Read phone number   | `phone(010-1234-5678)` → 공 . 일 . 공 . 일 . 이...  |
 | `money(amount)`      | Read amount         | `money(50000)` → 오만 원                        |
 | `date(date)`         | Read date           | `date(2024-03-15)` → 이천이십사년 삼 월 십오 일 |
 | `time(time)`         | Read time           | `time(14:30)` → 오후 두 시 삼십 분              |
@@ -211,7 +211,7 @@ char *result = typecast_manual_tag("phone(010-1234-5678)로 연락주세요.");
 | `order(order)`       | Read order          | `order(3)` → 세 번째                            |
 | `point(score)`       | Read score          | `point(95)` → 구십오 점                         |
 | `piece(count)`       | Read count (native) | `piece(3)` → 세 개                              |
-| `digits(number)`     | Read digit by digit | `digits(123)` → 일 이 삼                        |
+| `digits(number)`     | Read digit by digit | `digits(123)` → 1 . 2 . 3                       |
 | `number(number)`     | Read number         | `number(7)` → 칠 번                             |
 | `minsec(time)`       | Read min/sec        | `minsec(5m30s)` → 오 분 삼십 초                 |
 | `ratio(ratio)`       | Read ratio/percent  | `ratio(30%)` → 삼십 퍼센트                      |
@@ -245,7 +245,7 @@ Manual tags are processed first, then auto-tagging is applied to the rest.
 ```c
 // Name with manual tag, amount automatically
 // Input: "name(김철수)님, 잔액은 50000원입니다."
-// Output: "김 철 수님, 잔액은 오만 원 입니다."
+// Output: "김 . 철 . 수 님, 잔액은 오만 원 입니다."
 char *result = typecast_auto_tag_with_manual("name(김철수)님, 잔액은 50000원입니다.");
 
 // Complex example
@@ -589,7 +589,7 @@ Duktape is an **embeddable JavaScript engine** written in portable C (C99). It p
 │  └─────────────────────────────────────────────────────────┘    │
 │         │                                                        │
 │         ▼                                                        │
-│  "공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔"                   │
+│  "공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔"        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
