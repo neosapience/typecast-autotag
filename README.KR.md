@@ -336,7 +336,7 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 | 태그     | 설명         | 한국어 구문          | 영어 구문             |
 | -------- | ------------ | -------------------- | --------------------- |
 | `name`   | 이름 (글자별) | `name(김철수)` → `김 . 철 . 수` | `name(John)` → `J O H N` |
-| `digits` | 숫자 (자리별) | `digits(1234)` → `1 . 2 . 3 . 4` | `digits(1234)` → `one two three four` |
+| `digits` | 숫자 (자리별) | `digits(1234)` → `일 . 이 . 삼 . 사` | `digits(1234)` → `one two three four` |
 
 > **팁:** 모든 자동 태그는 명시적 구문으로 수동 태그로도 사용할 수 있습니다.
 
