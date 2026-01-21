@@ -15,8 +15,8 @@ export interface SerialOptions {
  * 일련번호/코드를 한글로 변환
  *
  * 일련번호는 숫자를 개별로 읽습니다:
- * - TSP-2024-001 → 티에스피 다시 이 공 이 사 다시 공 공 일
- * - 20240115-0042 → 이 공 이 사 공 일 일 오 다시 공 공 사 이
+ * - TSP-2024-001 → 티에스피 다시 이 . 공 . 이 . 사 다시 공 . 공 . 일
+ * - 20240115-0042 → 이 . 공 . 이 . 사 . 공 . 일 . 일 . 오 다시 공 . 공 . 사 . 이
  *
  * @param input - 변환할 일련번호 (문자열)
  * @param options - 옵션 (구분자)
@@ -24,9 +24,9 @@ export interface SerialOptions {
  *
  * @example
  * ```typescript
- * serial('TSP-2024-001');        // 'TSP 다시 이 공 이 사 다시 공 공 일'
- * serial('20240115-0042');       // '이 공 이 사 공 일 일 오 다시 공 공 사 이'
- * serial('RX-20240115-1234');    // 'RX 다시 이 공 이 사 공 일 일 오 다시 일 이 삼 사'
+ * serial('TSP-2024-001');        // 'TSP 다시 이 . 공 . 이 . 사 다시 공 . 공 . 일'
+ * serial('20240115-0042');       // '이 . 공 . 이 . 사 . 공 . 일 . 일 . 오 다시 공 . 공 . 사 . 이'
+ * serial('RX-20240115-1234');    // 'RX 다시 이 . 공 . 이 . 사 . 공 . 일 . 일 . 오 다시 일 . 이 . 삼 . 사'
  * ```
  */
 export function serial(input: string, options?: SerialOptions): string {
@@ -67,8 +67,28 @@ export function serial(input: string, options?: SerialOptions): string {
     }
   }
 
-  // 빈 문자열 제거하고 구분자로 연결
-  return result.filter((s) => s !== '').join(separator);
+  // 빈 문자열 제거하고 숫자 사이에 점을 추가하여 연결
+  const filtered = result.filter((s) => s !== '');
+  const joined: string[] = [];
+
+  for (let i = 0; i < filtered.length; i++) {
+    const current = filtered[i];
+    if (current === undefined) continue;
+
+    joined.push(current);
+
+    // 다음 요소가 있고, 현재와 다음이 모두 한글 숫자인 경우에만 점 추가
+    const next = filtered[i + 1];
+    if (
+      next !== undefined &&
+      /^[영공일이삼사오육칠팔구]$/.test(current) &&
+      /^[영공일이삼사오육칠팔구]$/.test(next)
+    ) {
+      joined.push('.');
+    }
+  }
+
+  return joined.join(separator);
 }
 
 /**
@@ -81,9 +101,9 @@ export function serial(input: string, options?: SerialOptions): string {
  * @example
  * ```typescript
  * serialNumbersOnly('모델번호: TSP-2024-001');
- * // '모델번호: TSP 다시 이 공 이 사 다시 공 공 일'
+ * // '모델번호: TSP 다시 이 . 공 . 이 . 사 다시 공 . 공 . 일'
  * serialNumbersOnly('계좌번호: 123-45-678901');
- * // '계좌번호: 일 이 삼 다시 사 오 다시 육 칠 팔 구 공 일'
+ * // '계좌번호: 일 . 이 . 삼 다시 사 . 오 다시 육 . 칠 . 팔 . 구 . 공 . 일'
  * ```
  */
 export function serialNumbersOnly(input: string, options?: SerialOptions): string {
@@ -92,12 +112,12 @@ export function serialNumbersOnly(input: string, options?: SerialOptions): strin
   const trimmed = input.trim();
   if (trimmed === '') return input;
 
-  // 숫자 연속 부분을 찾아서 개별 숫자로 변환
+  // 숫자 연속 부분을 찾아서 개별 숫자로 변환 (숫자 사이에 점 추가)
   let result = trimmed.replace(/\d+/g, (match) => {
     return match
       .split('')
       .map((d) => digitToPhoneKorean(d))
-      .join(separator);
+      .join(separator + '.' + separator);
   });
 
   // 하이픈을 "다시"로 변환 (숫자/한글 사이의 하이픈만)
