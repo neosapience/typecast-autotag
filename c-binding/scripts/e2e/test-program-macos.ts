@@ -123,8 +123,8 @@ int main() {
     printf("=== Testing typecast_manual_tag (37 tags) ===\\n");
     
     // name tag
-    run_test(&result, "name", typecast_manual_tag, 
-             "name(홍길동)님", "홍 길 동", 1);
+    run_test(&result, "name", typecast_manual_tag,
+             "name(홍길동)님", "홍 . 길 . 동", 1);
     
     // month tag
     run_test(&result, "month", typecast_manual_tag,
@@ -148,7 +148,7 @@ int main() {
     
     // phone tag
     run_test(&result, "phone", typecast_manual_tag,
-             "phone(010-1234-5678)", "공 일 공", 1);
+             "phone(010-1234-5678)", "공 . 일 . 공", 1);
     
     // money tag
     run_test(&result, "money", typecast_manual_tag,
@@ -168,7 +168,7 @@ int main() {
     
     // digits tag
     run_test(&result, "digits", typecast_manual_tag,
-             "digits(123)", "일 이 삼", 1);
+             "digits(123)", "1 . 2 . 3", 1);
     
     // minsec tag (output varies by time format)
     run_test(&result, "minsec", typecast_manual_tag,
@@ -318,15 +318,15 @@ int main() {
     
     // Name + phone mixed
     run_test(&result, "mixed_name_phone", typecast_auto_tag_with_manual,
-             "name(홍길동)님의 전화번호는 010-1234-5678입니다.", "홍 길 동", 1);
-    
+             "name(홍길동)님의 전화번호는 010-1234-5678입니다.", "홍 . 길 . 동", 1);
+
     // Name + money mixed
     run_test(&result, "mixed_name_money", typecast_auto_tag_with_manual,
-             "name(김철수)님이 50000원을 결제했습니다.", "김 철 수", 1);
-    
+             "name(김철수)님이 50000원을 결제했습니다.", "김 . 철 . 수", 1);
+
     // Name + date mixed
     run_test(&result, "mixed_name_date", typecast_auto_tag_with_manual,
-             "name(이영희)님의 생일은 12월 25일입니다.", "이 영 희", 1);
+             "name(이영희)님의 생일은 12월 25일입니다.", "이 . 영 . 희", 1);
     
     // Complex tags (phone manual tag + money auto-recognition)
     run_test(&result, "mixed_complex", typecast_auto_tag_with_manual,

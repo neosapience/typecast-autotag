@@ -35,10 +35,10 @@ public class TypecastAutotagTest {
     public void testAutoTag_PhoneNumber() throws Exception {
         String input = "전화번호는 010-1234-5678입니다.";
         String result = TypecastAutotag.autoTag(input);
-        
+
         assertNotNull("Result should not be null", result);
-        assertTrue("Result should contain converted phone number", 
-                   result.contains("공 일 공"));
+        assertTrue("Result should contain converted phone number",
+                   result.contains("공 . 일 . 공"));
     }
     
     @Test
@@ -64,20 +64,20 @@ public class TypecastAutotagTest {
     public void testManualTag_Name() throws Exception {
         String input = "name(김철수)님 안녕하세요.";
         String result = TypecastAutotag.manualTag(input);
-        
+
         assertNotNull("Result should not be null", result);
-        assertTrue("Result should contain spaced name", 
-                   result.contains("김 철 수"));
+        assertTrue("Result should contain spaced name",
+                   result.contains("김 . 철 . 수"));
     }
     
     @Test
     public void testManualTag_Phone() throws Exception {
         String input = "phone(010-1234-5678)로 연락주세요.";
         String result = TypecastAutotag.manualTag(input);
-        
+
         assertNotNull("Result should not be null", result);
-        assertTrue("Result should contain converted phone number", 
-                   result.contains("공 일 공"));
+        assertTrue("Result should contain converted phone number",
+                   result.contains("공 . 일 . 공"));
     }
     
     @Test
@@ -94,11 +94,11 @@ public class TypecastAutotagTest {
     public void testAutoTagWithManual() throws Exception {
         String input = "name(김철수)님, 잔액은 50000원입니다.";
         String result = TypecastAutotag.autoTagWithManual(input);
-        
+
         assertNotNull("Result should not be null", result);
-        assertTrue("Result should contain spaced name", 
-                   result.contains("김 철 수"));
-        assertTrue("Result should contain converted amount", 
+        assertTrue("Result should contain spaced name",
+                   result.contains("김 . 철 . 수"));
+        assertTrue("Result should contain converted amount",
                    result.contains("오만") || result.contains("만"));
     }
     
