@@ -77,8 +77,9 @@ function numberToKoreanForBae(numStr: string): string {
  * 비율을 한글로 변환
  *
  * 콜론(:) 비율, 퍼센트(%), 배수(배) 형식을 지원합니다.
+ * 숫자만 입력하면 기본적으로 퍼센트로 처리합니다.
  *
- * @param input - 변환할 비율 (문자열)
+ * @param input - 변환할 비율 (문자열 또는 숫자)
  * @param options - 옵션
  * @returns 한글 비율 표현
  *
@@ -88,22 +89,23 @@ function numberToKoreanForBae(numStr: string): string {
  * ratio('7:3');     // '칠대삼'
  * ratio('1:2:3');   // '일대이대삼'
  * ratio('15%');     // '십오 퍼센트'
+ * ratio(50);        // '오십 퍼센트'
  * ratio('3.5%');    // '삼쩜오 퍼센트'
  * ratio('100%');    // '백 퍼센트'
  * ratio('2배');     // '이 배'
  * ratio('1.5배');   // '일쩜오 배'
  * ```
  */
-export function ratio(input: string, options?: RatioOptions): string {
+export function ratio(input: number | string, options?: RatioOptions): string {
   const separator = options?.separator ?? '대';
   const percentUnit = options?.percentUnit ?? '퍼센트';
 
-  const trimmed = input.trim();
-  if (trimmed === '') return input;
+  const trimmed = String(input).trim();
+  if (trimmed === '') return String(input);
 
-  // 퍼센트 형식: N%
-  const percentMatch = trimmed.match(/^(-?[\d,.]+)\s*%$/);
-  if (percentMatch) {
+  // 퍼센트 형식: N% 또는 숫자만 (단위 없으면 퍼센트로 처리)
+  const percentMatch = trimmed.match(/^(-?[\d,.]+)\s*%?$/);
+  if (percentMatch && !trimmed.includes(':') && !trimmed.endsWith('배')) {
     const numStr = percentMatch[1] ?? '';
     const korean = numberToKoreanWithDecimal(numStr);
 
@@ -142,5 +144,5 @@ export function ratio(input: string, options?: RatioOptions): string {
     return koreanParts.join(separator);
   }
 
-  return input;
+  return String(input);
 }
