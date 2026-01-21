@@ -7,10 +7,25 @@
 
 ## Provided Files
 
-| Filename                 | Description                                                |
-| ------------------------ | ---------------------------------------------------------- |
-| `libtypecast_autotag.so` | Library file (this file performs the actual functionality) |
-| `typecast_autotag.h`     | Header file (file to `#include` in your code)              |
+### Header File
+
+| Filename             | Description                               |
+| -------------------- | ----------------------------------------- |
+| `typecast_autotag.h` | Header file (file to `#include` in code)  |
+
+### Library Files (Platform-specific)
+
+| Platform | Architecture | Filename                       | Size   |
+| -------- | ------------ | ------------------------------ | ------ |
+| Linux    | x86_64       | `libtypecast_autotag.so`       | ~731KB |
+| Linux    | x86 (32-bit) | `libtypecast_autotag_x86.so`   | ~771KB |
+| Linux    | arm64        | `libtypecast_autotag_arm64.so` | ~689KB |
+| Linux    | armv7        | `libtypecast_autotag_armv7.so` | ~559KB |
+| macOS    | x86_64+arm64 | `libtypecast_autotag.dylib`    | ~1.6MB |
+| Windows  | x86_64       | `typecast_autotag.dll`         | ~727KB |
+| Windows  | x86 (32-bit) | `typecast_autotag_i686.dll`    | ~729KB |
+
+> **Note:** Use one library file matching your environment along with the header file.
 
 ---
 
