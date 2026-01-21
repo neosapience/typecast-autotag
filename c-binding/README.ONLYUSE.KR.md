@@ -7,10 +7,25 @@
 
 ## 제공 파일
 
-| 파일명                   | 설명                                               |
-| ------------------------ | -------------------------------------------------- |
-| `libtypecast_autotag.so` | 라이브러리 파일 (이 파일이 실제 기능을 수행합니다) |
-| `typecast_autotag.h`     | 헤더 파일 (코드에서 `#include` 할 파일입니다)      |
+### 헤더 파일
+
+| 파일명               | 설명                                          |
+| -------------------- | --------------------------------------------- |
+| `typecast_autotag.h` | 헤더 파일 (코드에서 `#include` 할 파일입니다) |
+
+### 라이브러리 파일 (플랫폼별)
+
+| 플랫폼  | 아키텍처     | 파일명                        | 크기   |
+| ------- | ------------ | ----------------------------- | ------ |
+| Linux   | x86_64       | `libtypecast_autotag.so`      | ~731KB |
+| Linux   | x86 (32-bit) | `libtypecast_autotag_x86.so`  | ~771KB |
+| Linux   | arm64        | `libtypecast_autotag_arm64.so`| ~689KB |
+| Linux   | armv7        | `libtypecast_autotag_armv7.so`| ~559KB |
+| macOS   | x86_64+arm64 | `libtypecast_autotag.dylib`   | ~1.6MB |
+| Windows | x86_64       | `typecast_autotag.dll`        | ~727KB |
+| Windows | x86 (32-bit) | `typecast_autotag_i686.dll`   | ~729KB |
+
+> **참고:** 사용 환경에 맞는 라이브러리 파일 하나와 헤더 파일을 함께 사용하세요.
 
 ---
 
