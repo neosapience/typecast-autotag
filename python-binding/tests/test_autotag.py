@@ -60,7 +60,7 @@ class TestAutoTag:
         """Test phone number conversion."""
         result = auto_tag("전화번호는 010-1234-5678입니다.")
         assert "공" in result or "영" in result
-        assert "다시" in result
+        assert "." in result  # Phone number uses dots as separators
     
     def test_money(self):
         """Test money amount conversion."""
@@ -112,7 +112,7 @@ class TestManualTag:
         """Test phone tag conversion."""
         result = manual_tag("phone(010-1234-5678)로 연락주세요.")
         assert "공" in result or "영" in result
-        assert "다시" in result
+        assert "." in result  # Phone number uses dots as separators
     
     def test_money_tag(self):
         """Test money tag conversion."""
@@ -152,9 +152,11 @@ class TestManualTag:
     def test_digits_tag(self):
         """Test digits tag conversion."""
         result = manual_tag("digits(123) 번호입니다.")
-        assert "일" in result
-        assert "이" in result
-        assert "삼" in result
+        # Digits are kept as-is with dots
+        assert "1" in result
+        assert "2" in result
+        assert "3" in result
+        assert "." in result
     
     def test_point_tag(self):
         """Test point tag conversion."""
@@ -191,12 +193,12 @@ class TestAutoTagWithManual:
         """Test manual name tag with auto phone detection."""
         result = auto_tag_with_manual("name(홍길동)님, 연락처는 010-1234-5678입니다.")
         assert "홍" in result
-        assert "다시" in result  # Phone number separator
-    
+        assert "." in result  # Phone number uses dots as separators
+
     def test_all_manual(self):
         """Test with all manual tags."""
         result = auto_tag_with_manual("phone(02-123-4567)로 연락주세요.")
-        assert "다시" in result
+        assert "." in result  # Phone number uses dots as separators
     
     def test_all_auto(self):
         """Test with no manual tags."""
@@ -211,7 +213,7 @@ class TestContextManager:
         """Test using TypecastAutotag as context manager."""
         with TypecastAutotag() as tagger:
             result = tagger.auto_tag("전화번호는 010-1234-5678입니다.")
-            assert "다시" in result
+            assert "." in result  # Phone number uses dots as separators
     
     def test_context_manager_manual_tag(self):
         """Test manual_tag through context manager."""

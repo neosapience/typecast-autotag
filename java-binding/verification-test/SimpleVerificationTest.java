@@ -59,8 +59,8 @@ public class SimpleVerificationTest {
             String phoneOutput = lib.typecast_auto_tag(phoneInput);
             System.out.println("  Input:  " + phoneInput);
             System.out.println("  Output: " + phoneOutput);
-            // Accept both "공" (gong) and "영" (yeong) for zero
-            boolean phonePass = phoneOutput.contains("공 일 공") || phoneOutput.contains("영 일 영");
+            // Accept both "공" (gong) and "영" (yeong) for zero, now uses dots as separator
+            boolean phonePass = phoneOutput.contains("공 . 일 . 공") || phoneOutput.contains("영 . 일 . 영");
             System.out.println(phonePass ? "  ✓ PASS" : "  ✗ FAIL");
             System.out.println();
             
@@ -79,16 +79,16 @@ public class SimpleVerificationTest {
             String nameOutput = lib.typecast_manual_tag(nameInput);
             System.out.println("  Input:  " + nameInput);
             System.out.println("  Output: " + nameOutput);
-            System.out.println(nameOutput.contains("김 철 수") ? "  ✓ PASS" : "  ✗ FAIL");
+            System.out.println(nameOutput.contains("김 . 철 . 수") ? "  ✓ PASS" : "  ✗ FAIL");
             System.out.println();
-            
+
             // Test 4: Hybrid mode
             System.out.println("Test 4: Hybrid Mode");
             String hybridInput = "name(홍길동)님, 잔액은 50000원입니다.";
             String hybridOutput = lib.typecast_auto_tag_with_manual(hybridInput);
             System.out.println("  Input:  " + hybridInput);
             System.out.println("  Output: " + hybridOutput);
-            boolean pass4 = hybridOutput.contains("홍 길 동") && 
+            boolean pass4 = hybridOutput.contains("홍 . 길 . 동") &&
                            (hybridOutput.contains("오만") || hybridOutput.contains("만"));
             System.out.println(pass4 ? "  ✓ PASS" : "  ✗ FAIL");
             System.out.println();

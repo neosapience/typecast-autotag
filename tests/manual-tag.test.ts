@@ -8,7 +8,9 @@ import {
 describe('manualTag', () => {
   describe('기본 동작', () => {
     it('name 태그를 변환한다', () => {
-      expect(manualTag('안녕하세요, name(김형우) 고객님.')).toBe('안녕하세요, 김 형 우 고객님.');
+      expect(manualTag('안녕하세요, name(김형우) 고객님.')).toBe(
+        '안녕하세요, 김 . 형 . 우 고객님.'
+      );
     });
 
     it('month 태그를 변환한다', () => {
@@ -35,7 +37,7 @@ describe('manualTag', () => {
 
     it('phone 태그를 변환한다', () => {
       expect(manualTag('전화번호: phone(010-1234-5678)')).toBe(
-        '전화번호: 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔'
+        '전화번호: 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔'
       );
     });
 
@@ -57,7 +59,7 @@ describe('manualTag', () => {
     });
 
     it('digits 태그를 변환한다', () => {
-      expect(manualTag('인증번호: digits(1234)')).toBe('인증번호: 일 이 삼 사');
+      expect(manualTag('인증번호: digits(1234)')).toBe('인증번호: 1 . 2 . 3 . 4');
     });
 
     it('minsec 태그를 변환한다', () => {
@@ -73,18 +75,18 @@ describe('manualTag', () => {
 
   describe('복수 태그 처리', () => {
     it('여러 개의 동일한 태그를 변환한다', () => {
-      expect(manualTag('name(김철수)님과 name(이영희)님')).toBe('김 철 수님과 이 영 희님');
+      expect(manualTag('name(김철수)님과 name(이영희)님')).toBe('김 . 철 . 수님과 이 . 영 . 희님');
     });
 
     it('여러 종류의 태그를 변환한다', () => {
       expect(
         manualTag('안녕하세요, name(김형우) 고객님. month(12) day(25)에 방문 예정입니다.')
-      ).toBe('안녕하세요, 김 형 우 고객님. 십이월 이십오일에 방문 예정입니다.');
+      ).toBe('안녕하세요, 김 . 형 . 우 고객님. 십이월 이십오일에 방문 예정입니다.');
     });
 
     it('복잡한 문장에서 모든 태그를 변환한다', () => {
       const input = 'name(홍길동)님, year(2024) month(1) day(15)에 money(50000) 결제 예정입니다.';
-      const expected = '홍 길 동님, 이천이십사년 일월 십오일에 오만 원 결제 예정입니다.';
+      const expected = '홍 . 길 . 동님, 이천이십사년 일월 십오일에 오만 원 결제 예정입니다.';
       expect(manualTag(input)).toBe(expected);
     });
   });
@@ -113,7 +115,7 @@ describe('manualTag', () => {
 
     it('중첩된 괄호가 없는 값만 처리한다', () => {
       // 중첩 괄호는 지원하지 않음 - 첫 번째 닫는 괄호까지만 매칭
-      expect(manualTag('name(김(형)우)')).toBe('김 ( 형우)');
+      expect(manualTag('name(김(형)우)')).toBe('김 . ( . 형우)');
     });
   });
 });
@@ -149,12 +151,12 @@ describe('extractTags', () => {
 
 describe('manualTagSelective', () => {
   it('선택된 태그만 변환한다', () => {
-    expect(manualTagSelective('name(김형우) month(12)', ['name'])).toBe('김 형 우 month(12)');
+    expect(manualTagSelective('name(김형우) month(12)', ['name'])).toBe('김 . 형 . 우 month(12)');
   });
 
   it('여러 태그를 선택할 수 있다', () => {
     expect(manualTagSelective('name(김형우) month(12) day(25)', ['name', 'month'])).toBe(
-      '김 형 우 십이월 day(25)'
+      '김 . 형 . 우 십이월 day(25)'
     );
   });
 
