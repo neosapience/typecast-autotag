@@ -1,4 +1,4 @@
-import { digitToKorean } from '../utils/number-to-korean';
+import { digitToPhoneKorean } from '../utils/number-to-korean';
 
 /**
  * roomNumber 함수의 옵션
@@ -39,7 +39,7 @@ export function roomNumber(input: string, options?: RoomNumberOptions): string {
   const matchWithHo = trimmed.match(/^(\d+)\s*호$/);
   if (matchWithHo) {
     const numStr = matchWithHo[1] ?? '';
-    const digits = numStr.split('').map((d) => digitToKorean(d));
+    const digits = numStr.split('').map((d) => digitToPhoneKorean(d));
     return digits.join(separator) + separator + '호';
   }
 
@@ -47,7 +47,7 @@ export function roomNumber(input: string, options?: RoomNumberOptions): string {
   const matchNumberOnly = trimmed.match(/^(\d+)$/);
   if (matchNumberOnly) {
     const numStr = matchNumberOnly[1] ?? '';
-    const digits = numStr.split('').map((d) => digitToKorean(d));
+    const digits = numStr.split('').map((d) => digitToPhoneKorean(d));
     return digits.join(separator);
   }
 

@@ -1,4 +1,4 @@
-import { digitToKorean } from '../utils/number-to-korean';
+import { digitToPhoneKorean } from '../utils/number-to-korean';
 
 export interface AccountOptions {
   /**
@@ -44,9 +44,9 @@ export function account(input: string, options?: AccountOptions): string {
     return group
       .split('')
       .map((char): string => {
-        // 숫자인 경우 변환
+        // 숫자인 경우 변환 (0은 '공'으로)
         if (/\d/.test(char)) {
-          return digitToKorean(char);
+          return digitToPhoneKorean(char);
         }
         // 그 외 문자는 그대로 유지
         return char;

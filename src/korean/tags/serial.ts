@@ -1,4 +1,4 @@
-import { digitToKorean } from '../utils/number-to-korean';
+import { digitToPhoneKorean } from '../utils/number-to-korean';
 
 /**
  * serial 함수의 옵션
@@ -44,7 +44,7 @@ export function serial(input: string, options?: SerialOptions): string {
 
     if (/\d/.test(char)) {
       // 숫자는 개별로 읽기
-      result.push(digitToKorean(char));
+      result.push(digitToPhoneKorean(char));
     } else if (char === '-') {
       // 하이픈은 "다시"로 변환
       result.push('다시');
@@ -96,7 +96,7 @@ export function serialNumbersOnly(input: string, options?: SerialOptions): strin
   let result = trimmed.replace(/\d+/g, (match) => {
     return match
       .split('')
-      .map((d) => digitToKorean(d))
+      .map((d) => digitToPhoneKorean(d))
       .join(separator);
   });
 
