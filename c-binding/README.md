@@ -519,23 +519,23 @@ gcc -o program.exe program.c -L. -ltypecast_autotag
 
 ### Default Build (Single Architecture)
 
-| Platform       | Architecture   | Output File                 | Status       |
-| -------------- | -------------- | --------------------------- | ------------ |
-| Linux          | x86_64         | libtypecast_autotag.so      | ✅ Supported |
-| macOS          | x86_64 + arm64 | libtypecast_autotag.dylib   | ✅ Universal |
-| Windows        | x86_64         | typecast_autotag.dll        | ✅ Supported |
+| Platform       | Architecture   | Output File                 | Size   | Status       |
+| -------------- | -------------- | --------------------------- | ------ | ------------ |
+| Linux          | x86_64         | libtypecast_autotag.so      | ~731KB | ✅ Supported |
+| macOS          | x86_64 + arm64 | libtypecast_autotag.dylib   | ~1.6MB | ✅ Universal |
+| Windows        | x86_64         | typecast_autotag.dll        | ~727KB | ✅ Supported |
 
 ### Multi-Architecture Build
 
-| Platform | Architecture | Output File                      | Status       |
-| -------- | ------------ | -------------------------------- | ------------ |
-| Linux    | x86_64       | libtypecast_autotag_x86_64.so    | ✅ Supported |
-| Linux    | x86 (32-bit) | libtypecast_autotag_x86.so       | ✅ Supported |
-| Linux    | arm64        | libtypecast_autotag_arm64.so     | ✅ Supported |
-| Linux    | armv7        | libtypecast_autotag_armv7.so     | ✅ Supported |
-| macOS    | x86_64+arm64 | libtypecast_autotag.dylib        | ✅ Universal |
-| Windows  | x86_64       | typecast_autotag_x86_64.dll      | ✅ Supported |
-| Windows  | x86 (32-bit) | typecast_autotag_i686.dll        | ✅ Supported |
+| Platform | Architecture | Output File                      | Size   | Status       |
+| -------- | ------------ | -------------------------------- | ------ | ------------ |
+| Linux    | x86_64       | libtypecast_autotag_x86_64.so    | ~731KB | ✅ Supported |
+| Linux    | x86 (32-bit) | libtypecast_autotag_x86.so       | ~771KB | ✅ Supported |
+| Linux    | arm64        | libtypecast_autotag_arm64.so     | ~689KB | ✅ Supported |
+| Linux    | armv7        | libtypecast_autotag_armv7.so     | ~559KB | ✅ Supported |
+| macOS    | x86_64+arm64 | libtypecast_autotag.dylib        | ~1.6MB | ✅ Universal |
+| Windows  | x86_64       | typecast_autotag_x86_64.dll      | ~727KB | ✅ Supported |
+| Windows  | x86 (32-bit) | typecast_autotag_i686.dll        | ~729KB | ✅ Supported |
 
 ## Architecture: Duktape Integration
 

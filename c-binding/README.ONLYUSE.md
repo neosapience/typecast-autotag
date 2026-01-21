@@ -437,12 +437,37 @@ if (typecast_init() != 0) {
 
 ## Supported Environments
 
-This library has been tested on:
+### Available Libraries
+
+#### Default Build (Single Architecture)
+
+| Platform | Architecture   | Output File               | Size   | Status       |
+| -------- | -------------- | ------------------------- | ------ | ------------ |
+| Linux    | x86_64         | libtypecast_autotag.so    | ~731KB | ✅ Supported |
+| macOS    | x86_64 + arm64 | libtypecast_autotag.dylib | ~1.6MB | ✅ Universal |
+| Windows  | x86_64         | typecast_autotag.dll      | ~727KB | ✅ Supported |
+
+#### Multi-Architecture Build
+
+| Platform | Architecture | Output File                   | Size   | Status       |
+| -------- | ------------ | ----------------------------- | ------ | ------------ |
+| Linux    | x86_64       | libtypecast_autotag_x86_64.so | ~731KB | ✅ Supported |
+| Linux    | x86 (32-bit) | libtypecast_autotag_x86.so    | ~771KB | ✅ Supported |
+| Linux    | arm64        | libtypecast_autotag_arm64.so  | ~689KB | ✅ Supported |
+| Linux    | armv7        | libtypecast_autotag_armv7.so  | ~559KB | ✅ Supported |
+| macOS    | x86_64+arm64 | libtypecast_autotag.dylib     | ~1.6MB | ✅ Universal |
+| Windows  | x86_64       | typecast_autotag_x86_64.dll   | ~727KB | ✅ Supported |
+| Windows  | x86 (32-bit) | typecast_autotag_i686.dll     | ~729KB | ✅ Supported |
+
+### Tested Environments
 
 | Operating System | Architecture | Support Status |
 | ---------------- | ------------ | -------------- |
-| CentOS 6.9       | x86_64       | Supported      |
-| Amazon Linux 2   | x86_64       | Supported      |
+| CentOS 6.9+      | x86_64       | ✅ Supported   |
+| Amazon Linux 2   | x86_64       | ✅ Supported   |
+| Debian/Ubuntu    | x86_64/arm64 | ✅ Supported   |
+| macOS 11+        | x86_64/arm64 | ✅ Supported   |
+| Windows 10+      | x86_64/x86   | ✅ Supported   |
 
 ---
 
