@@ -19,7 +19,7 @@ Automatically converts phone numbers, dates, amounts, and various other patterns
 
 | Language | Status | Example |
 | -------- | ------ | ------- |
-| **Korean** (한국어) | ✅ Full Support | `010-1234-5678` → `공 일 공 다시...` |
+| **Korean** (한국어) | ✅ Full Support | `010-1234-5678` → `공 . 일 . 공 . ...` |
 | **English** | ✅ Full Support | `555-123-4567` → `five five five, one two three...` |
 
 ## Requirements
@@ -108,7 +108,7 @@ public class Example {
             // Korean - Automatic pattern recognition and conversion
             String result = TypecastAutotag.autoTag("전화번호는 010-1234-5678입니다.");
             System.out.println(result);
-            // Output: "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다."
+            // Output: "전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔입니다."
 
             String result2 = TypecastAutotag.autoTag("총 금액은 1500000원입니다.");
             System.out.println(result2);
@@ -176,7 +176,7 @@ import ai.typecast.autotag.TypecastAutotag;
 
 // Phone number
 String result = TypecastAutotag.autoTag("전화번호는 010-1234-5678입니다.");
-// → "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다."
+// → "전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔입니다."
 
 // Money
 String result2 = TypecastAutotag.autoTag("총 금액은 1500000원입니다.");
@@ -237,19 +237,19 @@ Tag format: `tagName(value)`
 ```java
 // Name tag
 String result = TypecastAutotag.manualTag("name(김철수)님 안녕하세요.");
-// → "김 철 수님 안녕하세요."
+// → "김 . 철 . 수님 안녕하세요."
 
 // Phone tag
 String result2 = TypecastAutotag.manualTag("phone(010-1234-5678)로 연락주세요.");
-// → "공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 연락주세요."
+// → "공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔로 연락주세요."
 ```
 
 **Supported Tags (37 total):**
 
 | Tag                  | Description            | Example                                         |
 | -------------------- | ---------------------- | ----------------------------------------------- |
-| `name(이름)`         | Name reading           | `name(김철수)` → 김 철 수                       |
-| `phone(번호)`        | Phone number reading   | `phone(010-1234-5678)` → 공 일 공 다시...       |
+| `name(이름)`         | Name reading           | `name(김철수)` → 김 . 철 . 수                   |
+| `phone(번호)`        | Phone number reading   | `phone(010-1234-5678)` → 공 . 일 . 공 . ...     |
 | `money(금액)`        | Amount reading         | `money(50000)` → 오만 원                        |
 | `date(날짜)`         | Date reading           | `date(2024-03-15)` → 이천이십사년 삼 월 십오 일 |
 | `time(시간)`         | Time reading           | `time(14:30)` → 오후 두 시 삼십 분              |
@@ -260,7 +260,7 @@ String result2 = TypecastAutotag.manualTag("phone(010-1234-5678)로 연락주세
 | `order(순서)`        | Ordinal reading        | `order(3)` → 세 번째                            |
 | `point(점수)`        | Score reading          | `point(95)` → 구십오 점                         |
 | `piece(개수)`        | Counter (native)       | `piece(3)` → 세 개                              |
-| `digits(숫자)`       | Read digits one by one | `digits(123)` → 일 이 삼                        |
+| `digits(숫자)`       | Read digits one by one | `digits(123)` → 1 . 2 . 3                       |
 | ...and more          |                        |                                                 |
 
 ### Method 3: Hybrid Mode (`autoTagWithManual`)
@@ -271,7 +271,7 @@ Manual tags are processed first, then auto tagging is applied to the rest.
 ```java
 // Name with manual tag, amount automatically
 String result = TypecastAutotag.autoTagWithManual("name(김철수)님, 잔액은 50000원입니다.");
-// → "김 철 수님, 잔액은 오만 원입니다."
+// → "김 . 철 . 수님, 잔액은 오만 원입니다."
 
 // Complex example
 String result2 = TypecastAutotag.autoTagWithManual(
