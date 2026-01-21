@@ -437,12 +437,37 @@ if (typecast_init() != 0) {
 
 ## 지원 환경
 
-이 라이브러리는 다음 환경에서 테스트되었습니다:
+### 제공되는 라이브러리
 
-| 운영체제       | 아키텍처 | 지원 상태 |
-| -------------- | -------- | --------- |
-| CentOS 6.9     | x86_64   | 지원      |
-| Amazon Linux 2 | x86_64   | 지원      |
+#### 기본 빌드 (단일 아키텍처)
+
+| 플랫폼  | 아키텍처       | 출력 파일                 | 크기   | 상태         |
+| ------- | -------------- | ------------------------- | ------ | ------------ |
+| Linux   | x86_64         | libtypecast_autotag.so    | ~731KB | ✅ 지원      |
+| macOS   | x86_64 + arm64 | libtypecast_autotag.dylib | ~1.6MB | ✅ Universal |
+| Windows | x86_64         | typecast_autotag.dll      | ~727KB | ✅ 지원      |
+
+#### 멀티 아키텍처 빌드
+
+| 플랫폼  | 아키텍처     | 출력 파일                     | 크기   | 상태         |
+| ------- | ------------ | ----------------------------- | ------ | ------------ |
+| Linux   | x86_64       | libtypecast_autotag_x86_64.so | ~731KB | ✅ 지원      |
+| Linux   | x86 (32-bit) | libtypecast_autotag_x86.so    | ~771KB | ✅ 지원      |
+| Linux   | arm64        | libtypecast_autotag_arm64.so  | ~689KB | ✅ 지원      |
+| Linux   | armv7        | libtypecast_autotag_armv7.so  | ~559KB | ✅ 지원      |
+| macOS   | x86_64+arm64 | libtypecast_autotag.dylib     | ~1.6MB | ✅ Universal |
+| Windows | x86_64       | typecast_autotag_x86_64.dll   | ~727KB | ✅ 지원      |
+| Windows | x86 (32-bit) | typecast_autotag_i686.dll     | ~729KB | ✅ 지원      |
+
+### 테스트된 환경
+
+| 운영체제       | 아키텍처     | 지원 상태  |
+| -------------- | ------------ | ---------- |
+| CentOS 6.9+    | x86_64       | ✅ 지원    |
+| Amazon Linux 2 | x86_64       | ✅ 지원    |
+| Debian/Ubuntu  | x86_64/arm64 | ✅ 지원    |
+| macOS 11+      | x86_64/arm64 | ✅ 지원    |
+| Windows 10+    | x86_64/x86   | ✅ 지원    |
 
 ---
 
