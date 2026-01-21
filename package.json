@@ -1,6 +1,6 @@
 {
   "name": "typecast-autotag",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "description": "Text preprocessing SDK for Typecast TTS API - automatically converts phone numbers, dates, names, and other patterns into speech-friendly formats for AICC environments",
   "source": "src/index.ts",
