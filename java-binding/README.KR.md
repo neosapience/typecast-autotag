@@ -260,7 +260,7 @@ String result2 = TypecastAutotag.manualTag("phone(010-1234-5678)로 연락주세
 | `order(순서)`        | 순서 읽기          | `order(3)` → 세 번째                            |
 | `point(점수)`        | 점수 읽기          | `point(95)` → 구십오 점                         |
 | `piece(개수)`        | 개수 읽기 (고유어) | `piece(3)` → 세 개                              |
-| `digits(숫자)`       | 숫자 하나씩 읽기   | `digits(123)` → 1 . 2 . 3                       |
+| `digits(숫자)`       | 숫자 하나씩 읽기   | `digits(123)` → 일 . 이 . 삼                    |
 | ...기타              |                    |                                                 |
 
 ### 방법 3: 하이브리드 모드 (`autoTagWithManual`)

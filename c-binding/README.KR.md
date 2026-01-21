@@ -211,7 +211,7 @@ char *result = typecast_manual_tag("phone(010-1234-5678)로 연락주세요.");
 | `order(순서)`          | 순서 읽기          | `order(3)` → 세 번째                            |
 | `point(점수)`          | 점수 읽기          | `point(95)` → 구십오 점                         |
 | `piece(개수)`          | 개수 읽기 (고유어) | `piece(3)` → 세 개                              |
-| `digits(숫자)`         | 숫자 한 자리씩     | `digits(123)` → 1 . 2 . 3                       |
+| `digits(숫자)`         | 숫자 한 자리씩     | `digits(123)` → 일 . 이 . 삼                    |
 | `number(번호)`         | 번호 읽기          | `number(7)` → 칠 번                             |
 | `minsec(시분초)`       | 시분초 읽기        | `minsec(5m30s)` → 오 분 삼십 초                 |
 | `ratio(비율)`          | 비율/퍼센트 읽기   | `ratio(30%)` → 삼십 퍼센트                      |

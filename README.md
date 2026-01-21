@@ -346,7 +346,7 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 | Tag      | Description         | English Syntax                        | Korean Syntax                  |
 | -------- | ------------------- | ------------------------------------- | ------------------------------ |
 | `name`   | Name (char-by-char) | `name(John)` → `J O H N`              | `name(김철수)` → `김 . 철 . 수`    |
-| `digits` | Digit-by-digit      | `digits(1234)` → `one two three four` | `digits(1234)` → `1 . 2 . 3 . 4` |
+| `digits` | Digit-by-digit      | `digits(1234)` → `one two three four` | `digits(1234)` → `일 . 이 . 삼 . 사` |
 
 > **Tip:** All auto-tags can also be used as manual tags with explicit syntax.
 

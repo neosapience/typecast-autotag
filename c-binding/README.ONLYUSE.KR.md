@@ -193,7 +193,7 @@ char *result = typecast_manual_tag("name(김철수)님 안녕하세요.");
 | `month(월)`            | 월          | `month(3)` → 삼월                               |
 | `day(일)`              | 일          | `day(15)` → 십오일                              |
 | `order(순서)`          | 순서        | `order(3)` → 세 번째                            |
-| `digits(숫자)`         | 한 자리씩   | `digits(123)` → 1 . 2 . 3                       |
+| `digits(숫자)`         | 한 자리씩   | `digits(123)` → 일 . 이 . 삼                    |
 | `number(번호)`         | 번호 읽기   | `number(7)` → 칠 번                             |
 | `point(점수)`          | 점수        | `point(95)` → 구십오 점                         |
 | `piece(개수)`          | 개수        | `piece(3)` → 세 개                              |
