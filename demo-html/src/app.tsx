@@ -14,6 +14,7 @@ function App() {
 
   const singleSectionAnim = useScrollAnimation<HTMLElement>();
   const aiccSectionAnim = useScrollAnimation<HTMLElement>();
+  const manualTagSectionAnim = useScrollAnimation<HTMLElement>();
   const infoSectionAnim = useScrollAnimation<HTMLElement>();
 
   const examples = language === 'ko' ? examplesKo : examplesEn;
@@ -23,12 +24,22 @@ function App() {
 
   const [selectedAICCId, setSelectedAICCId] = useState(aiccExamples[0].id);
   const [editableText, setEditableText] = useState(aiccExamples[0].input);
+  const [manualTagInput, setManualTagInput] = useState(
+    language === 'ko'
+      ? 'name(홍길동)님의 전화번호는 phone(010-1234-5678)입니다.\n금액은 money(50000)원이고, 날짜는 date(2024-12-25)입니다.'
+      : 'name(John)\'s phone number is phone(555-1234).\nThe amount is money($100) and the date is date(2024-12-25).'
+  );
 
   useEffect(() => {
     setCurrentIndex(0);
     setSelectedCategory(null);
     setSelectedAICCId(aiccExamples[0].id);
     setEditableText(aiccExamples[0].input);
+    setManualTagInput(
+      language === 'ko'
+        ? 'name(홍길동)님의 전화번호는 phone(010-1234-5678)입니다.\n금액은 money(50000)원이고, 날짜는 date(2024-12-25)입니다.'
+        : 'name(John)\'s phone number is phone(555-1234).\nThe amount is money($100) and the date is date(2024-12-25).'
+    );
   }, [language, aiccExamples]);
 
   const filteredExamples = useMemo(() => {
@@ -65,6 +76,10 @@ function App() {
 
   const aiccResult = useMemo(() => applyAutoTag(editableText), [editableText, language]);
 
+  const manualTagResult = useMemo(() => {
+    return applyManualTag(manualTagInput);
+  }, [manualTagInput, language]);
+
   const handlePrev = () =>
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : filteredExamples.length - 1));
   const handleNext = () =>
@@ -96,6 +111,14 @@ function App() {
     selectScenario: language === 'ko' ? '시나리오 선택' : 'Select Scenario',
     inputEditable: language === 'ko' ? '입력 (수정 가능)' : 'Input (Editable)',
     autoTagResult: language === 'ko' ? '오토태깅 결과' : 'Auto-tagged Result',
+    manualTagExperiment: language === 'ko' ? '수동 태그 실험' : 'Manual Tag Experiment',
+    manualTagInput: language === 'ko' ? '수동 태그 입력' : 'Manual Tag Input',
+    manualTagResult: language === 'ko' ? '수동 태그 처리 결과' : 'Manual Tag Result',
+    manualTagDesc:
+      language === 'ko'
+        ? '괄호를 사용하여 수동으로 태그를 지정할 수 있습니다. 예: name(홍길동), phone(010-1234-5678)'
+        : 'You can manually tag text using parentheses. Example: name(John), phone(555-1234)',
+    availableTags: language === 'ko' ? '사용 가능한 태그' : 'Available Tags',
     autoTagTitle: language === 'ko' ? '자동 태깅' : 'Auto Tagging',
     autoTagDesc:
       language === 'ko'
@@ -285,6 +308,274 @@ function App() {
                   <span className="panel-label">{ui.autoTagResult}</span>
                 </div>
                 <div className="aicc-result">{aiccResult}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          ref={manualTagSectionAnim.ref}
+          className={`section fade-in-section ${manualTagSectionAnim.isVisible ? 'visible' : ''}`}
+        >
+          <h2 className="section-title">
+            <span className="section-icon">{Icons.edit}</span>
+            {ui.manualTagExperiment}
+          </h2>
+          <p className="section-description">{ui.manualTagDesc}</p>
+          <div className="manual-experiment-card">
+            <div className="manual-input-section">
+              <div className="manual-input-panel">
+                <div className="panel-header">
+                  <span className="panel-dot manual-dot"></span>
+                  <span className="panel-label">{ui.manualTagInput}</span>
+                </div>
+                <textarea
+                  className="manual-textarea"
+                  value={manualTagInput}
+                  onChange={(e) => setManualTagInput(e.target.value)}
+                  placeholder={
+                    language === 'ko'
+                      ? 'name(이름), phone(전화번호), money(금액) 등의 태그를 사용해보세요...'
+                      : 'Try tags like name(John), phone(555-1234), money($100)...'
+                  }
+                  spellCheck={false}
+                />
+              </div>
+              <div className="manual-result-panel">
+                <div className="panel-header">
+                  <span className="panel-dot after-dot"></span>
+                  <span className="panel-label">{ui.manualTagResult}</span>
+                </div>
+                <div className="manual-result-content highlight">{manualTagResult}</div>
+              </div>
+            </div>
+            <div className="tag-list-section">
+              <h4 className="tag-list-title">
+                <span className="tag-list-icon">{Icons.link}</span>
+                {ui.availableTags}
+              </h4>
+              <div className="tag-list">
+                {language === 'ko' ? (
+                  <>
+                    <div className="tag-category">
+                      <div className="tag-category-title">이름/번호</div>
+                      <div className="tag-item">
+                        <code>name(홍길동)</code>
+                        <span>이름 (한글자씩)</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>phone(010-1234-5678)</code>
+                        <span>전화번호</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>digits(1234)</code>
+                        <span>숫자를 한자리씩</span>
+                      </div>
+                    </div>
+                    <div className="tag-category">
+                      <div className="tag-category-title">날짜/시간</div>
+                      <div className="tag-item">
+                        <code>date(2024-01-15)</code>
+                        <span>날짜</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>time(14:30)</code>
+                        <span>시간</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>datetime(2024-01-15T14:30)</code>
+                        <span>날짜와 시간</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>year(2024)</code>
+                        <span>연도</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>month(12)</code>
+                        <span>월</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>day(25)</code>
+                        <span>일</span>
+                      </div>
+                    </div>
+                    <div className="tag-category">
+                      <div className="tag-category-title">금액/점수</div>
+                      <div className="tag-item">
+                        <code>money(50000원)</code>
+                        <span>화폐 금액</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>point(95점)</code>
+                        <span>점수/포인트</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>order(3번째)</code>
+                        <span>순서</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>piece(5개)</code>
+                        <span>개수 세기</span>
+                      </div>
+                    </div>
+                    <div className="tag-category">
+                      <div className="tag-category-title">시간/비율</div>
+                      <div className="tag-item">
+                        <code>minsec(5분30초)</code>
+                        <span>분/초 시간</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>ratio(50%)</code>
+                        <span>비율/퍼센트</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>duration(3개월)</code>
+                        <span>기간</span>
+                      </div>
+                    </div>
+                    <div className="tag-category">
+                      <div className="tag-category-title">단위</div>
+                      <div className="tag-item">
+                        <code>floor(5층)</code>
+                        <span>층수</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>weight(5kg)</code>
+                        <span>무게</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>distance(5km)</code>
+                        <span>거리</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>temperature(25℃)</code>
+                        <span>온도</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>volume(500ml)</code>
+                        <span>부피/용량</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>dataCapacity(100GB)</code>
+                        <span>데이터 용량</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>inch(55인치)</code>
+                        <span>인치</span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="tag-category">
+                      <div className="tag-category-title">Names/Numbers</div>
+                      <div className="tag-item">
+                        <code>name(John)</code>
+                        <span>Name (char-by-char)</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>phone(555-1234)</code>
+                        <span>Phone numbers</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>digits(1234)</code>
+                        <span>Digit-by-digit</span>
+                      </div>
+                    </div>
+                    <div className="tag-category">
+                      <div className="tag-category-title">Date/Time</div>
+                      <div className="tag-item">
+                        <code>date(Jan 15, 2024)</code>
+                        <span>Date</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>time(2:30 PM)</code>
+                        <span>Time</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>datetime(2024-01-15T14:30)</code>
+                        <span>Date and time</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>year(2024)</code>
+                        <span>Year</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>month(December)</code>
+                        <span>Month</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>day(15th)</code>
+                        <span>Day</span>
+                      </div>
+                    </div>
+                    <div className="tag-category">
+                      <div className="tag-category-title">Money/Scores</div>
+                      <div className="tag-item">
+                        <code>money($1,500)</code>
+                        <span>Currency amounts</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>point(95 points)</code>
+                        <span>Points/scores</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>order(3rd place)</code>
+                        <span>Ordinal numbers</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>piece(5 items)</code>
+                        <span>Counting</span>
+                      </div>
+                    </div>
+                    <div className="tag-category">
+                      <div className="tag-category-title">Time/Ratios</div>
+                      <div className="tag-item">
+                        <code>minsec(5m30s)</code>
+                        <span>Duration (min/sec)</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>ratio(50%)</code>
+                        <span>Ratio/percent</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>duration(3 months)</code>
+                        <span>Period</span>
+                      </div>
+                    </div>
+                    <div className="tag-category">
+                      <div className="tag-category-title">Units</div>
+                      <div className="tag-item">
+                        <code>floor(5th floor)</code>
+                        <span>Floor numbers</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>weight(5kg)</code>
+                        <span>Weight</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>distance(5km)</code>
+                        <span>Distance</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>temperature(25°C)</code>
+                        <span>Temperature</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>volume(500ml)</code>
+                        <span>Volume/capacity</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>dataCapacity(100GB)</code>
+                        <span>Data capacity</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>inch(55 inches)</code>
+                        <span>Inch</span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
