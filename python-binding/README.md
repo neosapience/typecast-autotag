@@ -18,7 +18,7 @@ Automatically converts various patterns like phone numbers, dates, and amounts i
 
 | Language | Status | Example |
 | -------- | ------ | ------- |
-| **Korean** (한국어) | ✅ Full Support | `010-1234-5678` → `공 일 공 다시...` |
+| **Korean** (한국어) | ✅ Full Support | `010-1234-5678` → `공 . 일 . 공 . ...` |
 | **English** | ✅ Full Support | `555-123-4567` → `five five five, one two three...` |
 
 ## Installation
@@ -54,7 +54,7 @@ from typecast_autotag import auto_tag, auto_tag_en
 
 # Korean - Automatic pattern recognition and conversion
 result = auto_tag("전화번호는 010-1234-5678입니다.")
-print(result)  # "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다."
+print(result)  # "전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔입니다."
 
 result = auto_tag("총 금액은 1500000원입니다.")
 print(result)  # "총 금액은 백오십만 원입니다."
@@ -111,7 +111,7 @@ from typecast_autotag import auto_tag
 
 # Phone number
 result = auto_tag("전화번호는 010-1234-5678입니다.")
-# → "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다."
+# → "전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔입니다."
 
 # Money amount
 result = auto_tag("총 금액은 1500000원입니다.")
@@ -174,19 +174,19 @@ from typecast_autotag import manual_tag
 
 # Name tag
 result = manual_tag("name(김철수)님 안녕하세요.")
-# → "김 철 수님 안녕하세요."
+# → "김 . 철 . 수님 안녕하세요."
 
 # Phone tag
 result = manual_tag("phone(010-1234-5678)로 연락주세요.")
-# → "공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 연락주세요."
+# → "공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔로 연락주세요."
 ```
 
 **Supported Tags (37 total):**
 
 | Tag                  | Description         | Example                                         |
 | -------------------- | ------------------- | ----------------------------------------------- |
-| `name(name)`         | Read name           | `name(김철수)` → 김 철 수                       |
-| `phone(number)`      | Read phone number   | `phone(010-1234-5678)` → 공 일 공 다시...       |
+| `name(name)`         | Read name           | `name(김철수)` → 김 . 철 . 수                   |
+| `phone(number)`      | Read phone number   | `phone(010-1234-5678)` → 공 . 일 . 공 . ...     |
 | `money(amount)`      | Read amount         | `money(50000)` → 오만 원                        |
 | `date(date)`         | Read date           | `date(2024-03-15)` → 이천이십사년 삼 월 십오 일 |
 | `time(time)`         | Read time           | `time(14:30)` → 오후 두 시 삼십 분              |
@@ -197,7 +197,7 @@ result = manual_tag("phone(010-1234-5678)로 연락주세요.")
 | `order(order)`       | Read order          | `order(3)` → 세 번째                            |
 | `point(score)`       | Read score          | `point(95)` → 구십오 점                         |
 | `piece(count)`       | Read count (native) | `piece(3)` → 세 개                              |
-| `digits(number)`     | Read digit by digit | `digits(123)` → 일 이 삼                        |
+| `digits(number)`     | Read digit by digit | `digits(123)` → 1 . 2 . 3                       |
 | `minsec(time)`       | Read min/sec        | `minsec(5m30s)` → 오 분 삼십 초                 |
 | `ratio(ratio)`       | Read ratio/percent  | `ratio(30%)` → 삼십 퍼센트                      |
 | `floor(floor)`       | Read floor          | `floor(B2)` → 지하 이 층                        |
@@ -217,7 +217,7 @@ from typecast_autotag import auto_tag_with_manual
 
 # Name with manual tag, amount automatically
 result = auto_tag_with_manual("name(김철수)님, 잔액은 50000원입니다.")
-# → "김 철 수님, 잔액은 오만 원입니다."
+# → "김 . 철 . 수님, 잔액은 오만 원입니다."
 
 # Complex example
 result = auto_tag_with_manual(

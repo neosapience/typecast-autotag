@@ -19,7 +19,7 @@ TTS (Text-to-Speech) 텍스트 전처리 라이브러리의 Java 바인딩입니
 
 | 언어 | 상태 | 예시 |
 | ---- | ---- | ---- |
-| **한국어** (Korean) | ✅ 전체 지원 | `010-1234-5678` → `공 일 공 다시...` |
+| **한국어** (Korean) | ✅ 전체 지원 | `010-1234-5678` → `공 . 일 . 공 . ...` |
 | **영어** (English) | ✅ 전체 지원 | `555-123-4567` → `five five five, one two three...` |
 
 ## 요구사항
@@ -108,7 +108,7 @@ public class Example {
             // 한국어 - 자동 패턴 인식 및 변환
             String result = TypecastAutotag.autoTag("전화번호는 010-1234-5678입니다.");
             System.out.println(result);
-            // 출력: "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다."
+            // 출력: "전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔입니다."
 
             String result2 = TypecastAutotag.autoTag("총 금액은 1500000원입니다.");
             System.out.println(result2);
@@ -176,7 +176,7 @@ import ai.typecast.autotag.TypecastAutotag;
 
 // 전화번호
 String result = TypecastAutotag.autoTag("전화번호는 010-1234-5678입니다.");
-// → "전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔입니다."
+// → "전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔입니다."
 
 // 금액
 String result2 = TypecastAutotag.autoTag("총 금액은 1500000원입니다.");
@@ -237,19 +237,19 @@ String result3 = TypecastAutotag.autoTagEn("Meeting is at 2:30 PM.");
 ```java
 // 이름 태그
 String result = TypecastAutotag.manualTag("name(김철수)님 안녕하세요.");
-// → "김 철 수님 안녕하세요."
+// → "김 . 철 . 수님 안녕하세요."
 
 // 전화번호 태그
 String result2 = TypecastAutotag.manualTag("phone(010-1234-5678)로 연락주세요.");
-// → "공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔로 연락주세요."
+// → "공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔로 연락주세요."
 ```
 
 **지원 태그 (총 37개):**
 
 | 태그                 | 설명               | 예시                                            |
 | -------------------- | ------------------ | ----------------------------------------------- |
-| `name(이름)`         | 이름 읽기          | `name(김철수)` → 김 철 수                       |
-| `phone(번호)`        | 전화번호 읽기      | `phone(010-1234-5678)` → 공 일 공 다시...       |
+| `name(이름)`         | 이름 읽기          | `name(김철수)` → 김 . 철 . 수                   |
+| `phone(번호)`        | 전화번호 읽기      | `phone(010-1234-5678)` → 공 . 일 . 공 . ...     |
 | `money(금액)`        | 금액 읽기          | `money(50000)` → 오만 원                        |
 | `date(날짜)`         | 날짜 읽기          | `date(2024-03-15)` → 이천이십사년 삼 월 십오 일 |
 | `time(시간)`         | 시간 읽기          | `time(14:30)` → 오후 두 시 삼십 분              |
@@ -260,7 +260,7 @@ String result2 = TypecastAutotag.manualTag("phone(010-1234-5678)로 연락주세
 | `order(순서)`        | 순서 읽기          | `order(3)` → 세 번째                            |
 | `point(점수)`        | 점수 읽기          | `point(95)` → 구십오 점                         |
 | `piece(개수)`        | 개수 읽기 (고유어) | `piece(3)` → 세 개                              |
-| `digits(숫자)`       | 숫자 하나씩 읽기   | `digits(123)` → 일 이 삼                        |
+| `digits(숫자)`       | 숫자 하나씩 읽기   | `digits(123)` → 1 . 2 . 3                       |
 | ...기타              |                    |                                                 |
 
 ### 방법 3: 하이브리드 모드 (`autoTagWithManual`)
@@ -271,7 +271,7 @@ String result2 = TypecastAutotag.manualTag("phone(010-1234-5678)로 연락주세
 ```java
 // 이름은 수동 태그로, 금액은 자동으로
 String result = TypecastAutotag.autoTagWithManual("name(김철수)님, 잔액은 50000원입니다.");
-// → "김 철 수님, 잔액은 오만 원입니다."
+// → "김 . 철 . 수님, 잔액은 오만 원입니다."
 
 // 복잡한 예시
 String result2 = TypecastAutotag.autoTagWithManual(
