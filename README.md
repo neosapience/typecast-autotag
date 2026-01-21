@@ -72,7 +72,7 @@ autoTag('Call me at 555-123-4567 tomorrow.', { language: 'en' });
 
 // Korean auto-tagging
 autoTag('전화번호는 010-1234-5678입니다.', { language: 'ko' });
-// → '전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 입니다.'
+// → '전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 입니다.'
 ```
 
 <br>
@@ -108,7 +108,7 @@ To install a specific branch or tag:
 pnpm add git+https://github.com/neosapience/typecast-autotag.git#branch-name
 
 # Install specific tag/version
-pnpm add git+https://github.com/neosapience/typecast-autotag.git#v1.1.0
+pnpm add git+https://github.com/neosapience/typecast-autotag.git#v1.5.0
 
 # Install specific commit
 pnpm add git+https://github.com/neosapience/typecast-autotag.git#commit-hash
@@ -148,7 +148,7 @@ import { autoTag, manualTag, autoTagWithManual } from 'typecast-autotag';
 
 // Auto-tagging - automatically detects patterns (Korean)
 autoTag('전화번호는 010-1234-5678입니다.', { language: 'ko' });
-// → '전화번호는 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 입니다.'
+// → '전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 입니다.'
 
 autoTag('회의는 14:30에 시작합니다.', { language: 'ko' });
 // → '회의는 오후 두 시 삼십 분 에 시작합니다.'
@@ -158,11 +158,11 @@ autoTag('총 금액은 50000원입니다.', { language: 'ko' });
 
 // Manual-tagging - explicit control
 manualTag('안녕하세요, name(김철수)님.', { language: 'ko' });
-// → '안녕하세요, 김 철 수님.'
+// → '안녕하세요, 김 . 철 . 수님.'
 
 // Combined - use both together
 autoTagWithManual('name(김철수)님, 010-1234-5678로 연락주세요.', { language: 'ko' });
-// → '김 철 수 님, 공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔 로 연락주세요.'
+// → '김 . 철 . 수 님, 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 로 연락주세요.'
 ```
 
 ### Direct Language Module Access
@@ -178,7 +178,7 @@ english.autoTag('Call 555-123-4567');
 import { korean } from 'typecast-autotag';
 
 korean.autoTag('010-1234-5678');
-// → '공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔'
+// → '공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔'
 ```
 
 <br>
@@ -319,7 +319,7 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 
 | Tag            | Description      | Input              | Output                                        |
 | -------------- | ---------------- | ------------------ | --------------------------------------------- |
-| `phone`        | Phone numbers    | `010-1234-5678`    | `공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔`  |
+| `phone`        | Phone numbers    | `010-1234-5678`    | `공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔`  |
 | `datetime`     | Date and time    | `2024-01-15T14:30` | `이천이십사년 일월 십오일 오후 두 시 삼십 분` |
 | `time`         | Time             | `14:30`            | `오후 두 시 삼십 분`                          |
 | `date`         | Date             | `2024-01-15`       | `이천이십사년 일월 십오일`                    |
@@ -345,8 +345,8 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 
 | Tag      | Description         | English Syntax                        | Korean Syntax                  |
 | -------- | ------------------- | ------------------------------------- | ------------------------------ |
-| `name`   | Name (char-by-char) | `name(John)` → `J O H N`              | `name(김철수)` → `김 철 수`    |
-| `digits` | Digit-by-digit      | `digits(1234)` → `one two three four` | `digits(1234)` → `일 이 삼 사` |
+| `name`   | Name (char-by-char) | `name(John)` → `J O H N`              | `name(김철수)` → `김 . 철 . 수`    |
+| `digits` | Digit-by-digit      | `digits(1234)` → `one two three four` | `digits(1234)` → `1 . 2 . 3 . 4` |
 
 > **Tip:** All auto-tags can also be used as manual tags with explicit syntax.
 
@@ -365,8 +365,8 @@ autoTag('1-800-555-1234', { language: 'en' }); // → 'one, eight zero zero, fiv
 autoTag('911', { language: 'en' }); // → 'nine one one'
 
 // Korean
-autoTag('010-1234-5678', { language: 'ko' }); // → '공 일 공 다시 일 이 삼 사 다시 오 육 칠 팔'
-autoTag('02-123-4567', { language: 'ko' }); // → '공 이 다시 일 이 삼 다시 사 오 육 칠'
+autoTag('010-1234-5678', { language: 'ko' }); // → '공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔'
+autoTag('02-123-4567', { language: 'ko' }); // → '공 . 이 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠'
 ```
 
 </details>
@@ -412,8 +412,8 @@ manualTag('name(John)', { language: 'en' }); // → 'J O H N'
 manualTag('name(John Smith)', { language: 'en' }); // → 'J O H N S M I T H'
 
 // Korean
-manualTag('name(김철수)', { language: 'ko' }); // → '김 철 수'
-manualTag('name(홍길동)', { language: 'ko' }); // → '홍 길 동'
+manualTag('name(김철수)', { language: 'ko' }); // → '김 . 철 . 수'
+manualTag('name(홍길동)', { language: 'ko' }); // → '홍 . 길 . 동'
 ```
 
 </details>
