@@ -197,7 +197,7 @@ result = manual_tag("phone(010-1234-5678)로 연락주세요.")
 | `order(order)`       | Read order          | `order(3)` → 세 번째                            |
 | `point(score)`       | Read score          | `point(95)` → 구십오 점                         |
 | `piece(count)`       | Read count (native) | `piece(3)` → 세 개                              |
-| `digits(number)`     | Read digit by digit | `digits(123)` → 1 . 2 . 3                       |
+| `digits(number)`     | Read digit by digit | `digits(123)` → 일 . 이 . 삼                    |
 | `minsec(time)`       | Read min/sec        | `minsec(5m30s)` → 오 분 삼십 초                 |
 | `ratio(ratio)`       | Read ratio/percent  | `ratio(30%)` → 삼십 퍼센트                      |
 | `floor(floor)`       | Read floor          | `floor(B2)` → 지하 이 층                        |
