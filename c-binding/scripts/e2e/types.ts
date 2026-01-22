@@ -55,27 +55,65 @@ export const LINUX_TEST_ENVIRONMENTS: TestEnvironment[] = [
 
 /**
  * Linux multi-architecture test environments
+ * Includes CentOS 6.9 compatibility tests for x86_64/x86
  */
 export const LINUX_MULTIARCH_TEST_ENVIRONMENTS: TestEnvironment[] = [
-  // x86_64 (64-bit)
+  // ============================================
+  // x86_64 - Test on CentOS 6.9 (target compatibility)
+  // ============================================
   {
-    name: 'Debian Bullseye (x86_64)',
-    image: 'debian:bullseye-slim',
+    name: 'CentOS 6.9 (x86_64) - Target Compat',
+    image: 'quay.io/centos/centos:6',
+    platform: 'linux',
+    arch: 'x86_64',
+    dockerPlatform: 'linux/amd64',
+    libraryFile: 'libtypecast_autotag_x86_64.so',
+    setupCommands: [
+      "sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Base.repo",
+      "sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Base.repo",
+    ],
+  },
+  // Also test on CentOS 7 (common enterprise environment)
+  {
+    name: 'CentOS 7 (x86_64)',
+    image: 'quay.io/centos/centos:7',
+    platform: 'linux',
+    arch: 'x86_64',
+    dockerPlatform: 'linux/amd64',
+    libraryFile: 'libtypecast_autotag_x86_64.so',
+    setupCommands: [
+      // CentOS 7 vault repos for EOL
+      "sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*.repo 2>/dev/null || true",
+      "sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*.repo 2>/dev/null || true",
+    ],
+  },
+  // Test on Amazon Linux 2 (common cloud environment)
+  {
+    name: 'Amazon Linux 2 (x86_64)',
+    image: 'amazonlinux:2',
     platform: 'linux',
     arch: 'x86_64',
     dockerPlatform: 'linux/amd64',
     libraryFile: 'libtypecast_autotag_x86_64.so',
   },
-  // x86 (32-bit)
+  // ============================================
+  // x86 (32-bit) - Test on CentOS 6
+  // ============================================
   {
-    name: 'Debian Bullseye (x86/i386)',
-    image: 'i386/debian:bullseye-slim',
+    name: 'CentOS 6 (x86/i386)',
+    image: 'i386/centos:6',
     platform: 'linux',
     arch: 'x86',
     dockerPlatform: 'linux/386',
     libraryFile: 'libtypecast_autotag_x86.so',
+    setupCommands: [
+      "sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Base.repo",
+      "sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Base.repo",
+    ],
   },
-  // arm64
+  // ============================================
+  // arm64 - Test on Debian Bullseye (glibc 2.31)
+  // ============================================
   {
     name: 'Debian Bullseye (arm64)',
     image: 'arm64v8/debian:bullseye-slim',
@@ -84,7 +122,9 @@ export const LINUX_MULTIARCH_TEST_ENVIRONMENTS: TestEnvironment[] = [
     dockerPlatform: 'linux/arm64',
     libraryFile: 'libtypecast_autotag_arm64.so',
   },
-  // armv7 (32-bit ARM)
+  // ============================================
+  // armv7 (32-bit ARM) - Test on Debian Bullseye
+  // ============================================
   {
     name: 'Debian Bullseye (armv7)',
     image: 'arm32v7/debian:bullseye-slim',

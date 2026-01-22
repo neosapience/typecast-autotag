@@ -1,31 +1,24 @@
 # Typecast Autotag C Library - Linux Multi-Architecture Build
-# Cross-compiles for: x86_64, i686 (x86), aarch64 (arm64), armv7
-# Uses cross-compilers instead of QEMU emulation for reliability
+# CentOS 6.9+ compatible (glibc 2.12 for x86_64/x86)
+# 
+# Strategy:
+# - x86_64/x86: Build on CentOS 6 for maximum compatibility (glibc 2.12)
+# - arm64/armv7: Cross-compile with Debian Bullseye (current stable)
+#
+# This uses multi-stage build to achieve best compatibility for each architecture.
 
-FROM debian:bullseye-slim
+# =============================================================================
+# Stage 1: Build x86_64 on CentOS 6 (glibc 2.12)
+# =============================================================================
+FROM --platform=linux/amd64 quay.io/centos/centos:6 AS builder-x86_64
 
-# Install build tools and ALL cross-compilers (including x86_64 for ARM hosts)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        gcc \
-        libc6-dev \
-        gcc-x86-64-linux-gnu \
-        libc6-dev-amd64-cross \
-        gcc-i686-linux-gnu \
-        libc6-dev-i386-cross \
-        gcc-aarch64-linux-gnu \
-        libc6-dev-arm64-cross \
-        gcc-arm-linux-gnueabihf \
-        libc6-dev-armhf-cross \
-        make \
-        curl \
-        xz-utils \
-        file \
-        ca-certificates && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Switch to CentOS 6 vault repository (required after EOL)
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Base.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Base.repo
 
-# Set working directory
+# Install build tools (GCC 4.4)
+RUN yum install -y gcc make curl xz file
+
 WORKDIR /build
 
 # Download and prepare Duktape 2.7.0
@@ -39,28 +32,89 @@ RUN curl -L https://duktape.org/duktape-${DUKTAPE_VERSION}.tar.xz -o duktape.tar
 COPY src/ /build/src/
 COPY include/ /build/include/
 
-# Build for all architectures
-RUN mkdir -p /build/output
-
-# Build x86_64 (using cross-compiler to ensure correct arch)
-RUN x86_64-linux-gnu-gcc -std=c99 -Wall -O2 -fPIC -shared \
+# Build x86_64 shared library
+RUN mkdir -p /build/output && \
+    gcc -std=c99 -Wall -O2 -fPIC -shared \
     -I/build/include \
     -I/build/duktape-${DUKTAPE_VERSION}/src \
     /build/src/typecast_autotag.c \
     /build/duktape-${DUKTAPE_VERSION}/src/duktape.c \
-    -lm -lpthread \
+    -lm \
     -o /build/output/libtypecast_autotag_x86_64.so && \
     file /build/output/libtypecast_autotag_x86_64.so
 
-# Build i686 (x86 32-bit)
-RUN i686-linux-gnu-gcc -std=c99 -Wall -O2 -fPIC -shared \
+# =============================================================================
+# Stage 2: Build i686 (x86) on CentOS 6 32-bit (glibc 2.12)
+# Using QEMU emulation via Docker's buildx
+# =============================================================================
+FROM --platform=linux/386 i386/centos:6 AS builder-x86
+
+# Switch to CentOS 6 vault repository
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Base.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Base.repo
+
+# Install build tools
+RUN yum install -y gcc make curl xz file
+
+WORKDIR /build
+
+# Download Duktape
+ENV DUKTAPE_VERSION=2.7.0
+RUN curl -L https://duktape.org/duktape-${DUKTAPE_VERSION}.tar.xz -o duktape.tar.xz && \
+    xz -d duktape.tar.xz && \
+    tar -xf duktape.tar && \
+    rm duktape.tar
+
+COPY src/ /build/src/
+COPY include/ /build/include/
+
+# Build x86 shared library
+RUN mkdir -p /build/output && \
+    gcc -std=c99 -Wall -O2 -fPIC -shared \
     -I/build/include \
     -I/build/duktape-${DUKTAPE_VERSION}/src \
     /build/src/typecast_autotag.c \
     /build/duktape-${DUKTAPE_VERSION}/src/duktape.c \
-    -lm -lpthread \
+    -lm \
     -o /build/output/libtypecast_autotag_x86.so && \
     file /build/output/libtypecast_autotag_x86.so
+
+# =============================================================================
+# Stage 3: Cross-compile ARM architectures on Debian Bullseye (current stable)
+# ARM systems typically run newer glibc, so Bullseye (glibc 2.31) is acceptable
+# =============================================================================
+FROM debian:bullseye-slim AS builder-arm
+
+# Install cross-compilers
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        libc6-dev \
+        gcc-aarch64-linux-gnu \
+        libc6-dev-arm64-cross \
+        gcc-arm-linux-gnueabihf \
+        libc6-dev-armhf-cross \
+        make \
+        curl \
+        xz-utils \
+        file \
+        ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Download Duktape
+ENV DUKTAPE_VERSION=2.7.0
+RUN curl -L https://duktape.org/duktape-${DUKTAPE_VERSION}.tar.xz -o duktape.tar.xz && \
+    xz -d duktape.tar.xz && \
+    tar -xf duktape.tar && \
+    rm duktape.tar
+
+COPY src/ /build/src/
+COPY include/ /build/include/
+
+RUN mkdir -p /build/output
 
 # Build aarch64 (arm64)
 RUN aarch64-linux-gnu-gcc -std=c99 -Wall -O2 -fPIC -shared \
@@ -82,14 +136,33 @@ RUN arm-linux-gnueabihf-gcc -std=c99 -Wall -O2 -fPIC -shared \
     -o /build/output/libtypecast_autotag_armv7.so && \
     file /build/output/libtypecast_autotag_armv7.so
 
-# Create default (x86_64 copy)
-RUN cp /build/output/libtypecast_autotag_x86_64.so /build/output/libtypecast_autotag.so
+# =============================================================================
+# Stage 4: Final stage - collect all built libraries
+# =============================================================================
+FROM debian:bullseye-slim AS final
+
+WORKDIR /build/output
+
+# Copy all built libraries from previous stages
+COPY --from=builder-x86_64 /build/output/libtypecast_autotag_x86_64.so ./
+COPY --from=builder-x86 /build/output/libtypecast_autotag_x86.so ./
+COPY --from=builder-arm /build/output/libtypecast_autotag_arm64.so ./
+COPY --from=builder-arm /build/output/libtypecast_autotag_armv7.so ./
+
+# Copy header file
+COPY include/typecast_autotag.h ./
+
+# Create default x86_64 copy
+RUN cp libtypecast_autotag_x86_64.so libtypecast_autotag.so
 
 # Verify all builds
-RUN echo "=== Build Results ===" && \
-    ls -la /build/output/*.so && \
+RUN echo "=== Build Results (CentOS 6 compatible for x86) ===" && \
+    ls -la *.so && \
     echo "" && \
-    for f in /build/output/*.so; do echo "$(basename $f): $(file $f | sed 's/.*: //')"; done
+    for f in *.so; do echo "$f: $(file $f | sed 's/.*: //')"; done && \
+    echo "" && \
+    echo "x86_64 and x86: Built on CentOS 6 (glibc 2.12)" && \
+    echo "arm64 and armv7: Cross-compiled with Debian Bullseye (glibc 2.31)"
 
 # Copy to output directory
-CMD ["sh", "-c", "cp /build/output/*.so /output/ && cp /build/include/typecast_autotag.h /output/ && echo 'All Linux architectures built!' && ls -la /output/*.so"]
+CMD ["sh", "-c", "cp /build/output/*.so /output/ && cp /build/output/typecast_autotag.h /output/ && echo 'All Linux architectures built (x86 CentOS 6.9+ compatible)!' && ls -la /output/*.so"]
