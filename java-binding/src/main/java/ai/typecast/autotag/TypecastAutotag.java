@@ -258,6 +258,112 @@ public final class TypecastAutotag {
         return result;
     }
     
+    // ============================================
+    // English Language Methods
+    // ============================================
+    
+    /**
+     * Automatically recognize and convert patterns in English text.
+     * 
+     * <p>Automatically recognizes and converts the following patterns:
+     * 
+     * <ul>
+     *   <li>Phone numbers: {@code 555-123-4567} → five five five, one two three, four five six seven</li>
+     *   <li>Money: {@code $1,500} → one thousand five hundred dollars</li>
+     *   <li>Dates: {@code 01/15/2024} → January fifteenth, twenty twenty-four</li>
+     *   <li>Time: {@code 2:30 PM} → two thirty PM</li>
+     *   <li>Others: ordinals, percentages, etc.</li>
+     * </ul>
+     * 
+     * @param text English text to process (UTF-8)
+     * @return Processed text suitable for TTS
+     * @throws InitializationException if library is not initialized and auto-init fails
+     * @throws ConversionException if conversion fails
+     * @throws IllegalArgumentException if text is null
+     * 
+     * <p>Example:
+     * <pre>{@code
+     * String result = TypecastAutotag.autoTagEn("Call me at 555-123-4567.");
+     * // Output: "Call me at five five five, one two three, four five six seven."
+     * }</pre>
+     */
+    public static String autoTagEn(String text) throws InitializationException, ConversionException {
+        if (text == null) {
+            throw new IllegalArgumentException("Text cannot be null");
+        }
+        
+        ensureInitialized();
+        
+        String result = nativeAutoTagEn(text);
+        if (result == null) {
+            throw new ConversionException("auto_tag_english conversion failed");
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Process manual tags first, then apply auto tagging for English.
+     * 
+     * @param text English text with optional manual tags (UTF-8)
+     * @return Processed text suitable for TTS
+     * @throws InitializationException if library is not initialized and auto-init fails
+     * @throws ConversionException if conversion fails
+     * @throws IllegalArgumentException if text is null
+     * 
+     * <p>Example:
+     * <pre>{@code
+     * String result = TypecastAutotag.autoTagWithManualEn("name(John Smith), your balance is $500.");
+     * // Output: "John Smith, your balance is five hundred dollars."
+     * }</pre>
+     */
+    public static String autoTagWithManualEn(String text) 
+            throws InitializationException, ConversionException {
+        if (text == null) {
+            throw new IllegalArgumentException("Text cannot be null");
+        }
+        
+        ensureInitialized();
+        
+        String result = nativeAutoTagWithManualEn(text);
+        if (result == null) {
+            throw new ConversionException("auto_tag_with_manual_english conversion failed");
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Process only explicitly specified manual tags for English.
+     * 
+     * @param text English text with manual tags (UTF-8)
+     * @return Processed text suitable for TTS
+     * @throws InitializationException if library is not initialized and auto-init fails
+     * @throws ConversionException if conversion fails
+     * @throws IllegalArgumentException if text is null
+     * 
+     * <p>Example:
+     * <pre>{@code
+     * String result = TypecastAutotag.manualTagEn("phone(555-123-4567) is my number.");
+     * // Output: "five five five, one two three, four five six seven is my number."
+     * }</pre>
+     */
+    public static String manualTagEn(String text) 
+            throws InitializationException, ConversionException {
+        if (text == null) {
+            throw new IllegalArgumentException("Text cannot be null");
+        }
+        
+        ensureInitialized();
+        
+        String result = nativeManualTagEn(text);
+        if (result == null) {
+            throw new ConversionException("manual_tag_english conversion failed");
+        }
+        
+        return result;
+    }
+    
     /**
      * Get the library version.
      * 
@@ -323,5 +429,31 @@ public final class TypecastAutotag {
      * @return Version string
      */
     private static native String nativeVersion();
+    
+    // English native methods
+    
+    /**
+     * Native method for auto tagging English text.
+     * 
+     * @param text Text to process
+     * @return Processed text, or null on failure
+     */
+    private static native String nativeAutoTagEn(String text);
+    
+    /**
+     * Native method for auto tagging with manual tags for English.
+     * 
+     * @param text Text to process
+     * @return Processed text, or null on failure
+     */
+    private static native String nativeAutoTagWithManualEn(String text);
+    
+    /**
+     * Native method for manual tag processing for English.
+     * 
+     * @param text Text to process
+     * @return Processed text, or null on failure
+     */
+    private static native String nativeManualTagEn(String text);
 }
 

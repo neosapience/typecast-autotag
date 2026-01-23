@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "typecast-autotag"
-version = "1.6.0"
+version = "1.7.0"
 description = "TTS text preprocessing library - Converts phone numbers, dates, amounts, etc. to formats suitable for speech synthesis"
 readme = "README.md"
 license = {text = "MIT"}
