@@ -244,7 +244,7 @@ String result2 = TypecastAutotag.manualTag("phone(010-1234-5678)로 연락주세
 // → "공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔로 연락주세요."
 ```
 
-**Supported Tags (37 total):**
+**Supported Tags (38 total):**
 
 | Tag                  | Description            | Example                                         |
 | -------------------- | ---------------------- | ----------------------------------------------- |
@@ -261,6 +261,7 @@ String result2 = TypecastAutotag.manualTag("phone(010-1234-5678)로 연락주세
 | `point(점수)`        | Score reading          | `point(95)` → 구십오 점                         |
 | `piece(개수)`        | Counter (native)       | `piece(3)` → 세 개                              |
 | `digits(숫자)`       | Read digits one by one | `digits(123)` → 일 . 이 . 삼                    |
+| `address(주소)`      | Address reading        | `address(102동 1101호 (아파트))` → 백이동 천백일호 |
 | ...and more          |                        |                                                 |
 
 ### Method 3: Hybrid Mode (`autoTagWithManual`)

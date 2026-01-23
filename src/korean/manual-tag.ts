@@ -35,6 +35,7 @@ import { temperature } from './tags/temperature';
 import { volume } from './tags/volume';
 import { dataCapacity } from './tags/data-capacity';
 import { inch } from './tags/inch';
+import { address } from './tags/address';
 
 /**
  * 사용 가능한 태그 함수 매핑
@@ -79,6 +80,7 @@ const TAG_FUNCTIONS: Record<string, TagFunction> = {
   volume: (input) => volume(input),
   dataCapacity: (input) => dataCapacity(input),
   inch: (input) => inch(input),
+  address: (input) => address(input),
 };
 
 /**
@@ -88,9 +90,13 @@ export const SUPPORTED_TAGS = Object.keys(TAG_FUNCTIONS);
 
 /**
  * 태그 매칭을 위한 정규식
- * 형식: tagName(value) - 괄호 안에는 아무 문자나 포함 가능 (중첩 괄호 제외)
+ * 형식: tagName(value) - 괄호 안에는 아무 문자나 포함 가능 (1단계 중첩 괄호 지원)
+ * 예: address(우성베스토피아 102동 1101호 ( 엘지동, 우성베스토피아 ))
  */
-const TAG_PATTERN = new RegExp(`(${SUPPORTED_TAGS.join('|')})\\(([^)]*)\\)`, 'g');
+const TAG_PATTERN = new RegExp(
+  `(${SUPPORTED_TAGS.join('|')})\\(([^()]*(?:\\([^)]*\\)[^()]*)*)\\)`,
+  'g'
+);
 
 /**
  * 텍스트에서 태그를 파싱하여 해당 태그 함수를 적용한 결과로 대체

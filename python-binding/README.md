@@ -181,7 +181,7 @@ result = manual_tag("phone(010-1234-5678)로 연락주세요.")
 # → "공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔로 연락주세요."
 ```
 
-**Supported Tags (37 total):**
+**Supported Tags (38 total):**
 
 | Tag                  | Description         | Example                                         |
 | -------------------- | ------------------- | ----------------------------------------------- |
@@ -205,6 +205,7 @@ result = manual_tag("phone(010-1234-5678)로 연락주세요.")
 | `distance(distance)` | Read distance       | `distance(5km)` → 오 킬로미터                   |
 | `temperature(temp)`  | Read temperature    | `temperature(25℃)` → 이십오 도                  |
 | `volume(volume)`     | Read volume         | `volume(500ml)` → 오백 밀리리터                 |
+| `address(address)`   | Read address        | `address(102동 1101호 (아파트))` → 백이동 천백일호 |
 | ...and more          |                     |                                                 |
 
 ### Method 3: Hybrid Mode (`auto_tag_with_manual`)

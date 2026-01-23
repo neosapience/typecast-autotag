@@ -195,7 +195,7 @@ char *result = typecast_manual_tag("name(김철수)님 안녕하세요.");
 char *result = typecast_manual_tag("phone(010-1234-5678)로 연락주세요.");
 ```
 
-**Supported Tags (37 total):**
+**Supported Tags (38 total):**
 
 | Tag                  | Description         | Example                                         |
 | -------------------- | ------------------- | ----------------------------------------------- |
@@ -236,6 +236,7 @@ char *result = typecast_manual_tag("phone(010-1234-5678)로 연락주세요.");
 | `volume(volume)`     | Read volume         | `volume(500ml)` → 오백 밀리리터                 |
 | `dataCapacity(data)` | Read data capacity  | `dataCapacity(100GB)` → 백 기가바이트           |
 | `inch(inch)`         | Read inch           | `inch(55인치)` → 오십오 인치                    |
+| `address(address)`   | Read address        | `address(102동 1101호 (아파트))` → 백이동 천백일호 |
 
 ### Method 3: Hybrid Mode (`typecast_auto_tag_with_manual`)
 
@@ -397,7 +398,7 @@ pnpm test:e2e:macos
 
 | Category                        | Test Count | Description               |
 | ------------------------------- | ---------- | ------------------------- |
-| `typecast_manual_tag`           | 37         | All manual tags (37)      |
+| `typecast_manual_tag`           | 38         | All manual tags (38)      |
 | `typecast_auto_tag`             | 8          | Auto-recognition patterns |
 | `typecast_auto_tag_with_manual` | 4          | Manual + auto hybrid      |
 | **Total**                       | **49**     | 49 tests per environment  |

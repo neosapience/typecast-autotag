@@ -1,36 +1,37 @@
-import { digitToPhoneKorean } from '../utils/number-to-korean';
+import { numberToKorean } from '../utils/number-to-korean';
 
 /**
  * roomNumber 함수의 옵션
  */
 export interface RoomNumberOptions {
   /**
-   * 숫자 사이 구분자
-   * @default ' . '
+   * 숫자와 단위 사이 공백 포함 여부
+   * @default false
    */
-  separator?: string;
+  includeSpace?: boolean;
 }
 
 /**
  * 호실 번호를 한글로 변환
  *
- * 호실 번호는 숫자를 개별로 읽습니다:
- * - 1205호 → 일 . 이 . 공 . 오 호
- * - 302호 → 삼 . 공 . 이 호
+ * 호실 번호는 한자어 수사로 읽습니다:
+ * - 1205호 → 천이백오호
+ * - 302호 → 삼백이호
+ * - 202호 → 이백이호
  *
  * @param input - 변환할 호실 번호 (문자열)
- * @param options - 옵션 (구분자)
+ * @param options - 옵션 (공백 포함 여부)
  * @returns 한글 호실 번호 표현
  *
  * @example
  * ```typescript
- * roomNumber('1205호');  // '일 . 이 . 공 . 오 호'
- * roomNumber('302호');   // '삼 . 공 . 이 호'
- * roomNumber('501');     // '오 . 공 . 일'
+ * roomNumber('1205호');  // '천이백오호'
+ * roomNumber('302호');   // '삼백이호'
+ * roomNumber('501');     // '오백일'
  * ```
  */
 export function roomNumber(input: string, options?: RoomNumberOptions): string {
-  const separator = options?.separator ?? ' . ';
+  const includeSpace = options?.includeSpace ?? false;
 
   const trimmed = input.trim();
   if (trimmed === '') return input;
@@ -38,17 +39,20 @@ export function roomNumber(input: string, options?: RoomNumberOptions): string {
   // N호 패턴 매칭
   const matchWithHo = trimmed.match(/^(\d+)\s*호$/);
   if (matchWithHo) {
-    const numStr = matchWithHo[1] ?? '';
-    const digits = numStr.split('').map((d) => digitToPhoneKorean(d));
-    return digits.join(separator) + separator + '호';
+    const num = parseInt(matchWithHo[1] ?? '0', 10);
+    if (!isNaN(num) && num > 0) {
+      const space = includeSpace ? ' ' : '';
+      return numberToKorean(num) + space + '호';
+    }
   }
 
   // 숫자만 있는 경우
   const matchNumberOnly = trimmed.match(/^(\d+)$/);
   if (matchNumberOnly) {
-    const numStr = matchNumberOnly[1] ?? '';
-    const digits = numStr.split('').map((d) => digitToPhoneKorean(d));
-    return digits.join(separator);
+    const num = parseInt(matchNumberOnly[1] ?? '0', 10);
+    if (!isNaN(num) && num > 0) {
+      return numberToKorean(num);
+    }
   }
 
   return input;

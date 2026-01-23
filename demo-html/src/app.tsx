@@ -371,6 +371,10 @@ function App() {
                         <code>digits(1234)</code>
                         <span>숫자를 한자리씩</span>
                       </div>
+                      <div className="tag-item">
+                        <code>address(102동 1101호)</code>
+                        <span>주소 (동호수)</span>
+                      </div>
                     </div>
                     <div className="tag-category">
                       <div className="tag-category-title">날짜/시간</div>

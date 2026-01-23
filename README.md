@@ -343,10 +343,11 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 
 ### Manual-only Tags
 
-| Tag      | Description         | English Syntax                        | Korean Syntax                  |
-| -------- | ------------------- | ------------------------------------- | ------------------------------ |
-| `name`   | Name (char-by-char) | `name(John)` → `J O H N`              | `name(김철수)` → `김 . 철 . 수`    |
-| `digits` | Digit-by-digit      | `digits(1234)` → `one two three four` | `digits(1234)` → `일 . 이 . 삼 . 사` |
+| Tag       | Description         | English Syntax                        | Korean Syntax                  |
+| --------- | ------------------- | ------------------------------------- | ------------------------------ |
+| `name`    | Name (char-by-char) | `name(John)` → `J O H N`              | `name(김철수)` → `김 . 철 . 수`    |
+| `digits`  | Digit-by-digit      | `digits(1234)` → `one two three four` | `digits(1234)` → `일 . 이 . 삼 . 사` |
+| `address` | Address (Korean only) | -                                   | `address(102동 1101호 (엘지동, 아파트))` → `백이동 천백일호` |
 
 > **Tip:** All auto-tags can also be used as manual tags with explicit syntax.
 
