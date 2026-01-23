@@ -128,3 +128,91 @@ Java_ai_typecast_autotag_TypecastAutotag_nativeVersion(JNIEnv *env, jclass cls) 
     return (*env)->NewStringUTF(env, version);
 }
 
+
+/* ============================================
+ * English Language Functions
+ * ============================================ */
+
+/**
+ * Auto tag for English
+ */
+JNIEXPORT jstring JNICALL 
+Java_ai_typecast_autotag_TypecastAutotag_nativeAutoTagEn(JNIEnv *env, jclass cls, jstring text) {
+    if (text == NULL) {
+        return NULL;
+    }
+    
+    const char *input = (*env)->GetStringUTFChars(env, text, NULL);
+    if (input == NULL) {
+        return NULL;
+    }
+    
+    char *result = typecast_auto_tag_english(input);
+    
+    (*env)->ReleaseStringUTFChars(env, text, input);
+    
+    if (result == NULL) {
+        return NULL;
+    }
+    
+    jstring jresult = (*env)->NewStringUTF(env, result);
+    typecast_free(result);
+    
+    return jresult;
+}
+
+/**
+ * Auto tag with manual tags for English
+ */
+JNIEXPORT jstring JNICALL 
+Java_ai_typecast_autotag_TypecastAutotag_nativeAutoTagWithManualEn(JNIEnv *env, jclass cls, jstring text) {
+    if (text == NULL) {
+        return NULL;
+    }
+    
+    const char *input = (*env)->GetStringUTFChars(env, text, NULL);
+    if (input == NULL) {
+        return NULL;
+    }
+    
+    char *result = typecast_auto_tag_with_manual_english(input);
+    
+    (*env)->ReleaseStringUTFChars(env, text, input);
+    
+    if (result == NULL) {
+        return NULL;
+    }
+    
+    jstring jresult = (*env)->NewStringUTF(env, result);
+    typecast_free(result);
+    
+    return jresult;
+}
+
+/**
+ * Manual tag for English
+ */
+JNIEXPORT jstring JNICALL 
+Java_ai_typecast_autotag_TypecastAutotag_nativeManualTagEn(JNIEnv *env, jclass cls, jstring text) {
+    if (text == NULL) {
+        return NULL;
+    }
+    
+    const char *input = (*env)->GetStringUTFChars(env, text, NULL);
+    if (input == NULL) {
+        return NULL;
+    }
+    
+    char *result = typecast_manual_tag_english(input);
+    
+    (*env)->ReleaseStringUTFChars(env, text, input);
+    
+    if (result == NULL) {
+        return NULL;
+    }
+    
+    jstring jresult = (*env)->NewStringUTF(env, result);
+    typecast_free(result);
+    
+    return jresult;
+}
