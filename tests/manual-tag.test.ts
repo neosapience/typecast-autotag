@@ -113,9 +113,9 @@ describe('manualTag', () => {
       expect(manualTag('unknown(test)')).toBe('unknown(test)');
     });
 
-    it('중첩된 괄호가 없는 값만 처리한다', () => {
-      // 중첩 괄호는 지원하지 않음 - 첫 번째 닫는 괄호까지만 매칭
-      expect(manualTag('name(김(형)우)')).toBe('김 . ( . 형우)');
+    it('1단계 중첩 괄호를 지원한다', () => {
+      // 1단계 중첩 괄호 지원 - address 태그 등에서 괄호 안 내용 포함
+      expect(manualTag('name(김(형)우)')).toBe('김 . ( . 형 . ) . 우');
     });
   });
 });
@@ -191,7 +191,7 @@ describe('SUPPORTED_TAGS', () => {
     expect(SUPPORTED_TAGS).toContain('datetime');
   });
 
-  it('37개의 태그가 지원된다', () => {
-    expect(SUPPORTED_TAGS).toHaveLength(37);
+  it('38개의 태그가 지원된다', () => {
+    expect(SUPPORTED_TAGS).toHaveLength(38);
   });
 });

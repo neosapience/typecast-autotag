@@ -179,7 +179,7 @@ char *result = typecast_manual_tag("name(김철수)님 안녕하세요.");
 // Result: "김 . 철 . 수 님 안녕하세요."
 ```
 
-**Available Tags (37 total):**
+**Available Tags (38 total):**
 
 | Tag                    | Purpose       | Example                                             |
 | ---------------------- | ------------- | --------------------------------------------------- |
@@ -220,6 +220,7 @@ char *result = typecast_manual_tag("name(김철수)님 안녕하세요.");
 | `volume(volume)`       | Volume        | `volume(500ml)` → 오백 밀리리터                     |
 | `dataCapacity(data)`   | Data capacity | `dataCapacity(100GB)` → 백 기가바이트               |
 | `inch(inch)`           | Inch          | `inch(55인치)` → 오십오 인치                        |
+| `address(address)`     | Address       | `address(102동 1101호 (아파트))` → 백이동 천백일호    |
 
 ---
 

@@ -195,7 +195,7 @@ char *result = typecast_manual_tag("name(김철수)님 안녕하세요.");
 char *result = typecast_manual_tag("phone(010-1234-5678)로 연락주세요.");
 ```
 
-**지원 태그 (총 37개):**
+**지원 태그 (총 38개):**
 
 | 태그                   | 설명               | 예시                                            |
 | ---------------------- | ------------------ | ----------------------------------------------- |
@@ -236,6 +236,7 @@ char *result = typecast_manual_tag("phone(010-1234-5678)로 연락주세요.");
 | `volume(용량)`         | 용량 읽기          | `volume(500ml)` → 오백 밀리리터                 |
 | `dataCapacity(데이터)` | 데이터 용량 읽기   | `dataCapacity(100GB)` → 백 기가바이트           |
 | `inch(인치)`           | 인치 읽기          | `inch(55인치)` → 오십오 인치                    |
+| `address(주소)`        | 주소 읽기          | `address(102동 1101호 (아파트))` → 백이동 천백일호 |
 
 ### 방식 3: 하이브리드 방식 (`typecast_auto_tag_with_manual`)
 
@@ -397,7 +398,7 @@ pnpm test:e2e:macos
 
 | 카테고리                        | 테스트 수 | 설명                  |
 | ------------------------------- | --------- | --------------------- |
-| `typecast_manual_tag`           | 37        | 모든 수동 태그 (37개) |
+| `typecast_manual_tag`           | 38        | 모든 수동 태그 (38개) |
 | `typecast_auto_tag`             | 8         | 자동 인식 패턴        |
 | `typecast_auto_tag_with_manual` | 4         | 수동 + 자동 혼합      |
 | **총합**                        | **49**    | 환경별 49개 테스트    |
