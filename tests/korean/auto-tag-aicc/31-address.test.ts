@@ -550,5 +550,46 @@ describe('AICC 시나리오 31: 주소 변환', () => {
       expect(result).not.toContain(')');
       expect(result).not.toContain('김치길');
     });
+
+    it('대괄호도 제거: 서울시 [가나다] 강남구 메롱아파트 [가나다라] 201-1123 102호', () => {
+      const input = '서울시 [가나다] 강남구 메롱아파트 [가나다라] 201-1123 102호';
+      const result = autoTag(input);
+      expect(result).not.toContain('[');
+      expect(result).not.toContain(']');
+      expect(result).not.toContain('가나다');
+    });
+
+    it('대괄호 + 도로명: 대전시 대덕구 남산로 [김치길]', () => {
+      const input = '대전시 대덕구 남산로 [김치길]';
+      const result = autoTag(input);
+      expect(result).not.toContain('[');
+      expect(result).not.toContain(']');
+      expect(result).not.toContain('김치길');
+    });
+
+    it('소괄호와 대괄호 혼합: 강남 (가나다) 1234-131동 [가나다] 19호', () => {
+      const input = '강남 (가나다) 1234-131동 [가나다] 19호';
+      const result = autoTag(input);
+      expect(result).not.toContain('(');
+      expect(result).not.toContain(')');
+      expect(result).not.toContain('[');
+      expect(result).not.toContain(']');
+      expect(result).not.toContain('가나다');
+    });
+
+    it('도로명+숫자 붙어있는 경우: 성남 중원구 금광로11 (가나다) 108-2001', () => {
+      const input = '성남 중원구 금광로11 (가나다) 108-2001';
+      const result = autoTag(input);
+      expect(result).not.toContain('(');
+      expect(result).not.toContain(')');
+      expect(result).not.toContain('가나다');
+    });
+
+    it('도로명+숫자 붙어있는 경우 (괄호 없음): 성남 중원구 금광로11 108-2001', () => {
+      const input = '성남 중원구 금광로11 108-2001';
+      const result = autoTag(input);
+      // 주소로 인식되어야 함 (금광로11 패턴)
+      expect(result).toContain('금광로');
+    });
   });
 });
