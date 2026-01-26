@@ -138,4 +138,352 @@ describe('AICC 시나리오 31: 주소 변환', () => {
       expect(result).toBe('우성베스토피아 백이동 천백일호');
     });
   });
+
+  describe('완전한 도로명주소 + 괄호 패턴 (콤마 없는 경우)', () => {
+    // 괄호 안에 "동" 뒤에 콤마 없이 건물명이 오거나, 동만 있는 경우
+    it('도로명 + 괄호(동 건물명) - 콤마 없음: 엘지대로 111 (엘지동 동문굿모닝힐2차아파트)', () => {
+      const input = '엘지대로 111 (엘지동 동문굿모닝힐2차아파트)';
+      const result = autoTag(input);
+      expect(result).toBe('엘지대로 백십일');
+    });
+
+    it('도로명(숫자+길) + 괄호(동만) - 콤마 없음: 엘지로99길 11-1 (엘지동 )', () => {
+      const input = '엘지로99길 11-1 (엘지동 )';
+      const result = autoTag(input);
+      expect(result).toBe('엘지로구십구길 십일 다시 일');
+    });
+
+    it('도로명(숫자+번길) + 괄호(동 건물명) - 콤마 없음: 엘지로999번길 10 (엘지동 한성아파트)', () => {
+      const input = '엘지로999번길 10 (엘지동 한성아파트)';
+      const result = autoTag(input);
+      expect(result).toBe('엘지로구백구십구번길 십');
+    });
+
+    it('도로명 + 괄호(동 건물명) - 콤마 없음, 공백 포함: 엘지로 114-31 (엘지동 금호 베스트빌)', () => {
+      const input = '엘지로 114-31 (엘지동 금호 베스트빌)';
+      const result = autoTag(input);
+      expect(result).toBe('엘지로 백십사 다시 삼십일');
+    });
+
+    it('도로명(숫자+번길) + 괄호(동 건물명+숫자) - 콤마 없음: 엘지로512번길 52 (엘지동 엘지아파트1단지)', () => {
+      const input = '엘지로512번길 52 (엘지동 엘지아파트1단지)';
+      const result = autoTag(input);
+      expect(result).toBe('엘지로오백십이번길 오십이');
+    });
+
+    it('N-N + 괄호(동,건물명) - 콤마 있음: 108-2004 (엘지동, 엘지센텀퍼스트)', () => {
+      const input = '108-2004 (엘지동, 엘지센텀퍼스트)';
+      const result = autoTag(input);
+      expect(result).toBe('백팔 다시 이천사');
+    });
+
+    it('한글+숫자+길 + 괄호(읍): 엘지1길 19-8, (엘지읍)', () => {
+      const input = '엘지1길 19-8, (엘지읍)';
+      const result = autoTag(input);
+      expect(result).toBe('엘지일길 십구 다시 팔');
+    });
+  });
+
+  describe('N동N 형식 (호 없음)', () => {
+    it('N동N - 호 없이 동+숫자: 101동1512', () => {
+      const input = '101동1512';
+      const result = address(input);
+      expect(result).toBe('백일동 천오백십이');
+    });
+
+    it('N동N - 호 없이 동+숫자 (공백): 101동 1512', () => {
+      const input = '101동 1512';
+      const result = address(input);
+      // 이 경우는 N동 + 단독숫자로 처리됨
+      expect(result).toBe('백일동 천오백십이');
+    });
+  });
+
+  // =============================================
+  // 확장 테스트: 다양한 한국 주소 케이스
+  // =============================================
+
+  describe('아파트 주소 - 다양한 동/호 조합', () => {
+    it('한자리 동 + 세자리 호: 1동 101호', () => {
+      const input = '1동 101호';
+      expect(address(input)).toBe('일동 백일호');
+    });
+
+    it('두자리 동 + 네자리 호: 12동 1234호', () => {
+      const input = '12동 1234호';
+      expect(address(input)).toBe('십이동 천이백삼십사호');
+    });
+
+    it('세자리 동 + 두자리 호: 101동 12호', () => {
+      const input = '101동 12호';
+      expect(address(input)).toBe('백일동 십이호');
+    });
+
+    it('네자리 동 + 네자리 호: 1234동 5678호', () => {
+      const input = '1234동 5678호';
+      expect(address(input)).toBe('천이백삼십사동 오천육백칠십팔호');
+    });
+
+    it('동호 붙어있는 경우: 101동101호', () => {
+      const input = '101동101호';
+      expect(address(input)).toBe('백일동 백일호');
+    });
+
+    it('동호 공백 있는 경우: 101동  101호', () => {
+      const input = '101동  101호';
+      expect(address(input)).toBe('백일동 백일호');
+    });
+
+    it('건물명 + 동호: 래미안아파트 102동 1503호', () => {
+      const input = '래미안아파트 102동 1503호';
+      expect(address(input)).toBe('래미안아파트 백이동 천오백삼호');
+    });
+
+    it('복합 건물명 + 동호: 힐스테이트 더 퍼스트 101동 2201호', () => {
+      const input = '힐스테이트 더 퍼스트 101동 2201호';
+      expect(address(input)).toBe('힐스테이트 더 퍼스트 백일동 이천이백일호');
+    });
+  });
+
+  describe('오피스텔/상가 주소 - 층/호 조합', () => {
+    it('층 + 호: 5층 501호', () => {
+      const input = '5층 501호';
+      expect(address(input)).toBe('오층 오백일호');
+    });
+
+    it('층만: 지상 3층', () => {
+      const input = '지상 3층';
+      expect(address(input)).toBe('지상 삼층');
+    });
+
+    it('두자리 층: 15층', () => {
+      const input = '15층';
+      expect(address(input)).toBe('십오층');
+    });
+
+    it('층 + 호 붙어있음: 3층301호', () => {
+      const input = '3층301호';
+      expect(address(input)).toBe('삼층삼백일호');
+    });
+
+    it('건물명 + 층 + 호: 강남타워 12층 1201호', () => {
+      const input = '강남타워 12층 1201호';
+      expect(address(input)).toBe('강남타워 십이층 천이백일호');
+    });
+  });
+
+  describe('도로명주소 - 다양한 형태', () => {
+    it('대로: 테헤란대로 521', () => {
+      const input = '테헤란대로 521';
+      expect(address(input)).toBe('테헤란대로 오백이십일');
+    });
+
+    it('로: 강남대로 123', () => {
+      const input = '강남대로 123';
+      expect(address(input)).toBe('강남대로 백이십삼');
+    });
+
+    it('길: 역삼로3길 15', () => {
+      const input = '역삼로3길 15';
+      expect(address(input)).toBe('역삼로삼길 십오');
+    });
+
+    it('번길: 역삼로3번길 15', () => {
+      const input = '역삼로3번길 15';
+      expect(address(input)).toBe('역삼로삼번길 십오');
+    });
+
+    it('도로명 + 번지 + 동호: 테헤란로 123 101동 1501호', () => {
+      const input = '테헤란로 123 101동 1501호';
+      expect(address(input)).toBe('테헤란로 백이십삼 백일동 천오백일호');
+    });
+
+    it('도로명 + 번지-부번지: 강남대로 123-45', () => {
+      const input = '강남대로 123-45';
+      expect(address(input)).toBe('강남대로 백이십삼 다시 사십오');
+    });
+  });
+
+  describe('지번주소 - 동/리 + 번지', () => {
+    it('동 + 번지: 역삼동 123-45', () => {
+      const input = '역삼동 123-45';
+      expect(address(input)).toBe('역삼동 백이십삼 다시 사십오');
+    });
+
+    it('리 + 번지: 장기리 567-89', () => {
+      const input = '장기리 567-89';
+      expect(address(input)).toBe('장기리 오백육십칠 다시 팔십구');
+    });
+
+    it('동 + 번지(부번지 없음): 삼성동 123', () => {
+      const input = '삼성동 123';
+      expect(address(input)).toBe('삼성동 백이십삼');
+    });
+  });
+
+  describe('복합 주소 - 여러 요소 조합', () => {
+    it('도로명 + 건물명 + 동호 + 괄호: 테헤란로 123 래미안 101동 1501호 (역삼동, 래미안아파트)', () => {
+      const input = '테헤란로 123 래미안 101동 1501호 (역삼동, 래미안아파트)';
+      expect(address(input)).toBe('테헤란로 백이십삼 래미안 백일동 천오백일호');
+    });
+
+    it('지번 + 건물명 + 층 + 호: 역삼동 123-45 강남빌딩 5층 501호', () => {
+      const input = '역삼동 123-45 강남빌딩 5층 501호';
+      expect(address(input)).toBe('역삼동 백이십삼 다시 사십오 강남빌딩 오층 오백일호');
+    });
+
+    it('전체 주소: 서울특별시 강남구 테헤란로 123 101동 1501호', () => {
+      const input = '서울특별시 강남구 테헤란로 123 101동 1501호';
+      expect(address(input)).toBe('서울특별시 강남구 테헤란로 백이십삼 백일동 천오백일호');
+    });
+  });
+
+  describe('대괄호 처리', () => {
+    it('대괄호 안의 내용 제거: 101동 1501호 [역삼동]', () => {
+      const input = '101동 1501호 [역삼동]';
+      expect(address(input)).toBe('백일동 천오백일호');
+    });
+
+    it('전각 대괄호 안의 내용 제거: 101동 1501호 ［역삼동］', () => {
+      const input = '101동 1501호 ［역삼동］';
+      expect(address(input)).toBe('백일동 천오백일호');
+    });
+
+    it('대괄호와 소괄호 동시 사용: 101동 1501호 (역삼동) [래미안]', () => {
+      const input = '101동 1501호 (역삼동) [래미안]';
+      expect(address(input)).toBe('백일동 천오백일호');
+    });
+  });
+
+  describe('빌라/연립주택 주소', () => {
+    it('빌라 주소: 행복빌라 3동 201호', () => {
+      const input = '행복빌라 3동 201호';
+      expect(address(input)).toBe('행복빌라 삼동 이백일호');
+    });
+
+    it('연립주택: 가나다연립 101호', () => {
+      const input = '가나다연립 101호';
+      expect(address(input)).toBe('가나다연립 백일호');
+    });
+
+    it('다세대: ABC빌라 B동 302호', () => {
+      const input = 'ABC빌라 B동 302호';
+      // B동은 영문이므로 그대로, 호수만 변환
+      expect(address(input)).toBe('ABC빌라 B동 삼백이호');
+    });
+  });
+
+  describe('상업시설 주소', () => {
+    it('상가: 강남상가 1층 101호', () => {
+      const input = '강남상가 1층 101호';
+      expect(address(input)).toBe('강남상가 일층 백일호');
+    });
+
+    it('오피스: 테헤란빌딩 10층 1001호', () => {
+      const input = '테헤란빌딩 10층 1001호';
+      expect(address(input)).toBe('테헤란빌딩 십층 천일호');
+    });
+
+    it('지하상가: 지하 1층 B101호', () => {
+      const input = '지하 1층 B101호';
+      expect(address(input)).toBe('지하 일층 B백일호');
+    });
+  });
+
+  describe('특수 케이스', () => {
+    it('0이 포함된 동호수: 101동 1001호', () => {
+      const input = '101동 1001호';
+      expect(address(input)).toBe('백일동 천일호');
+    });
+
+    it('연속된 숫자: 111동 1111호', () => {
+      const input = '111동 1111호';
+      expect(address(input)).toBe('백십일동 천백십일호');
+    });
+
+    it('다양한 구분자 혼합: 101동/1501호', () => {
+      const input = '101동/1501호';
+      expect(address(input)).toBe('백일동 천오백일호');
+    });
+
+    it('쉼표로 구분: 101동, 1501호', () => {
+      const input = '101동, 1501호';
+      expect(address(input)).toBe('백일동 천오백일호');
+    });
+
+    it('번지-호: 123-4호', () => {
+      const input = '123-4호';
+      expect(address(input)).toBe('백이십삼 다시 사호');
+    });
+
+    it('다중 괄호: 아파트 101동 1501호 (역삼동) (래미안)', () => {
+      const input = '아파트 101동 1501호 (역삼동) (래미안)';
+      expect(address(input)).toBe('아파트 백일동 천오백일호');
+    });
+  });
+
+  describe('autoTag 통합 테스트 - 확장', () => {
+    it('도로명주소 + 괄호(동, 건물명): 테헤란로 123 (역삼동, 래미안)', () => {
+      const input = '테헤란로 123 (역삼동, 래미안)';
+      const result = autoTag(input);
+      expect(result).toBe('테헤란로 백이십삼');
+    });
+
+    it('도로명주소 + 괄호(동 건물명) 콤마없음: 강남대로 456 (삼성동 타워팰리스)', () => {
+      const input = '강남대로 456 (삼성동 타워팰리스)';
+      const result = autoTag(input);
+      expect(result).toBe('강남대로 사백오십육');
+    });
+
+    it('번길 주소 + 괄호: 역삼로15번길 23 (역삼동 현대아파트)', () => {
+      const input = '역삼로15번길 23 (역삼동 현대아파트)';
+      const result = autoTag(input);
+      expect(result).toBe('역삼로십오번길 이십삼');
+    });
+
+    it('복잡한 도로명 + 동호 + 괄호: 테헤란로87길 12 101동 1501호 (역삼동, 래미안아파트)', () => {
+      const input = '테헤란로87길 12 101동 1501호 (역삼동, 래미안아파트)';
+      const result = autoTag(input);
+      // 괄호는 제거되고 동호수는 변환됨
+      expect(result).not.toContain('(');
+      expect(result).not.toContain(')');
+      expect(result).toContain('백일동');
+    });
+
+    it('읍면 주소 + 괄호: 장기로 123 (장기면 행복마을)', () => {
+      const input = '장기로 123 (장기면 행복마을)';
+      const result = autoTag(input);
+      expect(result).toBe('장기로 백이십삼');
+    });
+  });
+
+  describe('경계 케이스', () => {
+    it('빈 문자열', () => {
+      expect(address('')).toBe('');
+    });
+
+    it('공백만 있는 경우', () => {
+      expect(address('   ')).toBe('   ');
+    });
+
+    it('숫자 없는 주소', () => {
+      const input = '서울시 강남구 역삼동';
+      expect(address(input)).toBe('서울시 강남구 역삼동');
+    });
+
+    it('동호수 없이 괄호만: (역삼동, 래미안)', () => {
+      const input = '(역삼동, 래미안)';
+      expect(address(input)).toBe('');
+    });
+
+    it('매우 긴 호수: 9999호', () => {
+      const input = '9999호';
+      expect(address(input)).toBe('구천구백구십구호');
+    });
+
+    it('매우 긴 동수: 9999동', () => {
+      const input = '9999동';
+      expect(address(input)).toBe('구천구백구십구동');
+    });
+  });
 });
