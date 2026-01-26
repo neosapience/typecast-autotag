@@ -51,9 +51,12 @@ import { address } from './tags/address';
 const ADDRESS_LINE_PATTERNS: RegExp[] = [
   // 도로명 주소: ~대로 + 숫자 or 괄호 (예: 테헤란대로 521, 도안대로 (12345), 도안대로 [12345])
   /[가-힣]{2,}대로(?:\s*\d+|\s*[([（［])/,
-  // 도로명 주소: ~로 + 숫자 or 괄호 (예: 엘지로 99, 금광로11, 남산로 (김치길))
-  // "~으로"는 제외 (조사), 띄어쓰기 유무 관계없이 매칭
-  /[가-힣]{2,}(?<!으)로(?:\s*\d+|\s*[([（［])/,
+  // 도로명 주소: ~로 + 숫자 (붙어있는 경우) (예: 금광로11)
+  /[가-힣]{2,}(?<!으)로\d+/,
+  // 도로명 주소: ~로 + 공백 + 숫자 (띄어있는 경우) (예: 금광로 11)
+  /[가-힣]{2,}(?<!으)로\s+\d+/,
+  // 도로명 주소: ~로 + 괄호 (예: 남산로 (김치길), 남산로 [김치길])
+  /[가-힣]{2,}(?<!으)로\s*[([（［]/,
   // 도로명 주소: ~길 + 숫자 or 괄호 (예: 엘지길 15, 엘지길15)
   /[가-힣]{2,}길(?:\s*\d+|\s*[([（［])/,
   // 한글+숫자+길 패턴 (예: 엘지로 99길, 역삼로15번길, 엘지로99길)
@@ -100,22 +103,112 @@ function shouldRemoveBracketContent(content: string): boolean {
   // 층 정보가 포함된 경우 유지 (예: 15층/25층, 3층)
   if (/\d+층/.test(trimmed)) return false;
 
-  // 행정구역명(동/읍/면/리/구) 패턴이 포함된 경우 제거
-  // 예: (엘지동, 센트럴파크), (강남구), (역삼동 래미안)
-  if (/[가-힣]+(?:동|읍|면|리|구)/.test(trimmed)) return true;
+  // 완전한 주소 패턴이 포함된 경우 유지 (도로명 + 번호)
+  // 예: (서울시 강남구 역삼로 123), (강남대로 521)
+  if (/[가-힣]{2,}(?:대로|(?<!으)로|길)\s*\d+/.test(trimmed)) return false;
+
+  // 기존 주소 패턴이 처리하는 괄호는 유지 (동/읍/면 + 건물명)
+  // 예: (엘지동, 센트럴파크), (엘지동 동문굿모닝힐)
+  // 이 패턴은 기존 address 컨버터가 처리함
+  if (/[가-힣]+(?:동|읍|면)\s*[,\s]\s*[가-힣]/.test(trimmed)) return false;
 
   // 순수 숫자만 있는 경우 제거 (우편번호 등)
   // 예: (12394), (124124)
   if (/^\d+$/.test(trimmed)) return true;
 
-  // 한글+숫자 조합이지만 단위가 없는 경우 제거
-  // 예: (휴먼시아, 센트럴파크)
-  if (/^[가-힣a-zA-Z0-9\s,]+$/.test(trimmed) && !/[가-힣]+\d*(?:층|호|동)/.test(trimmed)) {
+  // 단독 행정구역명(동/읍/면/리)만 있는 경우 제거
+  // 예: (엘지동), (역삼동), ( 엘지동 )
+  if (/^\s*[가-힣]+(?:동|읍|면|리)\s*$/.test(trimmed)) return true;
+
+  // 한글+영문+숫자 조합이지만 건물 단위가 없는 경우 제거
+  // 예: (휴먼시아, 센트럴파크), (김치길), (금광동, e편한세상)
+  // 주의: 건물 단위는 "숫자+동/호/층" 형태 (예: 102동, 1501호, 15층)
+  if (
+    /^[가-힣a-zA-Z0-9\s,]+$/.test(trimmed) &&
+    !/\d+(?:층|호|동)/.test(trimmed) &&
+    !/[가-힣]+(?:동|읍|면)\s*[,\s]\s*[가-힣]/.test(trimmed)
+  ) {
     return true;
   }
 
   // 그 외의 경우 유지
   return false;
+}
+
+/**
+ * 도로명의 숫자를 한글로 변환
+ * - 한글로N길 → 한글로N한글길 (예: 엘지로99길 → 엘지로구십구길)
+ * - 한글N길 → 한글N한글길 (예: 엘지1길 → 엘지일길)
+ * - 한글로N번길 → 한글로N한글번길 (예: 역삼로15번길 → 역삼로십오번길)
+ * @param text - 변환할 텍스트
+ */
+function convertRoadNameNumbers(text: string): string {
+  let result = text;
+
+  // 한글+로+숫자+번길 패턴 (예: 역삼로15번길 → 역삼로십오번길)
+  result = result.replace(
+    /([가-힣]+로)(\d+)(번길)/g,
+    (_match, prefix: string, num: string, suffix: string) => {
+      const n = parseInt(num, 10);
+      if (!isNaN(n) && n > 0) {
+        return prefix + numberToKorean(n) + suffix;
+      }
+      return _match;
+    }
+  );
+
+  // 한글+로+숫자+길 패턴 (예: 엘지로99길 → 엘지로구십구길)
+  result = result.replace(
+    /([가-힣]+로)(\d+)(길)/g,
+    (_match, prefix: string, num: string, suffix: string) => {
+      const n = parseInt(num, 10);
+      if (!isNaN(n) && n > 0) {
+        return prefix + numberToKorean(n) + suffix;
+      }
+      return _match;
+    }
+  );
+
+  // 한글+숫자+길 패턴 (예: 엘지1길 → 엘지일길)
+  // 주의: '로'가 없는 경우만 (위에서 이미 처리된 패턴 제외)
+  result = result.replace(
+    /([가-힣]+)(\d+)(길)/g,
+    (_match, prefix: string, num: string, suffix: string) => {
+      // prefix가 '로'로 끝나면 이미 위에서 처리됨
+      if (prefix.endsWith('로')) {
+        return _match;
+      }
+      const n = parseInt(num, 10);
+      if (!isNaN(n) && n > 0) {
+        return prefix + numberToKorean(n) + suffix;
+      }
+      return _match;
+    }
+  );
+
+  return result;
+}
+
+/**
+ * 주소에서 N-N 형식의 번지를 한글 수사로 변환
+ * 괄호가 제거된 주소 줄에서 번지 패턴을 한자어 수사로 변환
+ * (예: 11-1 → 십일 다시 일, 19-8 → 십구 다시 팔)
+ * @param text - 변환할 텍스트
+ */
+function convertAddressHyphenatedNumbers(text: string): string {
+  // N-N 패턴을 한글 수사로 변환
+  // 앞뒤로 하이픈이나 숫자가 없는 경우만 매칭
+  return text.replace(
+    /(?<![-\d])(\d{1,5})-(\d{1,5})(?![-\d])/g,
+    (_match, num1: string, num2: string) => {
+      const n1 = parseInt(num1, 10);
+      const n2 = parseInt(num2, 10);
+      if (!isNaN(n1) && !isNaN(n2) && n1 > 0 && n2 > 0) {
+        return numberToKorean(n1) + ' 다시 ' + numberToKorean(n2);
+      }
+      return _match;
+    }
+  );
 }
 
 /**
@@ -127,7 +220,8 @@ function removeAddressBracketsPostProcess(line: string): string {
   let result = line;
 
   // 소괄호 선택적 제거 (전각 포함)
-  result = result.replace(/\s*[(（]([^)）]*)[)）]\s*/g, (match, content: string) => {
+  // 쉼표 + 괄호 패턴도 함께 제거 (예: ", (엘지읍)" → " ")
+  result = result.replace(/,?\s*[(（]([^)）]*)[)）]\s*/g, (match, content: string) => {
     if (shouldRemoveBracketContent(content)) {
       return ' ';
     }
@@ -135,7 +229,8 @@ function removeAddressBracketsPostProcess(line: string): string {
   });
 
   // 대괄호 선택적 제거 (전각 포함)
-  result = result.replace(/\s*[[［]([^\]］]*)[\]］]\s*/g, (match, content: string) => {
+  // 쉼표 + 괄호 패턴도 함께 제거 (예: ", [엘지읍]" → " ")
+  result = result.replace(/,?\s*[[［]([^\]］]*)[\]］]\s*/g, (match, content: string) => {
     if (shouldRemoveBracketContent(content)) {
       return ' ';
     }
@@ -148,16 +243,28 @@ function removeAddressBracketsPostProcess(line: string): string {
 }
 
 /**
- * 주소로 인식되는 줄에서 불필요한 괄호를 제거하는 후처리
+ * 주소로 인식되는 줄에서 불필요한 괄호를 제거하는 전처리
  * 각 줄을 검사하여 주소 패턴이 발견되면 해당 줄의 불필요한 괄호를 제거
+ * 주의: 숫자가 한글로 변환되기 전에 실행되어야 패턴 매칭이 제대로 동작함
  * @param text - 전체 텍스트
  * @returns 주소 줄의 불필요한 괄호가 제거된 텍스트
  */
-function postProcessAddressLines(text: string): string {
+function preprocessAddressLines(text: string): string {
   const lines = text.split('\n');
   const processedLines = lines.map((line) => {
     if (isAddressLine(line)) {
-      return removeAddressBracketsPostProcess(line);
+      // 원본 줄에 괄호가 있었는지 확인
+      const hadBrackets = /[(（[［]/.test(line);
+      // 1. 불필요한 괄호 제거
+      let processed = removeAddressBracketsPostProcess(line);
+      // 2. 도로명 숫자 변환 (예: 엘지로99길 → 엘지로구십구길)
+      processed = convertRoadNameNumbers(processed);
+      // 3. 괄호가 제거된 경우에만 N-N 번지 변환 (한자어 수사로)
+      // 기존 address 패턴이 처리하던 것을 전처리에서 대신 처리
+      if (hadBrackets && !/[(（[［]/.test(processed)) {
+        processed = convertAddressHyphenatedNumbers(processed);
+      }
+      return processed;
     }
     return line;
   });
@@ -1698,6 +1805,9 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
     return text;
   }
 
+  // 주소로 인식되는 줄에서 불필요한 괄호를 먼저 제거 (전처리)
+  const preprocessedText = preprocessAddressLines(text);
+
   const enabledTags = options?.enabledTags ?? SUPPORTED_AUTO_TAGS;
 
   // 매칭 결과 수집
@@ -1712,7 +1822,7 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
       const regex = new RegExp(pattern.source, pattern.flags);
 
       let match: RegExpExecArray | null;
-      while ((match = regex.exec(text)) !== null) {
+      while ((match = regex.exec(preprocessedText)) !== null) {
         const original = match[0];
         const converted = tagConfig.converter(original);
 
@@ -1732,7 +1842,7 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
 
   // 매칭이 없으면 후처리만 적용
   if (allMatches.length === 0) {
-    let result = text;
+    let result = preprocessedText;
 
     // 특수문자 단위를 발음으로 변환 (후처리)
     for (const [pattern, replacement] of SPECIAL_UNIT_MAP) {
@@ -1743,9 +1853,6 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
     for (const [pattern, replacement] of ABBREVIATION_MAP) {
       result = result.replace(pattern, replacement);
     }
-
-    // 주소로 인식되는 줄에서 불필요한 괄호 제거 (후처리)
-    result = postProcessAddressLines(result);
 
     return result;
   }
@@ -1773,13 +1880,13 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
 
   for (const match of finalMatches) {
     // 매칭 전까지의 텍스트 추가
-    result += text.slice(currentIndex, match.start);
+    result += preprocessedText.slice(currentIndex, match.start);
     // 변환된 텍스트 추가
     result += match.converted;
 
     // 변환된 텍스트 뒤에 다음 문자가 한글, 영문, 숫자인 경우 공백 추가
     // (TTS에서 자연스럽게 읽히도록)
-    const nextChar = text[match.end];
+    const nextChar = preprocessedText[match.end];
     const convertedEndsWithSpace = match.converted.endsWith(' ');
     if (nextChar && !convertedEndsWithSpace && /[가-힣a-zA-Z0-9]/.test(nextChar)) {
       result += ' ';
@@ -1789,7 +1896,7 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
   }
 
   // 나머지 텍스트 추가
-  result += text.slice(currentIndex);
+  result += preprocessedText.slice(currentIndex);
 
   // 특수문자 단위를 발음으로 변환 (후처리)
   for (const [pattern, replacement] of SPECIAL_UNIT_MAP) {
@@ -1800,9 +1907,6 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
   for (const [pattern, replacement] of ABBREVIATION_MAP) {
     result = result.replace(pattern, replacement);
   }
-
-  // 주소로 인식되는 줄에서 불필요한 괄호 제거 (후처리)
-  result = postProcessAddressLines(result);
 
   return result;
 }

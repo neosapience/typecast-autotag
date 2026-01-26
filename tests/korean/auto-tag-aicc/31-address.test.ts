@@ -591,5 +591,13 @@ describe('AICC 시나리오 31: 주소 변환', () => {
       // 주소로 인식되어야 함 (금광로11 패턴)
       expect(result).toContain('금광로');
     });
+
+    it('도로명 숫자 띄어쓰기: 성남 중원구 금광로 11 [금광동, e편한세상] 108-2001', () => {
+      const input = '성남 중원구 금광로 11 [금광동, e편한세상] 108-2001';
+      const result = autoTag(input);
+      expect(result).not.toContain('[');
+      expect(result).not.toContain(']');
+      expect(result).not.toContain('금광동');
+    });
   });
 });
