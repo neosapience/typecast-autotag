@@ -526,5 +526,29 @@ describe('AICC 시나리오 31: 주소 변환', () => {
       expect(result).not.toContain('래미안');
       expect(result).toContain('층');
     });
+
+    it('시/구 + 여러 괄호: 서울시 (가나다) 강남구 메롱아파트 (가나다라) 201-1123 102호', () => {
+      const input = '서울시 (가나다) 강남구 메롱아파트 (가나다라) 201-1123 102호';
+      const result = autoTag(input);
+      expect(result).not.toContain('(');
+      expect(result).not.toContain(')');
+      expect(result).not.toContain('가나다');
+    });
+
+    it('동 + 여러 괄호: 강남 (가나다) 1234-131동 (가나다) 19호', () => {
+      const input = '강남 (가나다) 1234-131동 (가나다) 19호';
+      const result = autoTag(input);
+      expect(result).not.toContain('(');
+      expect(result).not.toContain(')');
+      expect(result).not.toContain('가나다');
+    });
+
+    it('도로명 + 괄호(길 이름): 대전시 대덕구 남산로 (김치길)', () => {
+      const input = '대전시 대덕구 남산로 (김치길)';
+      const result = autoTag(input);
+      expect(result).not.toContain('(');
+      expect(result).not.toContain(')');
+      expect(result).not.toContain('김치길');
+    });
   });
 });
