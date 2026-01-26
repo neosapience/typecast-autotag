@@ -218,6 +218,18 @@ export function address(input: string, options?: AddressOptions): string {
     return _match;
   });
 
+  // 4-1. N동N 변환 (호 없이 동+숫자만 있는 경우: 101동1512 → 백일동 천오백십이)
+  // 뒤에 '호'가 없는 경우만 처리
+  result = result.replace(/(\d+)\s*동(\d+)(?!호)/g, (_match, dongNum: string, roomNum: string) => {
+    const dong = parseInt(dongNum, 10);
+    const room = parseInt(roomNum, 10);
+    if (!isNaN(dong) && !isNaN(room) && dong > 0 && room > 0) {
+      const space = includeSpace ? ' ' : '';
+      return numberToKorean(dong) + space + '동 ' + numberToKorean(room);
+    }
+    return _match;
+  });
+
   // 5. N동 변환 (예: 102동 → 백이동)
   // 숫자 + 동 (뒤에 숫자가 오지 않는 경우)
   result = result.replace(/(\d+)\s*동(?!\d)/g, (match) => convertDong(match, includeSpace));
