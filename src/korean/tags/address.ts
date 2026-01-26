@@ -141,6 +141,60 @@ function convertNumber(match: string): string {
 }
 
 /**
+ * 도로명의 숫자를 한글로 변환
+ * - 한글로N길 → 한글로N한글길 (예: 엘지로99길 → 엘지로구십구길)
+ * - 한글N길 → 한글N한글길 (예: 엘지1길 → 엘지일길)
+ * - 한글로N번길 → 한글로N한글번길 (예: 역삼로15번길 → 역삼로십오번길)
+ * @param text - 변환할 텍스트
+ */
+function convertRoadNameNumbers(text: string): string {
+  let result = text;
+
+  // 한글+로+숫자+번길 패턴 (예: 역삼로15번길 → 역삼로십오번길)
+  result = result.replace(
+    /([가-힣]+로)(\d+)(번길)/g,
+    (_match, prefix: string, num: string, suffix: string) => {
+      const n = parseInt(num, 10);
+      if (!isNaN(n) && n > 0) {
+        return prefix + numberToKorean(n) + suffix;
+      }
+      return _match;
+    }
+  );
+
+  // 한글+로+숫자+길 패턴 (예: 엘지로99길 → 엘지로구십구길)
+  result = result.replace(
+    /([가-힣]+로)(\d+)(길)/g,
+    (_match, prefix: string, num: string, suffix: string) => {
+      const n = parseInt(num, 10);
+      if (!isNaN(n) && n > 0) {
+        return prefix + numberToKorean(n) + suffix;
+      }
+      return _match;
+    }
+  );
+
+  // 한글+숫자+길 패턴 (예: 엘지1길 → 엘지일길)
+  // 주의: '로'가 없는 경우만 (위에서 이미 처리된 패턴 제외)
+  result = result.replace(
+    /([가-힣]+)(\d+)(길)(?!로)/g,
+    (_match, prefix: string, num: string, suffix: string) => {
+      // prefix가 '로'로 끝나면 이미 위에서 처리됨
+      if (prefix.endsWith('로')) {
+        return _match;
+      }
+      const n = parseInt(num, 10);
+      if (!isNaN(n) && n > 0) {
+        return prefix + numberToKorean(n) + suffix;
+      }
+      return _match;
+    }
+  );
+
+  return result;
+}
+
+/**
  * N/N호 형식을 변환 (예: 104/4122호 → 백사 사천백이십이호)
  * @param match - 매칭된 문자열 (예: "104/4122호")
  * @param includeSpace - 공백 포함 여부
@@ -200,6 +254,9 @@ export function address(input: string, options?: AddressOptions): string {
 
   // 1. 괄호 안의 내용 제거
   let result = removeBracketedContent(trimmed);
+
+  // 1-1. 도로명 숫자 변환 (예: 엘지로99길 → 엘지로구십구길, 엘지1길 → 엘지일길)
+  result = convertRoadNameNumbers(result);
 
   // 2. N/N호 형식 변환 (특수문자 처리 전에 먼저 처리)
   result = result.replace(/\d+\/\d+\s*호/g, (match) => convertSlashHo(match, includeSpace));
