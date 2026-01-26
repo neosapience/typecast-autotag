@@ -486,4 +486,45 @@ describe('AICC 시나리오 31: 주소 변환', () => {
       expect(address(input)).toBe('구천구백구십구동');
     });
   });
+
+  describe('주소 줄에서 모든 괄호 제거', () => {
+    it('도로명주소 + 건물명 괄호 + 호수: 서울 엘지구 엘지로 99길 11-1 (휴먼시아, 센트럴파크) 201호', () => {
+      const input = '서울 엘지구 엘지로 99길 11-1 (휴먼시아, 센트럴파크) 201호';
+      const result = autoTag(input);
+      // 괄호 안 건물명이 제거되어야 함
+      expect(result).not.toContain('(');
+      expect(result).not.toContain(')');
+      expect(result).not.toContain('휴먼시아');
+      expect(result).not.toContain('센트럴파크');
+      // 호수는 변환되어야 함
+      expect(result).toContain('이백일호');
+    });
+
+    it('도로명주소 + 숫자 괄호 + 한글 + 숫자 괄호: 서울시 강남구 도안대로 (12394) ㅁㅁ ㅁ(124124)', () => {
+      const input = '서울시 강남구 도안대로 (12394) ㅁㅁ ㅁ(124124)';
+      const result = autoTag(input);
+      // 괄호 안 숫자가 제거되어야 함
+      expect(result).not.toContain('(');
+      expect(result).not.toContain(')');
+      expect(result).not.toContain('12394');
+      expect(result).not.toContain('124124');
+    });
+
+    it('층수 정보 괄호는 유지: 103동 1502호 (15층/25층)', () => {
+      const input = '103동 1502호 (15층/25층)';
+      const result = autoTag(input);
+      // 층수 정보는 유지되어야 함
+      expect(result).toContain('(');
+      expect(result).toContain('층');
+    });
+
+    it('혼합 케이스: 테헤란로 123 101동 1501호 (역삼동, 래미안) (15층/25층)', () => {
+      const input = '테헤란로 123 101동 1501호 (역삼동, 래미안) (15층/25층)';
+      const result = autoTag(input);
+      // 역삼동, 래미안 괄호는 제거되고, 층수 괄호는 유지
+      expect(result).not.toContain('역삼동');
+      expect(result).not.toContain('래미안');
+      expect(result).toContain('층');
+    });
+  });
 });
