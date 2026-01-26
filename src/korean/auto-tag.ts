@@ -42,6 +42,120 @@ import { inch } from './tags/inch';
 import { address } from './tags/address';
 
 /**
+ * 주소로 인식되는 줄인지 확인하는 패턴들
+ * - 도로명 주소: 대로/로/길 + 숫자 (또는 괄호)
+ * - 아파트 주소: N동N호 패턴
+ * 주의: 패턴이 너무 넓으면 주소가 아닌 텍스트도 매칭될 수 있음
+ */
+const ADDRESS_LINE_PATTERNS: RegExp[] = [
+  // 도로명 주소: ~대로 + 숫자 or 괄호 (예: 테헤란대로 521, 도안대로 (12345))
+  // "~으로"는 제외 (조사), 한글 2글자 이상 필요
+  /[가-힣]{2,}대로(?:\s*\d+|\s+[(（])/,
+  // 도로명 주소: ~로 + 숫자 (예: 엘지로 99, 역삼로 123)
+  // "~으로"는 제외 (조사)
+  /[가-힣]{2,}(?<!으)로\s+\d+/,
+  // 도로명 주소: ~길 + 숫자 (예: 엘지길 15)
+  /[가-힣]{2,}길\s+\d+/,
+  // 한글+숫자+길 패턴 (예: 엘지로 99길, 역삼로15번길, 엘지로99길)
+  /[가-힣]{2,}로?\s*\d+(?:번)?길/,
+  // 아파트 동/호 패턴: N동 + 호 (예: 102동 1101호, 102동1101호)
+  /\d{1,4}동\s*\d{1,4}호/,
+  // 번지-번지 + 호 패턴 (예: 123-45 201호)
+  /\d{1,5}-\d{1,5}\s+\d{1,4}호/,
+];
+
+/**
+ * 주어진 줄이 주소로 인식되는지 확인
+ * @param line - 확인할 줄
+ * @returns 주소로 인식되면 true
+ */
+function isAddressLine(line: string): boolean {
+  return ADDRESS_LINE_PATTERNS.some((pattern) => pattern.test(line));
+}
+
+/**
+ * 제거해야 할 괄호인지 확인
+ * - 행정구역명(동/읍/면/리/구)이 포함된 괄호 → 제거
+ * - 순수 숫자만 포함된 괄호 (우편번호 등) → 제거
+ * - 한글 건물명만 포함된 괄호 → 제거
+ * - 층수 정보(층) 등 유용한 정보 → 유지
+ * @param content - 괄호 안의 내용 (괄호 제외)
+ * @returns 제거해야 하면 true
+ */
+function shouldRemoveBracketContent(content: string): boolean {
+  const trimmed = content.trim();
+
+  // 빈 괄호는 제거
+  if (trimmed === '') return true;
+
+  // 층 정보가 포함된 경우 유지 (예: 15층/25층, 3층)
+  if (/\d+층/.test(trimmed)) return false;
+
+  // 행정구역명(동/읍/면/리/구) 패턴이 포함된 경우 제거
+  // 예: (엘지동, 센트럴파크), (강남구), (역삼동 래미안)
+  if (/[가-힣]+(?:동|읍|면|리|구)/.test(trimmed)) return true;
+
+  // 순수 숫자만 있는 경우 제거 (우편번호 등)
+  // 예: (12394), (124124)
+  if (/^\d+$/.test(trimmed)) return true;
+
+  // 한글+숫자 조합이지만 단위가 없는 경우 제거
+  // 예: (휴먼시아, 센트럴파크)
+  if (/^[가-힣a-zA-Z0-9\s,]+$/.test(trimmed) && !/[가-힣]+\d*(?:층|호|동)/.test(trimmed)) {
+    return true;
+  }
+
+  // 그 외의 경우 유지
+  return false;
+}
+
+/**
+ * 줄에서 제거해야 할 괄호만 선택적으로 제거 (후처리용)
+ * @param line - 처리할 줄
+ * @returns 불필요한 괄호가 제거된 줄
+ */
+function removeAddressBracketsPostProcess(line: string): string {
+  let result = line;
+
+  // 소괄호 선택적 제거 (전각 포함)
+  result = result.replace(/\s*[(（]([^)）]*)[)）]\s*/g, (match, content: string) => {
+    if (shouldRemoveBracketContent(content)) {
+      return ' ';
+    }
+    return match;
+  });
+
+  // 대괄호 선택적 제거 (전각 포함)
+  result = result.replace(/\s*[[［]([^\]］]*)[\]］]\s*/g, (match, content: string) => {
+    if (shouldRemoveBracketContent(content)) {
+      return ' ';
+    }
+    return match;
+  });
+
+  // 연속된 공백을 하나로 정리
+  result = result.replace(/\s+/g, ' ').trim();
+  return result;
+}
+
+/**
+ * 주소로 인식되는 줄에서 불필요한 괄호를 제거하는 후처리
+ * 각 줄을 검사하여 주소 패턴이 발견되면 해당 줄의 불필요한 괄호를 제거
+ * @param text - 전체 텍스트
+ * @returns 주소 줄의 불필요한 괄호가 제거된 텍스트
+ */
+function postProcessAddressLines(text: string): string {
+  const lines = text.split('\n');
+  const processedLines = lines.map((line) => {
+    if (isAddressLine(line)) {
+      return removeAddressBracketsPostProcess(line);
+    }
+    return line;
+  });
+  return processedLines.join('\n');
+}
+
+/**
  * 특수문자 단위를 발음으로 변환하는 매핑
  * 패턴 매칭으로 처리되지 않는 단독 특수문자들을 후처리로 변환
  */
@@ -1621,6 +1735,9 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
       result = result.replace(pattern, replacement);
     }
 
+    // 주소로 인식되는 줄에서 불필요한 괄호 제거 (후처리)
+    result = postProcessAddressLines(result);
+
     return result;
   }
 
@@ -1674,6 +1791,9 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
   for (const [pattern, replacement] of ABBREVIATION_MAP) {
     result = result.replace(pattern, replacement);
   }
+
+  // 주소로 인식되는 줄에서 불필요한 괄호 제거 (후처리)
+  result = postProcessAddressLines(result);
 
   return result;
 }
