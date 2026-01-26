@@ -1,7 +1,9 @@
 # Typecast Autotag C Library Usage Guide
 
-> A text preprocessing library for TTS (Text-to-Speech).  
+> A text preprocessing library for TTS (Text-to-Speech).
 > Converts phone numbers, amounts, dates, etc. into text suitable for natural voice output.
+
+> **Note:** **All manual tags (38 types) provided by this library are also supported in the auto-tag function (`typecast_auto_tag`).**
 
 ---
 
@@ -174,6 +176,8 @@ char *result = typecast_auto_tag("전화번호는 010-1234-5678입니다.");
 
 Use when you want to precisely specify and convert certain parts.
 
+> **Note:** All manual tags listed below are also supported in the auto-tag function (`typecast_auto_tag`).
+
 ```c
 char *result = typecast_manual_tag("name(김철수)님 안녕하세요.");
 // Result: "김 . 철 . 수 님 안녕하세요."
@@ -220,7 +224,7 @@ char *result = typecast_manual_tag("name(김철수)님 안녕하세요.");
 | `volume(volume)`       | Volume        | `volume(500ml)` → 오백 밀리리터                     |
 | `dataCapacity(data)`   | Data capacity | `dataCapacity(100GB)` → 백 기가바이트               |
 | `inch(inch)`           | Inch          | `inch(55인치)` → 오십오 인치                        |
-| `address(address)`     | Address       | `address(102동 1101호 (아파트))` → 백이동 천백일호    |
+| `address(address)`     | Address       | `address(102동 1101호)` → 백이동 천백일호, `address(180-12번지)` → 백팔십 의 십이 번지 |
 
 ---
 
@@ -551,3 +555,32 @@ Items to verify before use:
 - [ ] Did you call `typecast_cleanup()` before exit?
 
 If all items are checked, you're ready to go!
+
+---
+
+## Changelog
+
+> **Note:** All manual tags are also supported in the auto-tag function (`typecast_auto_tag`).
+
+### v1.5.0 ~ v1.7.0
+
+- Added English auto-tagging functionality
+- Enhanced address tagging functionality
+  - Added lot number pattern support (e.g., `180-12번지` → 백팔십 의 십이 번지)
+  - Added road name address pattern support
+  - Added apartment building/unit pattern support (e.g., `102동 1101호` → 백이동 천백일호)
+- Unified Korean output format (consistent dot separator notation)
+- Support for automatic recognition and conversion of various address formats
+
+### v1.4.0
+
+- Added English language support
+- Added demo project (React + Vite)
+- Improved documentation (Korean/English)
+
+### v1.3.0
+
+- Added Java binding
+- Added Python binding
+- Introduced version synchronization script
+- Multi-platform native library support
