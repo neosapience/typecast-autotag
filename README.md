@@ -7,7 +7,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-≥18-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-success?style=for-the-badge)]()
-[![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)]()
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](./LICENSE)
 
 [Features](#features) •
 [Installation](#installation) •
@@ -596,6 +596,12 @@ The following pre-built binaries are automatically attached to each release:
 | Header   | `typecast_autotag.h`                                                                                                                                                   |
 
 > **Note:** Make sure to build the C bindings before releasing: `pnpm c-binding:build-all-multiarch`
+
+<br>
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE) — Copyright (c) 2026 Neosapience, Inc.
 
 <br>
 
