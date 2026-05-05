@@ -5,12 +5,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neosapience/typecast-autotag-ts.git"
+    "url": "git+https://github.com/neosapience/typecast-autotag.git"
   },
   "bugs": {
-    "url": "https://github.com/neosapience/typecast-autotag-ts/issues"
+    "url": "https://github.com/neosapience/typecast-autotag/issues"
   },
-  "homepage": "https://github.com/neosapience/typecast-autotag-ts#readme",
+  "homepage": "https://github.com/neosapience/typecast-autotag#readme",
   "source": "src/index.ts",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
