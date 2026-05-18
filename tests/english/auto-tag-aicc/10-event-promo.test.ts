@@ -27,7 +27,9 @@ describe('AICC Scenario 10: Events and Promotions', () => {
     expect(result).toContain('five five five');
     expect(result).toContain('February');
     expect(result).toContain('ten AM');
-    expect(result).toContain('five five five');
+    // CodeRabbit feedback: widen the phone coverage to the middle group too,
+    // instead of repeating `five five five`.
+    expect(result).toContain('one two three');
     // TASK-12506: large comma number followed by an adjacent noun must spell out.
     expect(result).toContain('five thousand participants');
   });

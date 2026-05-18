@@ -42,7 +42,9 @@ describe('AICC Scenario 31: Address and Location Information', () => {
     expect(result).toContain('press one');
     expect(result).toContain('January');
     expect(result).toContain('nine AM');
-    expect(result).toContain('press one');
+    // CodeRabbit feedback: cover the "press 0" branch too (agent transfer)
+    // instead of repeating `press one`.
+    expect(result).toContain('press zero');
   });
 
   describe('floor tag tests', () => {
