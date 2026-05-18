@@ -64,6 +64,23 @@ describe('autoTag - duration (duration auto-tagging)', () => {
     });
   });
 
+  describe('range across minutes/seconds (TASK-12506)', () => {
+    it('converts both numbers in "X to Y minutes"', () => {
+      expect(autoDuration('Estimated wait: 30 to 45 minutes')).toContain(
+        'thirty to forty-five minutes'
+      );
+    });
+
+    it('converts both numbers in "X to Y seconds"', () => {
+      expect(autoDuration('Cooldown: 20 to 60 seconds')).toContain('twenty to sixty seconds');
+    });
+
+    it('still handles X to Y hours / days / weeks', () => {
+      expect(autoDuration('Battery: 5 to 10 hours')).toContain('five to ten hours');
+      expect(autoDuration('Delivery: 3 to 5 days')).toContain('three to five days');
+    });
+  });
+
   describe('False Positive prevention', () => {
     it('does not convert numbers without units', () => {
       expect(autoDuration('12345')).toBe('12345');

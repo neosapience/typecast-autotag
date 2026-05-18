@@ -28,6 +28,8 @@ describe('AICC Scenario 10: Events and Promotions', () => {
     expect(result).toContain('February');
     expect(result).toContain('ten AM');
     expect(result).toContain('five five five');
+    // TASK-12506: large comma number followed by an adjacent noun must spell out.
+    expect(result).toContain('five thousand participants');
   });
 
   it('converts promotion expiry notice correctly', () => {
@@ -40,5 +42,7 @@ describe('AICC Scenario 10: Events and Promotions', () => {
     expect(result).toContain('one hundred and eighty dollars');
     expect(result).toContain('fifty dollars');
     expect(result).toContain('ten percent');
+    // TASK-12506: "5,000 bonus points" now spells the comma number itself.
+    expect(result).toContain('five thousand bonus points');
   });
 });
