@@ -36,8 +36,24 @@ const {
   SUPPORTED_TAGS: KO_SUPPORTED_TAGS,
 } = koreanModule;
 
+// ============================================================================
+// English module import
+// ============================================================================
+import * as englishModule from './english';
+
+const {
+  autoTag: enAutoTag,
+  extractAutoTags: enExtractAutoTags,
+  manualTag: enManualTag,
+  extractTags: enExtractTags,
+  manualTagSelective: enManualTagSelective,
+  SUPPORTED_AUTO_TAGS: EN_SUPPORTED_AUTO_TAGS,
+  SUPPORTED_TAGS: EN_SUPPORTED_TAGS,
+} = englishModule;
+
 // Type imports
 import type { AutoTagOptions as KoAutoTagOptions, MatchResult as KoMatchResult } from './korean';
+import type { AutoTagOptions as EnAutoTagOptions, MatchResult as EnMatchResult } from './english';
 
 // ============================================================================
 // Type Definitions
@@ -46,7 +62,7 @@ import type { AutoTagOptions as KoAutoTagOptions, MatchResult as KoMatchResult }
 /**
  * Supported language codes
  */
-export type SupportedLanguage = 'ko';
+export type SupportedLanguage = 'ko' | 'en';
 
 /**
  * Auto-tagging options
@@ -138,6 +154,15 @@ const languageModules: Record<SupportedLanguage, LanguageModule> = {
     manualTagSelective: koManualTagSelective,
     supportedAutoTags: KO_SUPPORTED_AUTO_TAGS,
     supportedManualTags: KO_SUPPORTED_TAGS,
+  },
+  en: {
+    autoTag: enAutoTag as LanguageModule['autoTag'],
+    extractAutoTags: enExtractAutoTags as LanguageModule['extractAutoTags'],
+    manualTag: enManualTag,
+    extractTags: enExtractTags,
+    manualTagSelective: enManualTagSelective,
+    supportedAutoTags: EN_SUPPORTED_AUTO_TAGS,
+    supportedManualTags: EN_SUPPORTED_TAGS,
   },
 };
 
@@ -407,13 +432,14 @@ export function getSupportedManualTags(language?: SupportedLanguage): string[] {
 }
 
 // ============================================================================
-// Korean module re-export (for direct access)
+// Language module re-exports (for direct access)
 // ============================================================================
 
 export { koreanModule as korean };
+export { englishModule as english };
 
 // ============================================================================
 // Type re-exports
 // ============================================================================
 
-export type { KoAutoTagOptions, KoMatchResult };
+export type { KoAutoTagOptions, KoMatchResult, EnAutoTagOptions, EnMatchResult };
