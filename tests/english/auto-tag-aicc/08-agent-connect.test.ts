@@ -16,6 +16,10 @@ describe('AICC Scenario 08: Agent Connection', () => {
     expect(result).toContain('two thirty-two PM');
     expect(result).toContain('six PM');
     expect(result).toContain('nine AM');
+    // TASK-12506: ordinal in "5th in queue" must now convert.
+    expect(result).toContain('fifth in queue');
+    // TASK-12506: minsec compact 3m20s also covers the wait estimate.
+    expect(result).toContain('three minutes twenty seconds');
   });
 
   it('converts callback offer announcement correctly', () => {
