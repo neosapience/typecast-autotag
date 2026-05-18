@@ -7,7 +7,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-≥18-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-success?style=for-the-badge)]()
-[![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)]()
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](./LICENSE)
 
 [기능](#기능) •
 [설치](#설치) •
@@ -529,6 +529,12 @@ src/
     └── utils/
         └── number-to-english.ts # 숫자 변환 유틸리티
 ```
+
+<br>
+
+## 라이선스
+
+이 프로젝트는 [MIT License](./LICENSE) 로 배포됩니다 — Copyright (c) 2026 Neosapience, Inc.
 
 <br>
 

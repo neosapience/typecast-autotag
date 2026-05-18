@@ -42,6 +42,31 @@ describe('autoTag - order (ordinal auto-tagging)', () => {
     });
   });
 
+  describe('queue context (TASK-12506)', () => {
+    it('converts Nth in queue', () => {
+      expect(autoOrder('Your position: 5th in queue')).toContain('fifth in queue');
+      expect(autoOrder('1st in queue')).toContain('first in queue');
+    });
+
+    it('converts Nth in line', () => {
+      expect(autoOrder('You are 3rd in line')).toContain('third in line');
+    });
+  });
+
+  describe('colon-prefixed bare ordinal (TASK-12506)', () => {
+    it('converts ordinal right after a colon label', () => {
+      expect(autoOrder('Position: 5th')).toContain('fifth');
+      expect(autoOrder('Rank: 3rd.')).toContain('third');
+    });
+
+    it('does not eat ordinals inside running prose', () => {
+      // Without a preceding colon-label, bare "5th" stays as-is (existing behavior)
+      expect(autoTag('I finished my 5th lap', { enabledTags: ['order'] })).toBe(
+        'I finished my 5th lap'
+      );
+    });
+  });
+
   describe('False Positive prevention', () => {
     it('does not convert ordinals without context', () => {
       // Standalone ordinals without place/rank/position context
