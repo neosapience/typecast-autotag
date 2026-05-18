@@ -426,10 +426,22 @@ const AUTO_TAG_PATTERNS = {
     patterns: [
       // Nth place/rank/position
       /\b\d+(?:st|nd|rd|th)\s+(?:place|rank|position|grade|level|round)\b/gi,
+      // Queue context: Nth in queue, Nth in line
+      /\b\d+(?:st|nd|rd|th)\s+in\s+(?:queue|line)\b/gi,
       // Ordinal numbers with context: the 1st, came 2nd
       /\b(?:the|came|finished|ranked)\s+\d+(?:st|nd|rd|th)\b/gi,
+      // Bare ordinal right after a colon-prefixed label (e.g. "Position: 5th")
+      /(?<=:\s)\d+(?:st|nd|rd|th)(?=\s|$|[,.])/g,
     ],
-    converter: (match: string) => order(match),
+    converter: (match: string) => {
+      // Strip "in queue" / "in line" tail before delegating to order() so the
+      // function returns just the ordinal, then re-append the context word.
+      const queueMatch = match.match(/^(\d+(?:st|nd|rd|th))\s+(in\s+(?:queue|line))$/i);
+      if (queueMatch) {
+        return order(queueMatch[1] ?? '') + ' ' + (queueMatch[2] ?? '');
+      }
+      return order(match);
+    },
   },
 
   /**
@@ -474,14 +486,22 @@ const AUTO_TAG_PATTERNS = {
   /**
    * Distance context pattern (m unit + distance context keywords)
    * - 500m ahead, within 100m, etc.
+   *
+   * NOTE: `(?!\d)` on the trailing `m` is what keeps "approximately 3m20s"
+   * (a duration in NmNs compact form) from being captured here and read as
+   * meters. Without it the minsec compact pattern is starved by the longer
+   * "approximately 3m" distance match in start-position order.
    */
   distanceContext: {
     patterns: [
       // Number + m + distance context keyword (after)
-      new RegExp(`[\\d,]+(?:\\.\\d+)?\\s*m\\s*(?:${DISTANCE_CONTEXT_AFTER.join('|')})`, 'gi'),
+      new RegExp(
+        `[\\d,]+(?:\\.\\d+)?\\s*m(?!\\d)\\s*(?:${DISTANCE_CONTEXT_AFTER.join('|')})`,
+        'gi'
+      ),
       // Distance context keyword (before) + number + m
       new RegExp(
-        `(?:${DISTANCE_CONTEXT_BEFORE.join('|')})\\s*[\\d,]+(?:\\.\\d+)?\\s*m(?![a-zA-Z])`,
+        `(?:${DISTANCE_CONTEXT_BEFORE.join('|')})\\s*[\\d,]+(?:\\.\\d+)?\\s*m(?![a-zA-Z\\d])`,
         'gi'
       ),
     ],
@@ -622,6 +642,7 @@ const AUTO_TAG_PATTERNS = {
   /**
    * Number patterns
    * - Number N, #N
+   * - Large comma-grouped numbers in narrative text (4+ digits)
    */
   number: {
     patterns: [
@@ -629,6 +650,11 @@ const AUTO_TAG_PATTERNS = {
       /\b(?:number|no\.)\s*\d{1,4}\b/gi,
       // #N (hash + number, no word boundary before #) - limit to 4 digits
       /#\d{1,4}\b/g,
+      // Standalone large comma-grouped number: 5,000 / 10,000 / 1,234,567
+      // Bounded to 4-12 digit total so phone fragments / serials don't get scooped.
+      // Other tags (money $X,XXX, year ranges 2020~2024 without comma, phone NNN-NNNN)
+      // match before this fallback or use different shapes, so they win on overlap.
+      /\b\d{1,3}(?:,\d{3}){1,3}\b/g,
     ],
     converter: (match: string) => numberTag(match),
   },
@@ -637,11 +663,12 @@ const AUTO_TAG_PATTERNS = {
    * Duration patterns
    * - N months, N weeks, N years
    * - N days (as duration)
+   * - Range "X to Y minutes/hours/seconds/..." (front number was previously left as digit)
    */
   duration: {
     patterns: [
-      // Duration range: N~M hours, N~M days
-      /\b\d+\s*[-~to]+\s*\d+\s*(?:hours?|days?|weeks?|months?|years?|semesters?|quarters?)\b/gi,
+      // Duration range: N~M hours/days/minutes/seconds/...
+      /\b\d+\s*(?:\s+to\s+|[-~])\s*\d+\s*(?:hours?|minutes?|seconds?|mins?|secs?|hrs?|days?|weeks?|months?|years?|semesters?|quarters?)\b/gi,
       // N days/weeks/months/years + later/ago/long
       /\b[\d,]+\s*(?:days?|weeks?|months?|years?|semesters?|quarters?)\s*(?:later|ago|long)\b/gi,
       // For N days/weeks/months/years
@@ -652,9 +679,9 @@ const AUTO_TAG_PATTERNS = {
       /\b[\d,]+\s*(?:months?|weeks?|years?|semesters?|quarters?)\b/gi,
     ],
     converter: (match: string) => {
-      // Duration range: N~M units
+      // Range across the union of duration + minsec units.
       const rangeMatch = match.match(
-        /^(\d+)\s*[-~to]+\s*(\d+)\s*(hours?|days?|weeks?|months?|years?)$/i
+        /^(\d+)\s*(?:\s+to\s+|[-~])\s*(\d+)\s*(hours?|minutes?|seconds?|mins?|secs?|hrs?|days?|weeks?|months?|years?|semesters?|quarters?)$/i
       );
       if (rangeMatch) {
         const num1 = parseInt(rangeMatch[1] ?? '0', 10);
