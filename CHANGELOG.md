@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased]
+
+### Features
+
+- English module is now wired into the top-level package API. `autoTag(text, { language: 'en' })`, `manualTag`, `autoTagWithManual`, `extractAutoTags`, `getSupportedAutoTags('en')` and the `english` namespace re-export are all callable from the public entry point. Previously the English module existed under `src/english/` but the top-level dispatcher only knew about Korean, so `{ language: 'en' }` threw `Unsupported language: en` (TASK-12482).
+
+### Bug Fixes (English module — TASK-12506)
+
+- `minsec`: compact `NmNs` durations are no longer eaten by the distance handler when preceded by ambiguous keywords. `approximately 3m20s` now reads as `approximately three minutes twenty seconds` instead of `approximately three meters20s`. The `distanceContext` regex grew a `(?!\d)` lookahead on the trailing `m` so it never crosses into a duration.
+- `order`: queue / line contexts and bare ordinals after a colon label now convert. `5th in queue` → `fifth in queue`, `Position: 5th` → `Position: fifth`.
+- `number`: large comma-grouped numbers that are followed by an adjacent noun (or separated from their noun by an adjective) now spell themselves out. `5,000 participants` → `five thousand participants`, `10,000 bonus points` → `ten thousand bonus points`. Money keeps winning on `$1,500` because of overlap priority.
+- `duration` range: the English `X to Y minutes` / `X to Y seconds` range is now caught and both numbers convert. Previously only `hours` / `days` / `weeks` / `months` / `years` ranges were handled, so `30 to 45 minutes` left the `30` as a digit.
+
+### Known Gaps Still Open (deferred to follow-up)
+
+- `money`: `$X,XXX.00` integer-only output still reads as `one thousand eighty dollars` rather than `one thousand and eighty dollars`. Changing this affects `numberToEnglish` callers more broadly and was kept out of scope.
+- `flight`: airline 2-letter codes are still emitted as space-separated letters (`AA301` → `A A three zero one`). Picking one canonical convention (joined / dotted / phonetic / spelled-out name) is a separate decision.
+
 # [1.5.0](https://github.com/neosapience/typecast-autotag/compare/v1.4.0...v1.5.0) (2026-01-02)
 
 
