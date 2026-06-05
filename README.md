@@ -564,7 +564,7 @@ cp .env.example .env
 GITHUB_TOKEN=<your-github-token>
 ```
 
-> Generate a token at [GitHub Settings → Tokens](https://github.com/settings/tokens) with `repo` scope.
+> Generate a token at [GitHub Settings → Tokens](https://github.com/settings/tokens) with permission to create releases and upload release assets.
 
 ### Creating a Release
 
