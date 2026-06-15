@@ -211,31 +211,104 @@ function convertAddressHyphenatedNumbers(text: string): string {
   );
 }
 
+type BracketPair = {
+  open: string;
+  close: string;
+};
+
+const ADDRESS_BRACKET_PAIRS: BracketPair[] = [
+  { open: '(', close: ')' },
+  { open: '（', close: '）' },
+  { open: '[', close: ']' },
+  { open: '［', close: '］' },
+];
+
+/**
+ * 지정 위치 이후 가장 먼저 등장하는 주소 괄호와 괄호 종류를 찾는다.
+ * @param line - 검색할 주소 줄
+ * @param start - 검색 시작 위치
+ */
+function findNextBracket(line: string, start: number): { index: number; pair: BracketPair } | null {
+  let nextIndex = -1;
+  let nextPair: BracketPair | null = null;
+
+  for (const pair of ADDRESS_BRACKET_PAIRS) {
+    const index = line.indexOf(pair.open, start);
+    if (index !== -1 && (nextIndex === -1 || index < nextIndex)) {
+      nextIndex = index;
+      nextPair = pair;
+    }
+  }
+
+  return nextPair ? { index: nextIndex, pair: nextPair } : null;
+}
+
+/**
+ * 제거할 괄호 앞의 선택적 쉼표와 공백을 포함한 시작 위치를 계산한다.
+ * @param line - 처리할 주소 줄
+ * @param openIndex - 여는 괄호 위치
+ * @param lowerBound - 이번 스캔 구간에서 제거할 수 있는 최소 위치
+ */
+function getBracketRemovalStart(line: string, openIndex: number, lowerBound: number): number {
+  let removeStart = openIndex;
+
+  while (removeStart > lowerBound && /\s/.test(line.charAt(removeStart - 1))) {
+    removeStart -= 1;
+  }
+
+  if (removeStart > lowerBound && line.charAt(removeStart - 1) === ',') {
+    removeStart -= 1;
+  }
+
+  return removeStart;
+}
+
+/**
+ * 제거한 괄호 뒤의 공백을 건너뛴 다음 처리 위치를 반환한다.
+ * @param line - 처리할 주소 줄
+ * @param index - 닫는 괄호 바로 다음 위치
+ */
+function skipTrailingWhitespace(line: string, index: number): number {
+  let nextIndex = index;
+  while (nextIndex < line.length && /\s/.test(line.charAt(nextIndex))) {
+    nextIndex += 1;
+  }
+  return nextIndex;
+}
+
 /**
  * 줄에서 제거해야 할 괄호만 선택적으로 제거 (후처리용)
  * @param line - 처리할 줄
  * @returns 불필요한 괄호가 제거된 줄
  */
 function removeAddressBracketsPostProcess(line: string): string {
-  let result = line;
+  let result = '';
+  let index = 0;
 
-  // 소괄호 선택적 제거 (전각 포함)
-  // 쉼표 + 괄호 패턴도 함께 제거 (예: ", (엘지읍)" → " ")
-  result = result.replace(/,?\s*[(（]([^)）]*)[)）]\s*/g, (match, content: string) => {
-    if (shouldRemoveBracketContent(content)) {
-      return ' ';
+  while (index < line.length) {
+    const nextBracket = findNextBracket(line, index);
+    if (!nextBracket) {
+      result += line.slice(index);
+      break;
     }
-    return match;
-  });
 
-  // 대괄호 선택적 제거 (전각 포함)
-  // 쉼표 + 괄호 패턴도 함께 제거 (예: ", [엘지읍]" → " ")
-  result = result.replace(/,?\s*[[［]([^\]］]*)[\]］]\s*/g, (match, content: string) => {
-    if (shouldRemoveBracketContent(content)) {
-      return ' ';
+    const { index: openIndex, pair } = nextBracket;
+    const closeIndex = line.indexOf(pair.close, openIndex + pair.open.length);
+    if (closeIndex === -1) {
+      result += line.slice(index);
+      break;
     }
-    return match;
-  });
+
+    const content = line.slice(openIndex + pair.open.length, closeIndex);
+    if (shouldRemoveBracketContent(content)) {
+      const removeStart = getBracketRemovalStart(line, openIndex, index);
+      result += line.slice(index, removeStart) + ' ';
+      index = skipTrailingWhitespace(line, closeIndex + pair.close.length);
+    } else {
+      result += line.slice(index, closeIndex + pair.close.length);
+      index = closeIndex + pair.close.length;
+    }
+  }
 
   // 연속된 공백을 하나로 정리
   result = result.replace(/\s+/g, ' ').trim();
