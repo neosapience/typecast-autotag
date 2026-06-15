@@ -293,6 +293,12 @@ describe('AICC 시나리오 31: 주소 변환', () => {
       expect(address(input)).toBe('역삼로삼번길 십오');
     });
 
+    it('긴 도로명 숫자도 선형 시간으로 처리한다', () => {
+      const roadName = '가나다'.repeat(1000) + '로';
+      const input = `${roadName}15번길 23`;
+      expect(address(input)).toBe(`${roadName}십오번길 이십삼`);
+    });
+
     it('도로명 + 번지 + 동호: 테헤란로 123 101동 1501호', () => {
       const input = '테헤란로 123 101동 1501호';
       expect(address(input)).toBe('테헤란로 백이십삼 백일동 천오백일호');

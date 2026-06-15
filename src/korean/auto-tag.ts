@@ -136,6 +136,61 @@ function shouldRemoveBracketContent(content: string): boolean {
 }
 
 /**
+ * 한글 완성형 음절인지 확인한다.
+ * @param char - 확인할 문자
+ */
+function isKoreanSyllable(char: string): boolean {
+  return char >= '가' && char <= '힣';
+}
+
+/**
+ * 도로명 뒤 숫자와 길/번길 접미사를 읽어 한글 변환 결과를 만든다.
+ * @param text - 처리할 텍스트
+ * @param start - 한글 도로명 시작 위치
+ */
+function readRoadNameNumberReplacement(
+  text: string,
+  start: number
+): { value: string; end: number } | null {
+  let koreanEnd = start;
+  while (koreanEnd < text.length && isKoreanSyllable(text.charAt(koreanEnd))) {
+    koreanEnd += 1;
+  }
+
+  let numberEnd = koreanEnd;
+  while (numberEnd < text.length) {
+    const char = text.charAt(numberEnd);
+    if (char < '0' || char > '9') {
+      break;
+    }
+    numberEnd += 1;
+  }
+
+  if (numberEnd === koreanEnd) {
+    return null;
+  }
+
+  const suffix = text.startsWith('번길', numberEnd)
+    ? '번길'
+    : text.startsWith('길', numberEnd)
+      ? '길'
+      : null;
+  if (!suffix) {
+    return null;
+  }
+
+  const number = parseInt(text.slice(koreanEnd, numberEnd), 10);
+  if (isNaN(number) || number <= 0) {
+    return null;
+  }
+
+  return {
+    value: text.slice(start, koreanEnd) + numberToKorean(number) + suffix,
+    end: numberEnd + suffix.length,
+  };
+}
+
+/**
  * 도로명의 숫자를 한글로 변환
  * - 한글로N길 → 한글로N한글길 (예: 엘지로99길 → 엘지로구십구길)
  * - 한글N길 → 한글N한글길 (예: 엘지1길 → 엘지일길)
@@ -143,48 +198,27 @@ function shouldRemoveBracketContent(content: string): boolean {
  * @param text - 변환할 텍스트
  */
 function convertRoadNameNumbers(text: string): string {
-  let result = text;
+  let result = '';
+  let index = 0;
 
-  // 한글+로+숫자+번길 패턴 (예: 역삼로15번길 → 역삼로십오번길)
-  result = result.replace(
-    /([가-힣]+로)(\d+)(번길)/g,
-    (_match, prefix: string, num: string, suffix: string) => {
-      const n = parseInt(num, 10);
-      if (!isNaN(n) && n > 0) {
-        return prefix + numberToKorean(n) + suffix;
-      }
-      return _match;
+  while (index < text.length) {
+    const char = text.charAt(index);
+    if (!isKoreanSyllable(char)) {
+      result += char;
+      index += 1;
+      continue;
     }
-  );
 
-  // 한글+로+숫자+길 패턴 (예: 엘지로99길 → 엘지로구십구길)
-  result = result.replace(
-    /([가-힣]+로)(\d+)(길)/g,
-    (_match, prefix: string, num: string, suffix: string) => {
-      const n = parseInt(num, 10);
-      if (!isNaN(n) && n > 0) {
-        return prefix + numberToKorean(n) + suffix;
-      }
-      return _match;
+    const replacement = readRoadNameNumberReplacement(text, index);
+    if (replacement) {
+      result += replacement.value;
+      index = replacement.end;
+      continue;
     }
-  );
 
-  // 한글+숫자+길 패턴 (예: 엘지1길 → 엘지일길)
-  // 주의: '로'가 없는 경우만 (위에서 이미 처리된 패턴 제외)
-  result = result.replace(
-    /([가-힣]+)(\d+)(길)/g,
-    (_match, prefix: string, num: string, suffix: string) => {
-      // prefix가 '로'로 끝나면 이미 위에서 처리됨
-      if (prefix.endsWith('로')) {
-        return _match;
-      }
-      const n = parseInt(num, 10);
-      if (!isNaN(n) && n > 0) {
-        return prefix + numberToKorean(n) + suffix;
-      }
-      return _match;
-    }
-  );
+    result += char;
+    index += 1;
+  }
 
   return result;
 }
