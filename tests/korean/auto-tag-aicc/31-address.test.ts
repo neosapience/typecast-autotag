@@ -599,5 +599,13 @@ describe('AICC 시나리오 31: 주소 변환', () => {
       expect(result).not.toContain(']');
       expect(result).not.toContain('금광동');
     });
+
+    it('긴 괄호 내용도 선형 시간으로 처리한다', () => {
+      const input = `서울시 강남구 테헤란로 123 (${'가나다'.repeat(1000)}) 101동 1501호`;
+      const result = autoTag(input);
+      expect(result).not.toContain('(');
+      expect(result).not.toContain(')');
+      expect(result).toContain('백일동 천오백일호');
+    });
   });
 });
