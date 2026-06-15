@@ -1,3 +1,5 @@
+import type { ReactElement } from 'react';
+
 // SVG Icons
 export const Icons = {
   phone: (
@@ -127,7 +129,7 @@ export const Icons = {
   ),
 };
 
-export const categoryIconsKo: Record<string, JSX.Element> = {
+export const categoryIconsKo: Record<string, ReactElement> = {
   전화번호: Icons.phone,
   날짜: Icons.calendar,
   시간: Icons.clock,
@@ -140,7 +142,7 @@ export const categoryIconsKo: Record<string, JSX.Element> = {
   복합: Icons.layers,
 };
 
-export const categoryIconsEn: Record<string, JSX.Element> = {
+export const categoryIconsEn: Record<string, ReactElement> = {
   Phone: Icons.phone,
   Date: Icons.calendar,
   Time: Icons.clock,
@@ -152,4 +154,3 @@ export const categoryIconsEn: Record<string, JSX.Element> = {
   'Manual Tag': Icons.tag,
   Combined: Icons.layers,
 };
-
