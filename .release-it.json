@@ -36,6 +36,6 @@
   },
   "hooks": {
     "before:init": ["pnpm test:jest", "pnpm build", "pnpm python-binding:copy-libs", "pnpm python-binding:test"],
-    "after:bump": ["node scripts/sync-python-version.js ${version}"]
+    "after:bump": ["pnpm sync:version", "node scripts/sync-python-version.js ${version}"]
   }
 }
