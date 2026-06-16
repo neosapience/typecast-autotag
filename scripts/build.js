@@ -60,6 +60,40 @@ async function buildOnce() {
   runTsc();
 }
 
+function watchTypeDeclarations() {
+  const srcDir = path.join(rootDir, 'src');
+  const tsconfigBuild = path.join(rootDir, 'tsconfig.build.json');
+  let tscTimer;
+
+  const scheduleTsc = () => {
+    clearTimeout(tscTimer);
+    tscTimer = setTimeout(() => {
+      runTsc();
+    }, 100);
+  };
+
+  const onSourceChange = (eventType, filename) => {
+    if (!filename) {
+      scheduleTsc();
+      return;
+    }
+
+    if (
+      filename.endsWith('.ts') ||
+      filename.endsWith('.tsx') ||
+      filename === 'tsconfig.build.json'
+    ) {
+      scheduleTsc();
+    }
+  };
+
+  const watchers = [];
+  watchers.push(fs.watch(srcDir, { recursive: true }, onSourceChange));
+  watchers.push(fs.watch(tsconfigBuild, () => scheduleTsc()));
+
+  return watchers;
+}
+
 async function watch() {
   fs.rmSync(distDir, { recursive: true, force: true });
   fs.mkdirSync(distDir, { recursive: true });
@@ -67,6 +101,7 @@ async function watch() {
   const contexts = await Promise.all(builds.map((options) => esbuild.context(options)));
   await Promise.all(contexts.map((context) => context.watch()));
   runTsc();
+  watchTypeDeclarations();
   console.log('Watching for changes...');
 }
 
