@@ -156,6 +156,7 @@ public class TypecastAutotagTest {
         for (int i = 0; i < threadCount; i++) {
             final int threadIndex = i;
             threads[i] = new Thread(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         for (int j = 0; j < iterationsPerThread; j++) {
@@ -300,4 +301,3 @@ public class TypecastAutotagTest {
         TypecastAutotag.manualTagEn(null);
     }
 }
-

@@ -75,7 +75,7 @@ export function money(input: number | string, options?: MoneyOptions): string {
     if (trimmed === '') return input;
 
     // Remove currency symbols: $, £, €, ¥, ₩
-    let withoutCurrency = trimmed.replace(/^[$$£€¥₩]\s*/, '');
+    let withoutCurrency = trimmed.replace(/^[$£€¥₩]\s*/, '');
 
     // Handle negative: -number
     let isNegative = false;

@@ -7,7 +7,6 @@ Provides TTS text preprocessing functionality for Korean text.
 
 import ctypes
 import os
-import sys
 import platform
 from pathlib import Path
 from typing import Optional
@@ -620,4 +619,3 @@ class TypecastAutotag:
     @property
     def version(self):
         return _library.version
-

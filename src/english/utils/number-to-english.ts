@@ -296,9 +296,6 @@ export function numberToOrdinal(num: number): string {
   if (lastTwoDigits > 0 && lastTwoDigits < 100) {
     const withoutLast = num - lastTwoDigits;
     const lastPart = twoDigitsToOrdinal(lastTwoDigits);
-    if (withoutLast === 0) {
-      return lastPart;
-    }
     const mainPart = numberToEnglish(withoutLast);
     return mainPart + ' ' + lastPart;
   }

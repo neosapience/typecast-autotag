@@ -1798,7 +1798,7 @@ const AUTO_TAG_PATTERNS = {
       /£[\d,]+(?:\.\d+)?/g,
     ],
     converter: (match: string) => {
-      const currencyMatch = match.match(/^([$$¥€£])([\d,]+(?:\.\d+)?)$/);
+      const currencyMatch = match.match(/^([$¥€£])([\d,]+(?:\.\d+)?)$/);
       if (currencyMatch) {
         const symbol = currencyMatch[1];
         const numStr = currencyMatch[2]?.replace(/,/g, '') ?? '0';
