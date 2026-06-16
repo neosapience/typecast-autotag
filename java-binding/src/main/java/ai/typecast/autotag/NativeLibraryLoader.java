@@ -14,6 +14,7 @@ class NativeLibraryLoader {
     
     private static final String LIB_PREFIX = "/lib/";
     private static boolean loaded = false;
+    private static String loadedLibraryPath = null;
     
     /**
      * Platform information holder.
@@ -47,6 +48,7 @@ class NativeLibraryLoader {
             // Try to extract library from JAR to a temporary file
             File tempFile = extractLibraryFromJar(libraryPath, platform.extension);
             System.load(tempFile.getAbsolutePath());
+            loadedLibraryPath = tempFile.getAbsolutePath();
             loaded = true;
         } catch (IOException e) {
             throw new LibraryNotFoundException(
@@ -56,6 +58,19 @@ class NativeLibraryLoader {
                 "Failed to load native library: " + libraryPath + 
                 ". The library may be incompatible with your system.", e);
         }
+    }
+
+    /**
+     * Get the absolute path of the loaded native library.
+     *
+     * @return Loaded native library path
+     * @throws LibraryNotFoundException if the library is not loaded
+     */
+    static synchronized String getLoadedLibraryPath() throws LibraryNotFoundException {
+        if (!loaded || loadedLibraryPath == null) {
+            loadLibrary();
+        }
+        return loadedLibraryPath;
     }
     
     /**
@@ -188,4 +203,3 @@ class NativeLibraryLoader {
         }
     }
 }
-

@@ -1,5 +1,5 @@
 import com.sun.jna.*;
-import com.sun.jna.ptr.PointerByReference;
+import java.io.File;
 
 /**
  * Simple verification test using JNA (Java Native Access).
@@ -32,9 +32,10 @@ public class SimpleVerificationTest {
         try {
             // Load the native library
             String libPath = "../src/main/resources/lib/darwin/libtypecast_autotag.dylib";
-            System.out.println("Loading library from: " + libPath);
+            String absoluteLibPath = new File(libPath).getAbsolutePath();
+            System.out.println("Loading library from: " + absoluteLibPath);
             
-            TypecastAutotagLib lib = Native.load(libPath, TypecastAutotagLib.class);
+            TypecastAutotagLib lib = Native.load(absoluteLibPath, TypecastAutotagLib.class);
             System.out.println("✓ Library loaded successfully");
             System.out.println();
             
@@ -115,4 +116,3 @@ public class SimpleVerificationTest {
         }
     }
 }
-
