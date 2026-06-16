@@ -60,6 +60,52 @@ async function buildOnce() {
   runTsc();
 }
 
+function watchTypeDeclarations() {
+  const srcDir = path.join(rootDir, 'src');
+  const tsconfigBuild = path.join(rootDir, 'tsconfig.build.json');
+  const watchers = [];
+  let tscTimer;
+
+  const scheduleTsc = () => {
+    clearTimeout(tscTimer);
+    tscTimer = setTimeout(() => {
+      runTsc();
+    }, 100);
+  };
+
+  const onSourceChange = (eventType, filename) => {
+    if (!filename) {
+      scheduleTsc();
+      return;
+    }
+
+    if (
+      filename.endsWith('.ts') ||
+      filename.endsWith('.tsx') ||
+      filename === 'tsconfig.build.json'
+    ) {
+      scheduleTsc();
+    }
+  };
+
+  const addWatcher = (target, options, listener) => {
+    try {
+      const watcher = fs.watch(target, options, listener);
+      watcher.on('error', (error) => {
+        console.error(`File watcher failed for ${target}:`, error);
+      });
+      watchers.push(watcher);
+    } catch (error) {
+      console.error(`Unable to watch ${target}:`, error);
+    }
+  };
+
+  addWatcher(srcDir, { recursive: true }, onSourceChange);
+  addWatcher(tsconfigBuild, {}, () => scheduleTsc());
+
+  return watchers;
+}
+
 async function watch() {
   fs.rmSync(distDir, { recursive: true, force: true });
   fs.mkdirSync(distDir, { recursive: true });
@@ -67,6 +113,19 @@ async function watch() {
   const contexts = await Promise.all(builds.map((options) => esbuild.context(options)));
   await Promise.all(contexts.map((context) => context.watch()));
   runTsc();
+  const declarationWatchers = watchTypeDeclarations();
+  let isShuttingDown = false;
+
+  const shutdown = async () => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    declarationWatchers.forEach((watcher) => watcher.close());
+    await Promise.all(contexts.map((context) => context.dispose()));
+    process.exit(0);
+  };
+
+  process.once('SIGINT', shutdown);
+  process.once('SIGTERM', shutdown);
   console.log('Watching for changes...');
 }
 

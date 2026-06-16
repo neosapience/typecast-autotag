@@ -5,10 +5,8 @@ These tests verify that the Python binding correctly wraps the native library
 and produces the expected output for Korean and English TTS preprocessing.
 """
 
-import pytest
 from typecast_autotag import (
     initialize,
-    cleanup,
     auto_tag,
     auto_tag_with_manual,
     manual_tag,
@@ -420,4 +418,3 @@ class TestAllManualTags:
         """Test volume tag."""
         result = manual_tag("volume(500ml)")
         assert "밀리리터" in result or "미리" in result
-
