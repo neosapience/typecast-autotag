@@ -62,7 +62,7 @@ from .binding import (
     ConversionError,
 )
 
-__version__ = "1.5.0"
+__version__ = "1.8.0"
 __author__ = "TypeCast"
 __all__ = [
     # Korean Functions

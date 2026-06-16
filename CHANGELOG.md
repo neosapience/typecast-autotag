@@ -1,5 +1,16 @@
 # Changelog
 
+# [1.8.0](https://github.com/neosapience/typecast-autotag/compare/v1.7.0...v1.8.0) (2026-06-16)
+
+
+### Features
+
+* Enhance address line patterns by adding support for various bracket types in regex, improving recognition accuracy. Update tests to validate the removal of brackets and unnecessary information from recognized addresses. ([85ccfc2](https://github.com/neosapience/typecast-autotag/commit/85ccfc295bdb90f53ecc45a9e0abe400a791335f))
+* Enhance address processing by adding functions to convert road name numbers to Korean and improve bracket content removal. Update auto-tagging logic to preprocess address lines, ensuring better recognition and formatting of addresses. Add tests to validate new functionality and ensure accuracy in address transformations. ([2b7dae0](https://github.com/neosapience/typecast-autotag/commit/2b7dae01b23c7bde5fa6282186226940c215043b))
+* Enhance address tagging functionality by adding support for various complete address patterns, including road names and brackets for districts, and implement conversion for N동N format without room numbers. Update tests to cover new patterns and ensure comprehensive coverage of address formats. ([049ef3e](https://github.com/neosapience/typecast-autotag/commit/049ef3eb684a3be24b5b90518bc340c496b54ae8))
+* Implement address line processing to remove unnecessary brackets from recognized address patterns, enhancing the accuracy of address tagging. Add tests to verify the removal of brackets while preserving essential information like floor numbers. ([7eaac63](https://github.com/neosapience/typecast-autotag/commit/7eaac639b8dc4f53dfb12c8f3471cc800788ed3b))
+* Refine address line patterns to improve recognition accuracy by adding new regex for administrative districts and enhancing existing patterns. Update tests to validate the removal of unnecessary information from recognized addresses. ([b072cb9](https://github.com/neosapience/typecast-autotag/commit/b072cb92e72b8acfa14a7779e0f59458702988ae))
+
 ## [Unreleased]
 
 ### Features
