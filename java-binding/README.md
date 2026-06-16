@@ -48,9 +48,11 @@ VERSION=$(curl -s https://api.github.com/repos/neosapience/typecast-autotag/rele
 curl -L -o typecast-autotag-${VERSION}.jar \
   https://github.com/neosapience/typecast-autotag/releases/download/v${VERSION}/typecast-autotag-${VERSION}.jar
 
-# Use in your project
-javac -cp typecast-autotag-${VERSION}.jar YourApp.java
-java -cp typecast-autotag-${VERSION}.jar:. YourApp
+# Use in your project. Include JNA when using the release JAR directly.
+curl -L -o jna-5.14.0.jar \
+  https://repo1.maven.org/maven2/net/java/dev/jna/jna/5.14.0/jna-5.14.0.jar
+javac -cp "typecast-autotag-${VERSION}.jar:jna-5.14.0.jar" YourApp.java
+java -cp "typecast-autotag-${VERSION}.jar:jna-5.14.0.jar:." YourApp
 ```
 
 Or add to your Maven project:
@@ -373,7 +375,7 @@ cd java-binding
 ```bash
 cd java-binding
 javac -cp target/typecast-autotag-*.jar examples/BasicUsage.java
-java -cp target/typecast-autotag-*.jar:examples BasicUsage
+java -cp "target/typecast-autotag-*.jar:$HOME/.m2/repository/net/java/dev/jna/jna/5.14.0/jna-5.14.0.jar:examples" BasicUsage
 ```
 
 ### Creating a Release

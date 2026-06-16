@@ -1,5 +1,9 @@
 package ai.typecast.autotag;
 
+import com.sun.jna.Library;
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+
 /**
  * Typecast Autotag library for Java.
  * 
@@ -60,12 +64,17 @@ package ai.typecast.autotag;
 public final class TypecastAutotag {
     
     private static final Object LOCK = new Object();
+    private static final TypecastAutotagLib LIB;
     private static boolean initialized = false;
     
     // Load native library on class load
     static {
         try {
             NativeLibraryLoader.loadLibrary();
+            LIB = Native.load(
+                NativeLibraryLoader.getLoadedLibraryPath(),
+                TypecastAutotagLib.class
+            );
         } catch (LibraryNotFoundException e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -385,19 +394,46 @@ public final class TypecastAutotag {
         }
     }
     
-    // Native method declarations
+    private interface TypecastAutotagLib extends Library {
+        int typecast_init();
+        void typecast_cleanup();
+        Pointer typecast_auto_tag(String text);
+        Pointer typecast_auto_tag_with_manual(String text);
+        Pointer typecast_manual_tag(String text);
+        String typecast_version();
+        Pointer typecast_auto_tag_english(String text);
+        Pointer typecast_auto_tag_with_manual_english(String text);
+        Pointer typecast_manual_tag_english(String text);
+        void typecast_free(Pointer ptr);
+    }
+
+    private static String toJavaString(Pointer pointer) {
+        if (pointer == null) {
+            return null;
+        }
+
+        try {
+            return pointer.getString(0, "UTF-8");
+        } finally {
+            LIB.typecast_free(pointer);
+        }
+    }
     
     /**
      * Native method to initialize the library.
      * 
      * @return 0 on success, -1 on failure
      */
-    private static native int nativeInit();
+    private static int nativeInit() {
+        return LIB.typecast_init();
+    }
     
     /**
      * Native method to clean up the library.
      */
-    private static native void nativeCleanup();
+    private static void nativeCleanup() {
+        LIB.typecast_cleanup();
+    }
     
     /**
      * Native method for auto tagging.
@@ -405,7 +441,9 @@ public final class TypecastAutotag {
      * @param text Text to process
      * @return Processed text, or null on failure
      */
-    private static native String nativeAutoTag(String text);
+    private static String nativeAutoTag(String text) {
+        return toJavaString(LIB.typecast_auto_tag(text));
+    }
     
     /**
      * Native method for auto tagging with manual tags.
@@ -413,7 +451,9 @@ public final class TypecastAutotag {
      * @param text Text to process
      * @return Processed text, or null on failure
      */
-    private static native String nativeAutoTagWithManual(String text);
+    private static String nativeAutoTagWithManual(String text) {
+        return toJavaString(LIB.typecast_auto_tag_with_manual(text));
+    }
     
     /**
      * Native method for manual tag processing.
@@ -421,14 +461,18 @@ public final class TypecastAutotag {
      * @param text Text to process
      * @return Processed text, or null on failure
      */
-    private static native String nativeManualTag(String text);
+    private static String nativeManualTag(String text) {
+        return toJavaString(LIB.typecast_manual_tag(text));
+    }
     
     /**
      * Native method to get library version.
      * 
      * @return Version string
      */
-    private static native String nativeVersion();
+    private static String nativeVersion() {
+        return LIB.typecast_version();
+    }
     
     // English native methods
     
@@ -438,7 +482,9 @@ public final class TypecastAutotag {
      * @param text Text to process
      * @return Processed text, or null on failure
      */
-    private static native String nativeAutoTagEn(String text);
+    private static String nativeAutoTagEn(String text) {
+        return toJavaString(LIB.typecast_auto_tag_english(text));
+    }
     
     /**
      * Native method for auto tagging with manual tags for English.
@@ -446,7 +492,9 @@ public final class TypecastAutotag {
      * @param text Text to process
      * @return Processed text, or null on failure
      */
-    private static native String nativeAutoTagWithManualEn(String text);
+    private static String nativeAutoTagWithManualEn(String text) {
+        return toJavaString(LIB.typecast_auto_tag_with_manual_english(text));
+    }
     
     /**
      * Native method for manual tag processing for English.
@@ -454,6 +502,7 @@ public final class TypecastAutotag {
      * @param text Text to process
      * @return Processed text, or null on failure
      */
-    private static native String nativeManualTagEn(String text);
+    private static String nativeManualTagEn(String text) {
+        return toJavaString(LIB.typecast_manual_tag_english(text));
+    }
 }
-

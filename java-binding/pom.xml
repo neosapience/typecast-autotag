@@ -44,6 +44,12 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.14.0</version>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -137,4 +143,3 @@
         </plugins>
     </build>
 </project>
-
