@@ -12,7 +12,7 @@ describe('autoTag 통합 테스트', () => {
       const result = autoTag(text);
 
       expect(result).toContain('사만구천구백 원');
-      expect(result).toContain('공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔');
+      expect(result).toContain('공 . 일 . 공, 일 . 이 . 삼 . 사, 오 . 육 . 칠 . 팔');
     });
 
     it('일정 안내 메시지', () => {
@@ -27,7 +27,7 @@ describe('autoTag 통합 테스트', () => {
       const result = autoTag(text);
 
       expect(result).toContain('천구백구십사년 유 월 십육 일');
-      expect(result).toContain('공 . 일 . 공 . 구 . 팔 . 칠 . 육 . 오 . 사 . 삼 . 이');
+      expect(result).toContain('공 . 일 . 공, 구 . 팔 . 칠 . 육, 오 . 사 . 삼 . 이');
     });
 
     it('결제 안내 메시지', () => {
@@ -85,7 +85,7 @@ describe('autoTag 통합 테스트', () => {
       expect(result).toContain('이천이십사년 일 월 십오 일 오후 두 시 삼십 분');
       expect(result).toContain('십이만오천 원');
       expect(result).toContain('세 개');
-      expect(result).toContain('공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔');
+      expect(result).toContain('공 . 일 . 공, 일 . 이 . 삼 . 사, 오 . 육 . 칠 . 팔');
     });
   });
 
@@ -94,8 +94,8 @@ describe('autoTag 통합 테스트', () => {
       const text = '010-1234-5678 / 010-8765-4321';
       const result = autoTag(text, { enabledTags: ['phone'] });
 
-      expect(result).toContain('공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔');
-      expect(result).toContain('공 . 일 . 공 . 팔 . 칠 . 육 . 오 . 사 . 삼 . 이 . 일');
+      expect(result).toContain('공 . 일 . 공, 일 . 이 . 삼 . 사, 오 . 육 . 칠 . 팔');
+      expect(result).toContain('공 . 일 . 공, 팔 . 칠 . 육 . 오, 사 . 삼 . 이 . 일');
     });
 
     it('중첩 가능한 패턴 (우선순위)', () => {
@@ -120,7 +120,7 @@ describe('autoTag 통합 테스트', () => {
       const text = '연락처(010-1234-5678)로 문의';
       const result = autoTag(text, { enabledTags: ['phone'] });
 
-      expect(result).toBe('연락처(공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔)로 문의');
+      expect(result).toBe('연락처(공 . 일 . 공, 일 . 이 . 삼 . 사, 오 . 육 . 칠 . 팔)로 문의');
     });
 
     it('따옴표 안의 패턴', () => {

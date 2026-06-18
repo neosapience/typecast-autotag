@@ -10,6 +10,24 @@ export interface PhoneOptions {
   usePhoneticCode?: boolean;
 }
 
+function splitDomesticPhoneGroups(input: string): string[] | null {
+  const digits = input.replace(/\D/g, '');
+
+  if (/^01[016789]\d{7,8}$/.test(digits) || /^0[3-6]\d{8}$/.test(digits)) {
+    return [digits.slice(0, 3), digits.slice(3, -4), digits.slice(-4)];
+  }
+
+  if (/^02\d{7,8}$/.test(digits)) {
+    return [digits.slice(0, 2), digits.slice(2, -4), digits.slice(-4)];
+  }
+
+  return null;
+}
+
+function convertDigits(digits: string, digitConverter: (digit: string) => string): string {
+  return digits.split('').map(digitConverter).join(' . ');
+}
+
 /**
  * 전화번호를 발음하기 좋은 형태로 변환
  * 하이픈 등 구분자를 제거하고, 각 숫자를 한글로 변환하여 ' . '로 구분
@@ -40,6 +58,11 @@ export function phone(input: string, options?: PhoneOptions): string {
   // 포네틱 코드 사용 여부 (기본값: false)
   const usePhoneticCode = options?.usePhoneticCode ?? false;
   const digitConverter = usePhoneticCode ? digitToPhoneticKorean : digitToPhoneKorean;
+  const domesticPhoneGroups = splitDomesticPhoneGroups(input);
+
+  if (domesticPhoneGroups) {
+    return domesticPhoneGroups.map((group) => convertDigits(group, digitConverter)).join(', ');
+  }
 
   // 모든 문자를 처리하여 결과 배열 생성
   const result = input

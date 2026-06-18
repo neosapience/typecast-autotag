@@ -22,6 +22,37 @@ public class SimpleVerificationTest {
         void typecast_free(Pointer ptr);
         String typecast_version();
     }
+
+    private static String getLibraryPath() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String osArch = System.getProperty("os.arch").toLowerCase();
+
+        if (osName.contains("mac") || osName.contains("darwin")) {
+            return "../src/main/resources/lib/darwin/libtypecast_autotag.dylib";
+        }
+
+        if (osName.contains("win")) {
+            if (osArch.contains("64") || osArch.contains("amd64") || osArch.contains("x86_64")) {
+                return "../src/main/resources/lib/windows/typecast_autotag_x86_64.dll";
+            }
+            return "../src/main/resources/lib/windows/typecast_autotag_i686.dll";
+        }
+
+        if (osArch.contains("aarch64") || osArch.contains("arm64")) {
+            return "../src/main/resources/lib/linux/libtypecast_autotag_arm64.so";
+        }
+        if (osArch.contains("arm")) {
+            return "../src/main/resources/lib/linux/libtypecast_autotag_armv7.so";
+        }
+        if (osArch.contains("64") || osArch.contains("amd64") || osArch.contains("x86_64")) {
+            return "../src/main/resources/lib/linux/libtypecast_autotag_x86_64.so";
+        }
+        if (osArch.contains("86") || osArch.contains("i386")) {
+            return "../src/main/resources/lib/linux/libtypecast_autotag_x86.so";
+        }
+
+        return "../src/main/resources/lib/linux/libtypecast_autotag.so";
+    }
     
     public static void main(String[] args) {
         System.out.println("=".repeat(60));
@@ -31,7 +62,7 @@ public class SimpleVerificationTest {
         
         try {
             // Load the native library
-            String libPath = "../src/main/resources/lib/darwin/libtypecast_autotag.dylib";
+            String libPath = getLibraryPath();
             String absoluteLibPath = new File(libPath).getAbsolutePath();
             System.out.println("Loading library from: " + absoluteLibPath);
             

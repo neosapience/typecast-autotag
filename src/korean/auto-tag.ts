@@ -766,6 +766,46 @@ const AUTO_TAG_PATTERNS = {
     },
   },
 
+  /**
+   * 카페/매장 주문번호 패턴
+   * 짧은 순수 숫자 주문번호는 일련번호가 아니라 호출번호처럼 자연수로 읽음
+   */
+  orderNumber: {
+    patterns: [
+      // 주문번호 1234, 주문 번호: 1234 형태만 처리
+      // 긴 주문번호나 영문/하이픈 코드 주문번호는 serial에서 기존처럼 처리
+      /(?:주문\s*번호)[:\s]+[1-9]\d{2,3}\b/g,
+    ],
+    converter: (match: string) => {
+      const numberMatch = match.match(/(\d{3,4})$/);
+      if (!numberMatch) {
+        return match;
+      }
+
+      const numberText = numberMatch[1] ?? '';
+      const prefix = match.slice(0, -numberText.length);
+      return prefix + numberToKorean(parseInt(numberText, 10));
+    },
+  },
+
+  labeledPhone: {
+    patterns: [
+      /(?:번호|연락처)\s*01[016789][-.\s]?\d{3,4}[-.\s]?\d{4}\b/g,
+      /(?:번호|연락처)\s*02[-.\s]?\d{3,4}[-.\s]?\d{4}\b/g,
+      /(?:번호|연락처)\s*0[3-6]\d[-.\s]?\d{3,4}[-.\s]?\d{4}\b/g,
+    ],
+    converter: (match: string) => {
+      const phoneMatch = match.match(/(0\d[-.\s]?\d{3,4}[-.\s]?\d{4})$/);
+      if (!phoneMatch) {
+        return match;
+      }
+
+      const phoneText = phoneMatch[1] ?? '';
+      const prefix = match.slice(0, -phoneText.length).trimEnd();
+      return `${prefix}, ${phone(phoneText)}`;
+    },
+  },
+
   phone: {
     // 더 구체적인 패턴부터 먼저 매칭
     patterns: [
@@ -1988,6 +2028,13 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
   for (const match of finalMatches) {
     // 매칭 전까지의 텍스트 추가
     result += preprocessedText.slice(currentIndex, match.start);
+
+    // 긴 전화번호는 앞 문맥과 번호 사이에 호흡점을 둔다.
+    const phoneDigits = match.original.replace(/\D/g, '');
+    if (match.tagType === 'phone' && /^0\d{8,10}$/.test(phoneDigits)) {
+      result = result.replace(/([가-힣])\s*$/, '$1, ');
+    }
+
     // 변환된 텍스트 추가
     result += match.converted;
 

@@ -23,7 +23,7 @@ describe('autoTag 핵심 기능', () => {
 
       // phone만 활성화
       expect(autoTag(text, { enabledTags: ['phone'] })).toContain(
-        '공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔'
+        '공 . 일 . 공, 일 . 이 . 삼 . 사, 오 . 육 . 칠 . 팔'
       );
       expect(autoTag(text, { enabledTags: ['phone'] })).toContain('5000원');
 
@@ -36,7 +36,7 @@ describe('autoTag 핵심 기능', () => {
       const text = '전화: 010-1234-5678, 금액: 5000원';
       const result = autoTag(text, { enabledTags: ['phone', 'money'] });
 
-      expect(result).toContain('공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔');
+      expect(result).toContain('공 . 일 . 공, 일 . 이 . 삼 . 사, 오 . 육 . 칠 . 팔');
       expect(result).toContain('오천 원');
     });
 
@@ -60,7 +60,7 @@ describe('autoTag 핵심 기능', () => {
       const text = '010-1234-5678로 5000원 입금';
       const result = autoTag(text, { enabledTags: ['phone', 'money'] });
 
-      expect(result).toContain('공 . 일 . 공 .');
+      expect(result).toContain('공 . 일 . 공,');
       expect(result).toContain('오천 원');
     });
   });
@@ -71,7 +71,7 @@ describe('autoTag 핵심 기능', () => {
       const result = autoTag(text);
 
       expect(result).toContain('이천이십사년 일 월 십오 일 오후 두 시 삼십 분');
-      expect(result).toContain('공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔');
+      expect(result).toContain('공 . 일 . 공, 일 . 이 . 삼 . 사, 오 . 육 . 칠 . 팔');
       expect(result).toContain('오만 원');
     });
 
@@ -79,8 +79,8 @@ describe('autoTag 핵심 기능', () => {
       const text = '전화1: 010-1111-2222, 전화2: 010-3333-4444';
       const result = autoTag(text, { enabledTags: ['phone'] });
 
-      expect(result).toContain('공 . 일 . 공 . 일 . 일 . 일 . 일 . 이 . 이 . 이 . 이');
-      expect(result).toContain('공 . 일 . 공 . 삼 . 삼 . 삼 . 삼 . 사 . 사 . 사 . 사');
+      expect(result).toContain('공 . 일 . 공, 일 . 일 . 일 . 일, 이 . 이 . 이 . 이');
+      expect(result).toContain('공 . 일 . 공, 삼 . 삼 . 삼 . 삼, 사 . 사 . 사 . 사');
     });
   });
 });
