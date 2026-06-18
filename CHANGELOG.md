@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.1](https://github.com/neosapience/typecast-autotag/compare/v1.8.0...v1.8.1) (2026-06-18)
+
+
+### Bug Fixes
+
+* improve Korean phone number pauses ([ee6c282](https://github.com/neosapience/typecast-autotag/commit/ee6c282670f809f1085604a1d7909ba5113b26a7))
+
 # [1.8.0](https://github.com/neosapience/typecast-autotag/compare/v1.7.0...v1.8.0) (2026-06-16)
 
 
