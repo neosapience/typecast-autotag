@@ -39,32 +39,22 @@ pnpm java-binding:build
 
 ## 설치
 
-### 방법 1: GitHub Releases에서 다운로드 (권장)
+### 방법 1: Maven Central
 
-```bash
-# GitHub Releases에서 최신 JAR 다운로드
-# VERSION을 최신 릴리스 버전으로 교체 (예: 1.3.0)
-VERSION=$(curl -s https://api.github.com/repos/neosapience/typecast-autotag/releases/latest | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
-curl -L -o typecast-autotag-${VERSION}.jar \
-  https://github.com/neosapience/typecast-autotag/releases/download/v${VERSION}/typecast-autotag-${VERSION}.jar
-
-# 프로젝트에서 사용. 릴리스 JAR을 직접 사용할 때는 JNA도 classpath에 포함합니다.
-curl -L -o jna-5.14.0.jar \
-  https://repo1.maven.org/maven2/net/java/dev/jna/jna/5.14.0/jna-5.14.0.jar
-javac -cp "typecast-autotag-${VERSION}.jar:jna-5.14.0.jar" YourApp.java
-java -cp "typecast-autotag-${VERSION}.jar:jna-5.14.0.jar:." YourApp
-```
-
-또는 Maven 프로젝트에 추가:
+Maven 프로젝트에 추가합니다:
 
 ```xml
 <dependency>
-    <groupId>ai.typecast</groupId>
+    <groupId>com.neosapience</groupId>
     <artifactId>typecast-autotag</artifactId>
-    <version>${project.version}</version> <!-- 프로젝트 버전 사용 -->
-    <scope>system</scope>
-    <systemPath>${project.basedir}/lib/typecast-autotag-${project.version}.jar</systemPath>
+    <version>1.8.1</version>
 </dependency>
+```
+
+Gradle에서는 다음처럼 추가합니다:
+
+```gradle
+implementation "com.neosapience:typecast-autotag:1.8.1"
 ```
 
 ### 방법 2: 소스에서 빌드
@@ -93,7 +83,7 @@ mvn install
 
 # 그 다음 pom.xml에서 사용 (버전은 pom.xml에서 확인)
 <dependency>
-    <groupId>ai.typecast</groupId>
+    <groupId>com.neosapience</groupId>
     <artifactId>typecast-autotag</artifactId>
     <version>${typecast-autotag.version}</version> <!-- 설치된 버전 확인 -->
 </dependency>

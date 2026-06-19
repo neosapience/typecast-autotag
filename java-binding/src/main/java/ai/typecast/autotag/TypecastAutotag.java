@@ -31,7 +31,7 @@ import com.sun.jna.Pointer;
  * }</pre>
  * 
  * <h2>Usage Scenarios</h2>
- * <table border="1" summary="Comparison of usage scenarios">
+ * <table border="1">
  *   <caption>Method Comparison</caption>
  *   <tr>
  *     <th>Method</th>
@@ -139,7 +139,7 @@ public final class TypecastAutotag {
      * <p>This is the most convenient method and sufficient for most cases.
      * Automatically recognizes and converts the following patterns:
      * 
-     * <h3>Supported Patterns:</h3>
+     * <p><b>Supported Patterns:</b>
      * <ul>
      *   <li>Phone numbers: {@code 010-1234-5678}, {@code 02-123-4567}, {@code 1588-1234}</li>
      *   <li>Money: {@code 50000원}, {@code 1500만원}, {@code ₩10000}</li>
@@ -222,8 +222,8 @@ public final class TypecastAutotag {
      * <p>Use this for legacy system compatibility or when you need
      * explicit control over all conversions.
      * 
-     * <h3>Supported Tags (37 total):</h3>
-     * <table border="1" summary="Supported manual tags">
+     * <p><b>Supported Tags (37 total):</b>
+     * <table border="1">
      *   <caption>Manual Tag Reference</caption>
      *   <tr><th>Tag</th><th>Description</th><th>Example</th></tr>
      *   <tr><td>name(이름)</td><td>Name reading</td><td>{@code name(김철수)} → 김 철 수</td></tr>
