@@ -36,7 +36,7 @@ jobs:
         run: pnpm build
 
       - name: Upgrade npm
-        run: npm install -g npm@10
+        run: npm install -g npm@11.12.1
 
       - name: Check OIDC availability
         run: |
