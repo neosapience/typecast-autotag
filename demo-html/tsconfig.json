@@ -17,8 +17,8 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "typecast-autotag": ["../src"],
-      "typecast-autotag/english": ["../src/english"]
+      "@neosapience/typecast-autotag": ["../src"],
+      "@neosapience/typecast-autotag/english": ["../src/english"]
     }
   },
   "include": ["src"]

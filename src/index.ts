@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { autoTag, manualTag } from 'typecast-autotag';
+ * import { autoTag, manualTag } from '@neosapience/typecast-autotag';
  *
  * // Default Korean usage
  * autoTag('전화번호는 010-1234-5678입니다.');

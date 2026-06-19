@@ -34,13 +34,13 @@ This library supports **multiple languages** for TTS text preprocessing:
 
 ### Development Languages
 
-| Language    | Version | Package                       |
-| ----------- | ------- | ----------------------------- |
-| **Node.js** | ≥18     | `typecast-autotag` (npm/pnpm) |
-| **Browser** | Modern  | `typecast-autotag` (ESM/UMD)  |
-| **Python**  | ≥3.8    | `typecast-autotag` (pip)      |
-| **Java**    | ≥8      | `typecast-autotag` (Maven)    |
-| **C/C++**   | Any     | Native library                |
+| Language    | Version | Package                                     |
+| ----------- | ------- | ------------------------------------------- |
+| **Node.js** | ≥18     | `@neosapience/typecast-autotag` (npm/pnpm) |
+| **Browser** | Modern  | `@neosapience/typecast-autotag` (ESM/UMD)  |
+| **Python**  | ≥3.8    | `typecast-autotag` (pip)                    |
+| **Java**    | ≥8      | `typecast-autotag` (Maven)                  |
+| **C/C++**   | Any     | Native library                              |
 
 ### Server Platforms
 
@@ -64,7 +64,7 @@ This library supports **multiple languages** for TTS text preprocessing:
 Transform phone numbers, dates, currency, and more into natural speech patterns. Built for [Typecast](https://typecast.ai) TTS API and AICC (AI Contact Center) environments.
 
 ```typescript
-import { autoTag } from 'typecast-autotag';
+import { autoTag } from '@neosapience/typecast-autotag';
 
 // English auto-tagging
 autoTag('Call me at 555-123-4567 tomorrow.', { language: 'en' });
@@ -88,20 +88,20 @@ autoTag('전화번호는 010-1234-5678입니다.', { language: 'ko' });
 
 ## Installation
 
-Install directly from GitHub repository:
+Install from npm:
 
 ```bash
 # pnpm (recommended)
-pnpm add git+https://github.com/neosapience/typecast-autotag.git
+pnpm add @neosapience/typecast-autotag
 
 # npm
-npm install git+https://github.com/neosapience/typecast-autotag.git
+npm install @neosapience/typecast-autotag
 
 # yarn
-yarn add git+https://github.com/neosapience/typecast-autotag.git
+yarn add @neosapience/typecast-autotag
 ```
 
-To install a specific branch or tag:
+You can still install directly from GitHub for unreleased branches, tags, or commits:
 
 ```bash
 # Install specific branch
@@ -121,7 +121,7 @@ pnpm add git+https://github.com/neosapience/typecast-autotag.git#commit-hash
 ### English Text Processing
 
 ```typescript
-import { autoTag, manualTag, autoTagWithManual } from 'typecast-autotag';
+import { autoTag, manualTag, autoTagWithManual } from '@neosapience/typecast-autotag';
 
 // Auto-tagging - automatically detects patterns (English)
 autoTag('Call me at 555-123-4567.', { language: 'en' });
@@ -144,7 +144,7 @@ manualTag('month(12) day(25) is Christmas.', { language: 'en' });
 ### Korean Text Processing
 
 ```typescript
-import { autoTag, manualTag, autoTagWithManual } from 'typecast-autotag';
+import { autoTag, manualTag, autoTagWithManual } from '@neosapience/typecast-autotag';
 
 // Auto-tagging - automatically detects patterns (Korean)
 autoTag('전화번호는 010-1234-5678입니다.', { language: 'ko' });
@@ -169,13 +169,13 @@ autoTagWithManual('name(김철수)님, 010-1234-5678로 연락주세요.', { lan
 
 ```typescript
 // Use English module directly
-import { english } from 'typecast-autotag';
+import { english } from '@neosapience/typecast-autotag';
 
 english.autoTag('Call 555-123-4567');
 // → 'Call five five five, one two three, four five six seven'
 
 // Use Korean module directly
-import { korean } from 'typecast-autotag';
+import { korean } from '@neosapience/typecast-autotag';
 
 korean.autoTag('010-1234-5678');
 // → '공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔'
@@ -278,7 +278,7 @@ import {
   getSupportedManualTags,
   setDefaultLanguage,
   getDefaultLanguage,
-} from 'typecast-autotag';
+} from '@neosapience/typecast-autotag';
 
 getSupportedLanguages(); // ['ko', 'en']
 getSupportedAutoTags(); // ['phone', 'datetime', 'time', 'date', ...]
@@ -470,15 +470,15 @@ autoTag('고객님의 잔액은 1,234,567원입니다.', { language: 'ko' });
 ### Direct Language Module Access
 
 ```typescript
-import { korean, english } from 'typecast-autotag';
+import { korean, english } from '@neosapience/typecast-autotag';
 
 // Use language-specific functions
 korean.autoTag('010-1234-5678');
 english.autoTag('555-123-4567');
 
-// Access individual tag converters
-import { name, phone, money, date, time } from 'typecast-autotag/korean';
-import { name as nameEn, phone as phoneEn } from 'typecast-autotag/english';
+// Access individual tag converters through the language modules
+korean.name('김철수');
+english.phone('555-123-4567');
 ```
 
 <br>

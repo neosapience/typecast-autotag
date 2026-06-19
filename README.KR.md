@@ -36,8 +36,8 @@
 
 | 언어 | 버전 | 패키지 |
 | ---- | ---- | ------ |
-| **Node.js** | ≥18 | `typecast-autotag` (npm/pnpm) |
-| **Browser** | Modern | `typecast-autotag` (ESM/UMD) |
+| **Node.js** | ≥18 | `@neosapience/typecast-autotag` (npm/pnpm) |
+| **Browser** | Modern | `@neosapience/typecast-autotag` (ESM/UMD) |
 | **Python** | ≥3.8 | `typecast-autotag` (pip) |
 | **Java** | ≥8 | `typecast-autotag` (Maven) |
 | **C/C++** | Any | 네이티브 라이브러리 |
@@ -64,7 +64,7 @@
 전화번호, 날짜, 금액 등을 자연스러운 한국어 음성 패턴으로 변환합니다. [Typecast](https://typecast.ai) TTS API 및 AICC (AI Contact Center) 환경을 위해 제작되었습니다.
 
 ```typescript
-import { autoTag } from 'typecast-autotag';
+import { autoTag } from '@neosapience/typecast-autotag';
 
 // 한국어 자동 태깅
 autoTag('전화번호는 010-1234-5678입니다.', { language: 'ko' });
@@ -88,20 +88,20 @@ autoTag('Call me at 555-123-4567 tomorrow.', { language: 'en' });
 
 ## 설치
 
-GitHub 저장소에서 직접 설치합니다:
+npm에서 설치합니다:
 
 ```bash
 # pnpm (권장)
-pnpm add git+https://github.com/neosapience/typecast-autotag.git
+pnpm add @neosapience/typecast-autotag
 
 # npm
-npm install git+https://github.com/neosapience/typecast-autotag.git
+npm install @neosapience/typecast-autotag
 
 # yarn
-yarn add git+https://github.com/neosapience/typecast-autotag.git
+yarn add @neosapience/typecast-autotag
 ```
 
-특정 브랜치 또는 태그를 설치하려면:
+아직 배포되지 않은 브랜치, 태그, 커밋은 GitHub에서 직접 설치할 수 있습니다:
 
 ```bash
 # 특정 브랜치 설치
@@ -121,7 +121,7 @@ pnpm add git+https://github.com/neosapience/typecast-autotag.git#commit-hash
 ### 한국어 텍스트 처리
 
 ```typescript
-import { autoTag, manualTag, autoTagWithManual } from 'typecast-autotag';
+import { autoTag, manualTag, autoTagWithManual } from '@neosapience/typecast-autotag';
 
 // 자동 태깅 - 패턴 자동 감지 (한국어)
 autoTag('전화번호는 010-1234-5678입니다.', { language: 'ko' });
@@ -148,7 +148,7 @@ autoTagWithManual('name(김철수)님, 010-1234-5678로 연락주세요.', { lan
 ### 영어 텍스트 처리
 
 ```typescript
-import { autoTag, manualTag, autoTagWithManual } from 'typecast-autotag';
+import { autoTag, manualTag, autoTagWithManual } from '@neosapience/typecast-autotag';
 
 // 자동 태깅 - 패턴 자동 감지 (영어)
 autoTag('Call me at 555-123-4567.', { language: 'en' });
@@ -169,13 +169,13 @@ manualTag('Hello, name(John Smith).', { language: 'en' });
 
 ```typescript
 // 한국어 모듈 직접 사용
-import { korean } from 'typecast-autotag';
+import { korean } from '@neosapience/typecast-autotag';
 
 korean.autoTag('010-1234-5678');
 // → '공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔'
 
 // 영어 모듈 직접 사용
-import { english } from 'typecast-autotag';
+import { english } from '@neosapience/typecast-autotag';
 
 english.autoTag('Call 555-123-4567');
 // → 'Call five five five, one two three, four five six seven'
@@ -268,7 +268,7 @@ import {
   getSupportedManualTags,
   setDefaultLanguage,
   getDefaultLanguage,
-} from 'typecast-autotag';
+} from '@neosapience/typecast-autotag';
 
 getSupportedLanguages(); // ['ko', 'en']
 getSupportedAutoTags(); // ['phone', 'datetime', 'time', 'date', ...]
@@ -456,15 +456,15 @@ autoTag('Your balance is $1,234.56.', { language: 'en' });
 ### 언어 모듈 직접 접근
 
 ```typescript
-import { korean, english } from 'typecast-autotag';
+import { korean, english } from '@neosapience/typecast-autotag';
 
 // 언어별 함수 사용
 korean.autoTag('010-1234-5678');
 english.autoTag('555-123-4567');
 
-// 개별 태그 변환기 접근
-import { name, phone, money, date, time } from 'typecast-autotag/korean';
-import { name as nameEn, phone as phoneEn } from 'typecast-autotag/english';
+// 개별 태그 변환기는 언어 모듈을 통해 접근
+korean.name('김철수');
+english.phone('555-123-4567');
 ```
 
 <br>
@@ -547,4 +547,3 @@ Made for [Typecast](https://typecast.ai)
 **[맨 위로](#typecast-autotag)**
 
 </div>
-

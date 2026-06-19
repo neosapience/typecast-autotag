@@ -8,15 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@neosapience/typecast-autotag':
+        specifier: file:..
+        version: file:..
       react:
         specifier: ^19.2.7
         version: 19.2.7
       react-dom:
         specifier: ^19.2.7
         version: 19.2.7(react@19.2.7)
-      typecast-autotag:
-        specifier: file:..
-        version: file:..
     devDependencies:
       '@types/react':
         specifier: ^19.2.17
@@ -225,6 +225,10 @@ packages:
     peerDependencies:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
+
+  '@neosapience/typecast-autotag@file:..':
+    resolution: {directory: .., type: directory}
+    engines: {node: '>=18'}
 
   '@oxc-project/types@0.133.0':
     resolution: {integrity: sha512-KzkdCd6Uxqnf6l3HOw1xfatAlUURA0g14cvBYFyJ5SaNOQbOUvBr9PKArcPcrNIeRsBdgcUzOGrhKveVpvOIGA==}
@@ -544,10 +548,6 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  typecast-autotag@file:..:
-    resolution: {directory: .., type: directory}
-    engines: {node: '>=18'}
-
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
@@ -740,6 +740,8 @@ snapshots:
       '@emnapi/runtime': 1.10.0
       '@tybys/wasm-util': 0.10.2
     optional: true
+
+  '@neosapience/typecast-autotag@file:..': {}
 
   '@oxc-project/types@0.133.0': {}
 
@@ -1015,8 +1017,6 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
     optional: true
-
-  typecast-autotag@file:..: {}
 
   typescript@5.9.3: {}
 
