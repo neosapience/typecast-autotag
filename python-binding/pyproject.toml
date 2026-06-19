@@ -7,15 +7,18 @@ name = "typecast-autotag"
 version = "1.8.1"
 description = "TTS text preprocessing library - Converts phone numbers, dates, amounts, etc. to formats suitable for speech synthesis"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
-    {name = "TypeCast", email = "support@typecast.ai"}
+    {name = "Neosapience", email = "help@typecast.ai"}
+]
+maintainers = [
+    {name = "Neosapience", email = "help@typecast.ai"}
 ]
 keywords = ["tts", "text-to-speech", "preprocessing", "korean", "autotag"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS :: MacOS X",
@@ -60,4 +63,3 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
-
