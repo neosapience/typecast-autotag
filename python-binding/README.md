@@ -41,7 +41,7 @@ pip install .
 pip install -e .
 ```
 
-### From PyPI (when published)
+### From PyPI
 
 ```bash
 pip install typecast-autotag

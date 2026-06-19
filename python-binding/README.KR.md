@@ -41,7 +41,7 @@ pip install .
 pip install -e .
 ```
 
-### PyPI에서 설치 (배포 후)
+### PyPI에서 설치
 
 ```bash
 pip install typecast-autotag
