@@ -1,0 +1,50 @@
+name: Publish npm package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish @neosapience/typecast-autotag
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
+        run: pnpm build
+
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
+      - name: Check OIDC availability
+        run: |
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ""
+          NPM_CONFIG_USERCONFIG: /tmp/npm-trusted-publisher.npmrc
+        run: |
+          printf 'registry=https://registry.npmjs.org/\n' > "$NPM_CONFIG_USERCONFIG"
+          npm publish --provenance --access public
