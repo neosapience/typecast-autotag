@@ -23,11 +23,10 @@ Automatically converts various patterns like phone numbers, dates, and amounts i
 
 ## Installation
 
-### From GitHub
+### From PyPI
 
 ```bash
-# Install from GitHub (subdirectory specification required)
-pip install "git+https://github.com/neosapience/typecast-autotag#subdirectory=python-binding"
+pip install typecast-autotag
 ```
 
 ### From Source
@@ -41,10 +40,11 @@ pip install .
 pip install -e .
 ```
 
-### From PyPI
+### From GitHub
 
 ```bash
-pip install typecast-autotag
+# Install an unreleased branch, tag, or commit.
+pip install "git+https://github.com/neosapience/typecast-autotag#subdirectory=python-binding"
 ```
 
 ## Quick Start

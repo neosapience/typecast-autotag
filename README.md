@@ -548,7 +548,7 @@ src/
 
 ## Releasing
 
-This project uses [release-it](https://github.com/release-it/release-it) for automated GitHub Releases.
+This project uses [release-it](https://github.com/release-it/release-it) for GitHub Releases. Public registry publishing is handled by GitHub Actions; see [PUBLISHING.md](./PUBLISHING.md) for the npm, PyPI, and Maven Central checklist.
 
 ### Setup
 
@@ -583,6 +583,12 @@ This will:
 - Generate/update `CHANGELOG.md`
 - Create a Git tag
 - Create a GitHub Release with pre-built C binding binaries attached
+
+After the release tag is created, run the publishing workflows for:
+
+- npm: `@neosapience/typecast-autotag`
+- PyPI: `typecast-autotag`
+- Maven Central: `com.neosapience:typecast-autotag`
 
 ### Release Assets
 

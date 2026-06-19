@@ -532,6 +532,18 @@ src/
 
 <br>
 
+## 릴리즈와 공개 배포
+
+GitHub Release 생성은 `release-it`을 사용합니다. npm, PyPI, Maven Central 공개 레지스트리 배포 절차는 [PUBLISHING.md](./PUBLISHING.md)에 정리되어 있습니다.
+
+현재 공개 패키지는 다음 좌표로 배포합니다:
+
+- npm: `@neosapience/typecast-autotag`
+- PyPI: `typecast-autotag`
+- Maven Central: `com.neosapience:typecast-autotag`
+
+<br>
+
 ## 라이선스
 
 이 프로젝트는 [MIT License](./LICENSE) 로 배포됩니다 — Copyright (c) 2026 Neosapience, Inc.
