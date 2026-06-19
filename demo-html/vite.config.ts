@@ -7,8 +7,8 @@ export default defineConfig({
   plugins: [react(), viteSingleFile()],
   resolve: {
     alias: {
-      'typecast-autotag/english': path.resolve(__dirname, '../src/english'),
-      'typecast-autotag': path.resolve(__dirname, '../src'),
+      '@neosapience/typecast-autotag/english': path.resolve(__dirname, '../src/english'),
+      '@neosapience/typecast-autotag': path.resolve(__dirname, '../src'),
     },
   },
   build: {

@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { korean } from 'typecast-autotag';
-import * as english from 'typecast-autotag/english';
+import { korean, english } from '@neosapience/typecast-autotag';
 import { Icons, categoryIconsKo, categoryIconsEn } from './Icons';
 import { examplesKo, examplesEn, aiccExamplesKo, aiccExamplesEn } from './examples';
 import { useScrollAnimation } from './useScrollAnimation';
