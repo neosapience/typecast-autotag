@@ -39,32 +39,22 @@ pnpm java-binding:build
 
 ## Installation
 
-### Option 1: Download from GitHub Releases (Recommended)
+### Option 1: Maven Central
 
-```bash
-# Download the latest JAR from GitHub Releases
-# Replace VERSION with the latest release version (e.g., 1.3.0)
-VERSION=$(curl -s https://api.github.com/repos/neosapience/typecast-autotag/releases/latest | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
-curl -L -o typecast-autotag-${VERSION}.jar \
-  https://github.com/neosapience/typecast-autotag/releases/download/v${VERSION}/typecast-autotag-${VERSION}.jar
-
-# Use in your project. Include JNA when using the release JAR directly.
-curl -L -o jna-5.14.0.jar \
-  https://repo1.maven.org/maven2/net/java/dev/jna/jna/5.14.0/jna-5.14.0.jar
-javac -cp "typecast-autotag-${VERSION}.jar:jna-5.14.0.jar" YourApp.java
-java -cp "typecast-autotag-${VERSION}.jar:jna-5.14.0.jar:." YourApp
-```
-
-Or add to your Maven project:
+Add the package to your Maven project:
 
 ```xml
 <dependency>
-    <groupId>ai.typecast</groupId>
+    <groupId>com.neosapience</groupId>
     <artifactId>typecast-autotag</artifactId>
-    <version>${project.version}</version> <!-- Use your project's version -->
-    <scope>system</scope>
-    <systemPath>${project.basedir}/lib/typecast-autotag-${project.version}.jar</systemPath>
+    <version>1.8.1</version>
 </dependency>
+```
+
+For Gradle:
+
+```gradle
+implementation "com.neosapience:typecast-autotag:1.8.1"
 ```
 
 ### Option 2: Build from Source
@@ -93,7 +83,7 @@ mvn install
 
 # Then use in your pom.xml (check version in pom.xml)
 <dependency>
-    <groupId>ai.typecast</groupId>
+    <groupId>com.neosapience</groupId>
     <artifactId>typecast-autotag</artifactId>
     <version>${typecast-autotag.version}</version> <!-- Check installed version -->
 </dependency>

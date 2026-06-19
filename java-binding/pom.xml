@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ai.typecast</groupId>
+    <groupId>com.neosapience</groupId>
     <artifactId>typecast-autotag</artifactId>
     <version>1.8.1</version>
     <packaging>jar</packaging>
@@ -23,16 +23,17 @@
 
     <developers>
         <developer>
-            <name>TypeCast</name>
-            <email>support@typecast.ai</email>
-            <organization>TypeCast</organization>
+            <id>neosapience</id>
+            <name>Neosapience</name>
+            <email>help@typecast.ai</email>
+            <organization>Neosapience</organization>
             <organizationUrl>https://typecast.ai</organizationUrl>
         </developer>
     </developers>
 
     <scm>
         <connection>scm:git:git://github.com/neosapience/typecast-autotag.git</connection>
-        <developerConnection>scm:git:ssh://github.com:neosapience/typecast-autotag.git</developerConnection>
+        <developerConnection>scm:git:ssh://git@github.com/neosapience/typecast-autotag.git</developerConnection>
         <url>https://github.com/neosapience/typecast-autotag</url>
     </scm>
 
@@ -142,4 +143,46 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.8</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.9.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
