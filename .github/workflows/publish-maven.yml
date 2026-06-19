@@ -26,12 +26,16 @@ jobs:
           server-id: central
           server-username: CENTRAL_USERNAME
           server-password: CENTRAL_PASSWORD
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Import GPG key
+        env:
+          GPG_PRIVATE_KEY_BASE64: ${{ secrets.GPG_PRIVATE_KEY_BASE64 }}
+        run: |
+          printf '%s' "$GPG_PRIVATE_KEY_BASE64" | base64 --decode | gpg --batch --import
 
       - name: Publish to Maven Central
         env:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: mvn --batch-mode --no-transfer-progress -Prelease deploy
+        run: mvn --batch-mode --no-transfer-progress -Prelease -Dgpg.passphrase="$GPG_PASSPHRASE" deploy
