@@ -25,22 +25,25 @@
 
 This library supports **multiple languages** for TTS text preprocessing:
 
-| Language            | Status          | Module    |
-| ------------------- | --------------- | --------- |
-| **Korean** (한국어) | ✅ Full Support | `korean`  |
-| **English**         | ✅ Full Support | `english` |
+| Language              | Status               | Module     |
+| --------------------- | -------------------- | ---------- |
+| **Korean** (한국어)   | ✅ Full Support      | `korean`   |
+| **English**           | ✅ Full Support      | `english`  |
+| **Japanese** (日本語) | ✅ Core TTS Patterns | `japanese` |
+
+> Japanese is currently exposed by the JavaScript and browser package. The native C, Python, and Java bindings retain their existing Korean and English entry points.
 
 ## Supported Environments
 
 ### Development Languages
 
-| Language    | Version | Package                                     |
-| ----------- | ------- | ------------------------------------------- |
+| Language    | Version | Package                                    |
+| ----------- | ------- | ------------------------------------------ |
 | **Node.js** | ≥18     | `@neosapience/typecast-autotag` (npm/pnpm) |
 | **Browser** | Modern  | `@neosapience/typecast-autotag` (ESM/UMD)  |
-| **Python**  | ≥3.8    | `typecast-autotag` (pip)                    |
-| **Java**    | ≥8      | `typecast-autotag` (Maven)                  |
-| **C/C++**   | Any     | Native library                              |
+| **Python**  | ≥3.8    | `typecast-autotag` (pip)                   |
+| **Java**    | ≥8      | `typecast-autotag` (Maven)                 |
+| **C/C++**   | Any     | Native library                             |
 
 ### Server Platforms
 
@@ -73,13 +76,17 @@ autoTag('Call me at 555-123-4567 tomorrow.', { language: 'en' });
 // Korean auto-tagging
 autoTag('전화번호는 010-1234-5678입니다.', { language: 'ko' });
 // → '전화번호는 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 입니다.'
+
+// Japanese auto-tagging
+autoTag('受付は6–9時、料金は¥12,800です。', { language: 'ja' });
+// → '受付はろくじからくじ、料金はいちまんにせんはっぴゃくえんです。'
 ```
 
 <br>
 
 ## Features
 
-- **Multi-language Support**: Full support for Korean and English text preprocessing.
+- **Multi-language Support**: Korean, English, and Japanese TTS text preprocessing.
 - **Auto-tagging**: Automatically detects and converts patterns like phone numbers, dates, times, and amounts.
 - **Manual-tagging**: Explicitly tag text with `tagName(value)` syntax for precise control.
 - **Zero Dependencies**: Lightweight, fast, and tree-shakeable. Supports both ESM and CommonJS.
@@ -165,6 +172,24 @@ autoTagWithManual('name(김철수)님, 010-1234-5678로 연락주세요.', { lan
 // → '김 . 철 . 수 님, 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 로 연락주세요.'
 ```
 
+### Japanese Text Processing
+
+```typescript
+import { autoTag, manualTag } from '@neosapience/typecast-autotag';
+
+autoTag('予約日は2026年7月14日、会議は14:30です。', { language: 'ja' });
+// → '予約日はにせんにじゅうろくねんしちがつじゅうよっか、会議はじゅうよんじさんじゅっぷんです。'
+
+autoTag('スコアは3-2、進捗は72.5%です。', { language: 'ja' });
+// → 'スコアはさんたいに、進捗はななじゅうにてんごパーセントです。'
+
+autoTag('東京→大阪、資料は3〜5ページです。', { language: 'ja' });
+// → '東京から大阪、資料はさんページからごページです。'
+
+manualTag('暗証番号はdigits(2048)、金額はmoney(5000円)です。', { language: 'ja' });
+// → '暗証番号はに・ゼロ・よん・はち、金額はごせんえんです。'
+```
+
 ### Direct Language Module Access
 
 ```typescript
@@ -179,6 +204,12 @@ import { korean } from '@neosapience/typecast-autotag';
 
 korean.autoTag('010-1234-5678');
 // → '공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔'
+
+// Use Japanese module directly
+import { japanese } from '@neosapience/typecast-autotag';
+
+japanese.autoTag('電話番号は090-1234-5678です。');
+// → '電話番号はゼロ・きゅう・ゼロ、いち・に・さん・よん、ご・ろく・なな・はちです。'
 ```
 
 <br>
@@ -200,10 +231,10 @@ autoTag('$500, 555-1234', { language: 'en', enabledTags: ['phone'] });
 // → '$500, five five five, one two three four'
 ```
 
-| Option        | Type         | Default | Description         |
-| ------------- | ------------ | ------- | ------------------- |
-| `language`    | `'ko'｜'en'` | `'ko'`  | Language to use     |
-| `enabledTags` | `string[]`   | all     | Tag types to enable |
+| Option        | Type               | Default | Description         |
+| ------------- | ------------------ | ------- | ------------------- |
+| `language`    | `'ko'｜'en'｜'ja'` | `'ko'`  | Language to use     |
+| `enabledTags` | `string[]`         | all     | Tag types to enable |
 
 </details>
 
@@ -280,7 +311,7 @@ import {
   getDefaultLanguage,
 } from '@neosapience/typecast-autotag';
 
-getSupportedLanguages(); // ['ko', 'en']
+getSupportedLanguages(); // ['ko', 'en', 'ja']
 getSupportedAutoTags(); // ['phone', 'datetime', 'time', 'date', ...]
 getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 ```
@@ -317,37 +348,54 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 
 ### Korean Auto-tags (Automatically Detected)
 
-| Tag            | Description      | Input              | Output                                        |
-| -------------- | ---------------- | ------------------ | --------------------------------------------- |
-| `phone`        | Phone numbers    | `010-1234-5678`    | `공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔`  |
-| `datetime`     | Date and time    | `2024-01-15T14:30` | `이천이십사년 일월 십오일 오후 두 시 삼십 분` |
-| `time`         | Time             | `14:30`            | `오후 두 시 삼십 분`                          |
-| `date`         | Date             | `2024-01-15`       | `이천이십사년 일월 십오일`                    |
-| `money`        | Currency amounts | `50000원`          | `오만 원`                                     |
-| `year`         | Year             | `2024년`           | `이천이십사년`                                |
-| `month`        | Month            | `12월`             | `십이월`                                      |
-| `day`          | Day              | `25일`             | `이십오일`                                    |
-| `order`        | Ordinal numbers  | `3번째`, `2등`     | `세 번째`, `이 등`                            |
-| `point`        | Points/scores    | `95점`             | `구십오 점`                                   |
-| `piece`        | Counting         | `5개`              | `다섯 개`                                     |
-| `minsec`       | Duration (m/s)   | `5분30초`, `100ms` | `오 분 삼십 초`, `백 밀리초`                  |
-| `ratio`        | Ratio/percent    | `50%`, `1:2`       | `오십 퍼센트`, `일 대 이`                     |
-| `duration`     | Period           | `3개월`            | `삼 개월`                                     |
-| `floor`        | Floor numbers    | `5층`, `B1층`      | `오 층`, `지하 일 층`                         |
-| `weight`       | Weight           | `5kg`, `100g`      | `오 킬로그램`, `백 그램`                      |
-| `distance`     | Distance         | `5km`              | `오 킬로미터`                                 |
-| `temperature`  | Temperature      | `25℃`, `-5°C`      | `이십오 도`, `영하 오 도`                     |
-| `volume`       | Volume/capacity  | `500ml`, `2L`      | `오백 밀리리터`, `이 리터`                    |
-| `dataCapacity` | Data capacity    | `100GB`, `50Mbps`  | `백 기가바이트`, `오십 메가비피에스`          |
-| `inch`         | Inch             | `55인치`           | `오십오 인치`                                 |
+| Tag            | Description      | Input              | Output                                                 |
+| -------------- | ---------------- | ------------------ | ------------------------------------------------------ |
+| `phone`        | Phone numbers    | `010-1234-5678`    | `공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔` |
+| `datetime`     | Date and time    | `2024-01-15T14:30` | `이천이십사년 일월 십오일 오후 두 시 삼십 분`          |
+| `time`         | Time             | `14:30`            | `오후 두 시 삼십 분`                                   |
+| `date`         | Date             | `2024-01-15`       | `이천이십사년 일월 십오일`                             |
+| `money`        | Currency amounts | `50000원`          | `오만 원`                                              |
+| `year`         | Year             | `2024년`           | `이천이십사년`                                         |
+| `month`        | Month            | `12월`             | `십이월`                                               |
+| `day`          | Day              | `25일`             | `이십오일`                                             |
+| `order`        | Ordinal numbers  | `3번째`, `2등`     | `세 번째`, `이 등`                                     |
+| `point`        | Points/scores    | `95점`             | `구십오 점`                                            |
+| `piece`        | Counting         | `5개`              | `다섯 개`                                              |
+| `minsec`       | Duration (m/s)   | `5분30초`, `100ms` | `오 분 삼십 초`, `백 밀리초`                           |
+| `ratio`        | Ratio/percent    | `50%`, `1:2`       | `오십 퍼센트`, `일 대 이`                              |
+| `duration`     | Period           | `3개월`            | `삼 개월`                                              |
+| `floor`        | Floor numbers    | `5층`, `B1층`      | `오 층`, `지하 일 층`                                  |
+| `weight`       | Weight           | `5kg`, `100g`      | `오 킬로그램`, `백 그램`                               |
+| `distance`     | Distance         | `5km`              | `오 킬로미터`                                          |
+| `temperature`  | Temperature      | `25℃`, `-5°C`      | `이십오 도`, `영하 오 도`                              |
+| `volume`       | Volume/capacity  | `500ml`, `2L`      | `오백 밀리리터`, `이 리터`                             |
+| `dataCapacity` | Data capacity    | `100GB`, `50Mbps`  | `백 기가바이트`, `오십 메가비피에스`                   |
+| `inch`         | Inch             | `55인치`           | `오십오 인치`                                          |
+
+### Japanese Auto-tags (Automatically Detected)
+
+| Tag                       | Description                | Input                | Output                                                           |
+| ------------------------- | -------------------------- | -------------------- | ---------------------------------------------------------------- |
+| `phone`                   | Phone number               | `090-1234-5678`      | `ゼロ・きゅう・ゼロ、いち・に・さん・よん、ご・ろく・なな・はち` |
+| `postalCode`              | Postal code                | `〒100-0001`         | `郵便番号いち・ゼロ・ゼロ、ゼロ・ゼロ・ゼロ・いち`               |
+| `date` / `datetime`       | Date and time              | `2026年7月14日`      | `にせんにじゅうろくねんしちがつじゅうよっか`                     |
+| `time`                    | Time                       | `14:30`              | `じゅうよんじさんじゅっぷん`                                     |
+| `range`                   | Time, price, or page range | `6–9時`              | `ろくじからくじ`                                                 |
+| `money`                   | Currency                   | `¥12,800`            | `いちまんにせんはっぴゃくえん`                                   |
+| `score` / `ratio`         | Score or ratio             | `スコアは3-2`        | `スコアはさんたいに`                                             |
+| `percentage` / `fraction` | Percentage or fraction     | `72.5%`, `1/2`       | `ななじゅうにてんごパーセント`, `にぶんのいち`                   |
+| `order`                   | Chapter, rank, or number   | `第7章`, `No. 5`     | `だいななしょう`, `ナンバーご`                                   |
+| `unit`                    | Measurements and counters  | `25kg`, `2人`, `3本` | `にじゅうごキログラム`, `ふたり`, `さんぼん`                     |
+| `email`                   | Email symbols              | `help@example.jp`    | `help アットマーク example ドット jp`                            |
+| `direction`               | Direction arrow            | `東京→大阪`          | `東京から大阪`                                                   |
 
 ### Manual-only Tags
 
-| Tag       | Description         | English Syntax                        | Korean Syntax                  |
-| --------- | ------------------- | ------------------------------------- | ------------------------------ |
-| `name`    | Name (char-by-char) | `name(John)` → `J O H N`              | `name(김철수)` → `김 . 철 . 수`    |
-| `digits`  | Digit-by-digit      | `digits(1234)` → `one two three four` | `digits(1234)` → `일 . 이 . 삼 . 사` |
-| `address` | Address (Korean only) | -                                   | `address(102동 1101호 (엘지동, 아파트))` → `백이동 천백일호` |
+| Tag       | Description           | English Syntax                        | Korean Syntax                                                |
+| --------- | --------------------- | ------------------------------------- | ------------------------------------------------------------ |
+| `name`    | Name (char-by-char)   | `name(John)` → `J O H N`              | `name(김철수)` → `김 . 철 . 수`                              |
+| `digits`  | Digit-by-digit        | `digits(1234)` → `one two three four` | `digits(1234)` → `일 . 이 . 삼 . 사`                         |
+| `address` | Address (Korean only) | -                                     | `address(102동 1101호 (엘지동, 아파트))` → `백이동 천백일호` |
 
 > **Tip:** All auto-tags can also be used as manual tags with explicit syntax.
 
@@ -535,13 +583,15 @@ src/
 │   ├── tags/                   # Individual tag converters
 │   └── utils/
 │       └── number-to-korean.ts # Number conversion utilities
-└── english/                    # English language module
+├── english/                    # English language module
     ├── index.ts                # English module exports
     ├── auto-tag.ts             # Auto-tagging logic
     ├── manual-tag.ts           # Manual-tagging logic
     ├── tags/                   # Individual tag converters
     └── utils/
-        └── number-to-english.ts # Number conversion utilities
+│       └── number-to-english.ts # Number conversion utilities
+└── japanese/                   # Japanese language module
+    └── index.ts                # Japanese rules and number readings
 ```
 
 <br>

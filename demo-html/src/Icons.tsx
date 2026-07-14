@@ -154,3 +154,18 @@ export const categoryIconsEn: Record<string, ReactElement> = {
   'Manual Tag': Icons.tag,
   Combined: Icons.layers,
 };
+
+export const categoryIconsJa: Record<string, ReactElement> = {
+  電話番号: Icons.phone,
+  郵便番号: Icons.hash,
+  日付: Icons.calendar,
+  時刻: Icons.clock,
+  金額: Icons.dollar,
+  割合: Icons.percent,
+  順序: Icons.hash,
+  単位: Icons.ruler,
+  助数詞: Icons.hash,
+  範囲: Icons.ruler,
+  記号: Icons.tag,
+  手動タグ: Icons.layers,
+};

@@ -1,10 +1,11 @@
-import { examplesEn, examplesKo } from '../demo-html/src/examples';
-import { english, korean } from '../src/index';
+import { aiccExamplesJa, examplesEn, examplesJa, examplesKo } from '../demo-html/src/examples';
+import { english, japanese, korean } from '../src/index';
 
 describe('demo example consistency', () => {
   it.each([
     ['Korean', examplesKo, korean.autoTag, korean.autoTagWithManual],
     ['English', examplesEn, english.autoTag, english.autoTagWithManual],
+    ['Japanese', examplesJa, japanese.autoTag, japanese.autoTagWithManual],
   ] as const)(
     '%s examples do not leave numeric placeholders behind',
     (_language, examples, tag, tagWithManual) => {
@@ -27,5 +28,14 @@ describe('demo example consistency', () => {
     expect(english.autoTag(examplesEn.find((example) => example.id === 14)!.original)).toContain(
       'first prize'
     );
+  });
+
+  it('keeps Japanese AICC scenarios free of numeric placeholders', () => {
+    for (const example of aiccExamplesJa) {
+      expect({ id: example.id, result: japanese.autoTag(example.input) }).toEqual({
+        id: example.id,
+        result: expect.not.stringMatching(/\d/),
+      });
+    }
   });
 });
