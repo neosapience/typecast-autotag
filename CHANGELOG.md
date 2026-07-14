@@ -1,5 +1,11 @@
 # Changelog
 
+# [1.10.0](https://github.com/neosapience/typecast-autotag/compare/v1.9.0...v1.10.0) (2026-07-14)
+
+### Features
+
+- add Japanese auto-tagging for core TTS patterns in the JavaScript/browser SDK, with 31 demo examples and 63 regression tests ([4b34566](https://github.com/neosapience/typecast-autotag/commit/4b34566354c70106c23da5e999d7af008926fa5c))
+
 # [1.9.0](https://github.com/neosapience/typecast-autotag/compare/v1.8.1...v1.9.0) (2026-07-14)
 
 ### Features
