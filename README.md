@@ -25,13 +25,14 @@
 
 This library supports **multiple languages** for TTS text preprocessing:
 
-| Language              | Status               | Module     |
-| --------------------- | -------------------- | ---------- |
-| **Korean** (한국어)   | ✅ Full Support      | `korean`   |
-| **English**           | ✅ Full Support      | `english`  |
-| **Japanese** (日本語) | ✅ Core TTS Patterns | `japanese` |
+| Language                          | Status               | Module     |
+| --------------------------------- | -------------------- | ---------- |
+| **Korean** (한국어)               | ✅ Full Support      | `korean`   |
+| **English**                       | ✅ Full Support      | `english`  |
+| **Japanese** (日本語)             | ✅ Core TTS Patterns | `japanese` |
+| **Simplified Chinese** (简体中文) | ✅ Core TTS Patterns | `chinese`  |
 
-> Japanese is currently exposed by the JavaScript and browser package. The native C, Python, and Java bindings retain their existing Korean and English entry points.
+> Japanese and Simplified Chinese are currently exposed by the JavaScript and browser package. The native C, Python, and Java bindings retain their existing Korean and English entry points.
 
 ## Supported Environments
 
@@ -80,13 +81,17 @@ autoTag('전화번호는 010-1234-5678입니다.', { language: 'ko' });
 // Japanese auto-tagging
 autoTag('受付は6–9時、料金は¥12,800です。', { language: 'ja' });
 // → '受付はろくじからくじ、料金はいちまんにせんはっぴゃくえんです。'
+
+// Simplified Chinese auto-tagging
+autoTag('客服时间是6–9点，费用是¥12,800。', { language: 'zh' });
+// → '客服时间是六点到九点，费用是一万二千八百元。'
 ```
 
 <br>
 
 ## Features
 
-- **Multi-language Support**: Korean, English, and Japanese TTS text preprocessing.
+- **Multi-language Support**: Korean, English, Japanese, and Simplified Chinese TTS text preprocessing.
 - **Auto-tagging**: Automatically detects and converts patterns like phone numbers, dates, times, and amounts.
 - **Manual-tagging**: Explicitly tag text with `tagName(value)` syntax for precise control.
 - **Zero Dependencies**: Lightweight, fast, and tree-shakeable. Supports both ESM and CommonJS.
@@ -190,6 +195,24 @@ manualTag('暗証番号はdigits(2048)、金額はmoney(5000円)です。', { la
 // → '暗証番号はに・ゼロ・よん・はち、金額はごせんえんです。'
 ```
 
+### Simplified Chinese Text Processing
+
+```typescript
+import { autoTag, manualTag } from '@neosapience/typecast-autotag';
+
+autoTag('预约日期是2026年7月14日，会议14:30开始。', { language: 'zh' });
+// → '预约日期是二零二六年七月十四日，会议十四点三十分开始。'
+
+autoTag('最终比分是3-2，当前进度是72.5%。', { language: 'zh' });
+// → '最终比分是三比二，当前进度是百分之七十二点五。'
+
+autoTag('北京→上海，今晚阅读第3至5页。', { language: 'zh' });
+// → '北京到上海，今晚阅读第三页到五页。'
+
+manualTag('验证码是digits(2048)，总计money(5000元)。', { language: 'zh' });
+// → '验证码是二·零·四·八，总计五千元。'
+```
+
 ### Direct Language Module Access
 
 ```typescript
@@ -210,6 +233,12 @@ import { japanese } from '@neosapience/typecast-autotag';
 
 japanese.autoTag('電話番号は090-1234-5678です。');
 // → '電話番号はゼロ・きゅう・ゼロ、いち・に・さん・よん、ご・ろく・なな・はちです。'
+
+// Use Simplified Chinese module directly
+import { chinese } from '@neosapience/typecast-autotag';
+
+chinese.autoTag('手机号是138-0013-8000。');
+// → '手机号是一·三·八、零·零·一·三、八·零·零·零。'
 ```
 
 <br>
@@ -231,10 +260,10 @@ autoTag('$500, 555-1234', { language: 'en', enabledTags: ['phone'] });
 // → '$500, five five five, one two three four'
 ```
 
-| Option        | Type               | Default | Description         |
-| ------------- | ------------------ | ------- | ------------------- |
-| `language`    | `'ko'｜'en'｜'ja'` | `'ko'`  | Language to use     |
-| `enabledTags` | `string[]`         | all     | Tag types to enable |
+| Option        | Type                     | Default | Description         |
+| ------------- | ------------------------ | ------- | ------------------- |
+| `language`    | `'ko'｜'en'｜'ja'｜'zh'` | `'ko'`  | Language to use     |
+| `enabledTags` | `string[]`               | all     | Tag types to enable |
 
 </details>
 
@@ -311,7 +340,7 @@ import {
   getDefaultLanguage,
 } from '@neosapience/typecast-autotag';
 
-getSupportedLanguages(); // ['ko', 'en', 'ja']
+getSupportedLanguages(); // ['ko', 'en', 'ja', 'zh']
 getSupportedAutoTags(); // ['phone', 'datetime', 'time', 'date', ...]
 getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 ```
@@ -388,6 +417,23 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 | `unit`                    | Measurements and counters  | `25kg`, `2人`, `3本` | `にじゅうごキログラム`, `ふたり`, `さんぼん`                     |
 | `email`                   | Email symbols              | `help@example.jp`    | `help アットマーク example ドット jp`                            |
 | `direction`               | Direction arrow            | `東京→大阪`          | `東京から大阪`                                                   |
+
+### Simplified Chinese Auto-tags (Automatically Detected)
+
+| Tag                       | Description                | Input                  | Output                               |
+| ------------------------- | -------------------------- | ---------------------- | ------------------------------------ |
+| `phone`                   | Phone number               | `138-0013-8000`        | `一·三·八、零·零·一·三、八·零·零·零` |
+| `postalCode`              | Postal code                | `邮编是100000`         | `邮编是一·零·零·零·零·零`            |
+| `date` / `datetime`       | Date and time              | `2026年7月14日`        | `二零二六年七月十四日`               |
+| `time`                    | Time                       | `14:30`                | `十四点三十分`                       |
+| `range`                   | Time, price, or page range | `6–9点`                | `六点到九点`                         |
+| `money`                   | Currency                   | `¥12,800`              | `一万二千八百元`                     |
+| `score` / `ratio`         | Score or ratio             | `最终比分是3-2`        | `最终比分是三比二`                   |
+| `percentage` / `fraction` | Percentage or fraction     | `72.5%`, `1/2`         | `百分之七十二点五`, `二分之一`       |
+| `order`                   | Chapter, rank, or number   | `第7章`, `No. 5`       | `第七章`, `编号五`                   |
+| `unit`                    | Measurements and counters  | `25kg`, `2人`, `3本书` | `二十五千克`, `两人`, `三本书`       |
+| `email`                   | Email symbols              | `help@example.cn`      | `help 艾特 example 点 cn`            |
+| `direction`               | Direction arrow            | `北京→上海`            | `北京到上海`                         |
 
 ### Manual-only Tags
 
@@ -590,8 +636,10 @@ src/
     ├── tags/                   # Individual tag converters
     └── utils/
 │       └── number-to-english.ts # Number conversion utilities
-└── japanese/                   # Japanese language module
-    └── index.ts                # Japanese rules and number readings
+├── japanese/                   # Japanese language module
+│   └── index.ts                # Japanese rules and number readings
+└── chinese/                    # Simplified Chinese language module
+    └── index.ts                # Chinese rules and number readings
 ```
 
 <br>

@@ -169,3 +169,18 @@ export const categoryIconsJa: Record<string, ReactElement> = {
   記号: Icons.tag,
   手動タグ: Icons.layers,
 };
+
+export const categoryIconsZh: Record<string, ReactElement> = {
+  电话号码: Icons.phone,
+  邮政编码: Icons.hash,
+  日期: Icons.calendar,
+  时间: Icons.clock,
+  金额: Icons.dollar,
+  比例: Icons.percent,
+  顺序: Icons.hash,
+  单位: Icons.ruler,
+  量词: Icons.hash,
+  范围: Icons.ruler,
+  符号: Icons.tag,
+  手动标签: Icons.layers,
+};

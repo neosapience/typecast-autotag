@@ -166,7 +166,7 @@ describe('Japanese auto-tagging', () => {
 
 describe('Japanese top-level API exposure', () => {
   it('registers ja and exposes its direct namespace', () => {
-    expect(getSupportedLanguages()).toEqual(['ko', 'en', 'ja']);
+    expect(getSupportedLanguages()).toEqual(['ko', 'en', 'ja', 'zh']);
     expect(getSupportedAutoTags('ja')).toContain('phone');
     expect(getSupportedManualTags('ja')).toContain('digits');
     expect(japanese.autoTag('価格は500円です。')).toBe('価格はごひゃくえんです。');

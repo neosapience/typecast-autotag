@@ -330,6 +330,47 @@ export const examplesJa: Example[] = [
   },
 ];
 
+// Simplified Chinese examples
+export const examplesZh: Example[] = [
+  { id: 1, category: '电话号码', description: '手机号码', original: '手机号是138-0013-8000。' },
+  { id: 2, category: '电话号码', description: '客服电话', original: '客服电话是400-123-4567。' },
+  { id: 3, category: '邮政编码', description: '六位邮编', original: '收货地址的邮编是100000。' },
+  { id: 4, category: '日期', description: '年月日', original: '预约日期是2026年7月14日。' },
+  { id: 5, category: '日期', description: 'ISO格式', original: '截止日期是2026-12-24。' },
+  { id: 6, category: '日期', description: '日期和时间', original: '开始时间是2026-07-14T09:05。' },
+  { id: 7, category: '时间', description: '二十四小时制', original: '会议14:30开始。' },
+  { id: 8, category: '时间', description: '营业时间', original: '营业时间是9:00至18:00。' },
+  { id: 9, category: '金额', description: '人民币符号', original: '费用是¥12,800。' },
+  { id: 10, category: '金额', description: '小数金额', original: '总计1,234.56元。' },
+  { id: 11, category: '金额', description: '美元', original: '手续费是$19.95。' },
+  { id: 12, category: '比例', description: '百分比', original: '当前进度是72.5%。' },
+  { id: 13, category: '比例', description: '比赛比分', original: '最终比分是3-2。' },
+  { id: 14, category: '比例', description: '画面比例', original: '画面比例是16:9。' },
+  { id: 15, category: '比例', description: '分数', original: '已经完成1/2。' },
+  { id: 16, category: '顺序', description: '章节编号', original: '请阅读第7章。' },
+  { id: 17, category: '顺序', description: '编号写法', original: '请选择No. 5。' },
+  { id: 18, category: '单位', description: '重量', original: '包裹重25kg。' },
+  { id: 19, category: '单位', description: '距离', original: '路线长42.195km。' },
+  { id: 20, category: '单位', description: '温度', original: '今天早上是-5℃。' },
+  { id: 21, category: '单位', description: '容量', original: '请加入500mL水。' },
+  { id: 22, category: '单位', description: '数据容量', original: '存储容量是2TB。' },
+  { id: 23, category: '量词', description: '人数', original: '参加者有1人和2人。' },
+  { id: 24, category: '量词', description: '商品和书籍', original: '购买2个商品和12本书。' },
+  { id: 25, category: '量词', description: '期间', original: '合同期为6个月，保修4年。' },
+  { id: 26, category: '范围', description: '时间范围', original: '客服时间是6–9点。' },
+  { id: 27, category: '范围', description: '页码范围', original: '今晚阅读第3至5页。' },
+  { id: 28, category: '符号', description: '电子邮箱', original: '邮箱是help@example.cn。' },
+  { id: 29, category: '符号', description: '移动方向', original: '北京→上海出发' },
+  { id: 30, category: '符号', description: '保留省略号', original: '嗯……我想想' },
+  {
+    id: 31,
+    category: '手动标签',
+    description: '验证码和金额',
+    original: 'name(王伟)，验证码是digits(2048)，总计money(5000元)。',
+    hasManualTag: true,
+  },
+];
+
 export interface AICCExample {
   id: string;
   category: string;
@@ -482,5 +523,50 @@ export const aiccExamplesJa: AICCExample[] = [
 サポート時間: 6–9時
 
 変更をご希望の場合はNo. 5を選択してください。`,
+  },
+];
+
+export const aiccExamplesZh: AICCExample[] = [
+  {
+    id: 'main-menu',
+    category: 'IVR菜单',
+    title: '主菜单',
+    input: `欢迎致电Typecast客户服务中心。
+
+账单查询请按1，
+物流查询请按2，
+退款申请请按3，
+转人工服务请按0。
+
+当前等待时间约为5分钟30秒。
+服务时间是9:00至18:00。`,
+  },
+  {
+    id: 'delivery',
+    category: '物流',
+    title: '配送状态',
+    input: `为您播报配送状态。
+
+订单编号: 2048
+下单日期: 2026年7月14日
+预计送达: 2026-07-16T14:30
+邮编: 100000
+客服电话: 400-123-4567
+
+运费为550元。`,
+  },
+  {
+    id: 'subscription',
+    category: '订阅',
+    title: '使用情况',
+    input: `您的订阅信息如下。
+
+订阅期: 6个月
+月费: ¥12,800
+数据容量: 50GB
+当前使用率: 72.5%
+客服时间: 6–9点
+
+如需变更，请选择No. 5。`,
   },
 ];
