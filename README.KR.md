@@ -25,13 +25,14 @@
 
 이 라이브러리는 TTS 텍스트 전처리를 위한 **다국어**를 지원합니다:
 
-| 언어                  | 상태                  | 모듈       |
-| --------------------- | --------------------- | ---------- |
-| **한국어** (Korean)   | ✅ 전체 지원          | `korean`   |
-| **영어** (English)    | ✅ 전체 지원          | `english`  |
-| **일본어** (Japanese) | ✅ 핵심 TTS 패턴 지원 | `japanese` |
+| 언어                       | 상태                  | 모듈       |
+| -------------------------- | --------------------- | ---------- |
+| **한국어** (Korean)        | ✅ 전체 지원          | `korean`   |
+| **영어** (English)         | ✅ 전체 지원          | `english`  |
+| **일본어** (Japanese)      | ✅ 핵심 TTS 패턴 지원 | `japanese` |
+| **중국어 간체** (简体中文) | ✅ 핵심 TTS 패턴 지원 | `chinese`  |
 
-> 일본어는 현재 JavaScript·브라우저 패키지에서 제공합니다. 네이티브 C·Python·Java 바인딩은 기존 한국어·영어 진입점을 유지합니다.
+> 일본어와 중국어 간체는 현재 JavaScript·브라우저 패키지에서 제공합니다. 네이티브 C·Python·Java 바인딩은 기존 한국어·영어 진입점을 유지합니다.
 
 ## 지원 환경
 
@@ -64,7 +65,7 @@
 
 ---
 
-전화번호, 날짜, 금액 등을 한국어·영어·일본어의 자연스러운 음성 패턴으로 변환합니다. [Typecast](https://typecast.ai) TTS API 및 AICC (AI Contact Center) 환경을 위해 제작되었습니다.
+전화번호, 날짜, 금액 등을 한국어·영어·일본어·중국어 간체의 자연스러운 음성 패턴으로 변환합니다. [Typecast](https://typecast.ai) TTS API 및 AICC (AI Contact Center) 환경을 위해 제작되었습니다.
 
 ```typescript
 import { autoTag } from '@neosapience/typecast-autotag';
@@ -80,13 +81,17 @@ autoTag('Call me at 555-123-4567 tomorrow.', { language: 'en' });
 // 일본어 자동 태깅
 autoTag('受付は6–9時、料金は¥12,800です。', { language: 'ja' });
 // → '受付はろくじからくじ、料金はいちまんにせんはっぴゃくえんです。'
+
+// 중국어 간체 자동 태깅
+autoTag('客服时间是6–9点，费用是¥12,800。', { language: 'zh' });
+// → '客服时间是六点到九点，费用是一万二千八百元。'
 ```
 
 <br>
 
 ## 기능
 
-- **다국어 지원**: 한국어·영어·일본어 TTS 텍스트 전처리 지원.
+- **다국어 지원**: 한국어·영어·일본어·중국어 간체 TTS 텍스트 전처리 지원.
 - **자동 태깅**: 전화번호, 날짜, 시간, 금액 등의 패턴을 자동으로 감지하여 변환.
 - **수동 태깅**: `tagName(value)` 구문으로 명시적 제어 가능.
 - **제로 디펜던시**: 가볍고 빠르며 트리 쉐이킹 가능. ESM과 CommonJS 모두 지원.
@@ -190,6 +195,24 @@ manualTag('暗証番号はdigits(2048)、金額はmoney(5000円)です。', { la
 // → '暗証番号はに・ゼロ・よん・はち、金額はごせんえんです。'
 ```
 
+### 중국어 텍스트 처리
+
+```typescript
+import { autoTag, manualTag } from '@neosapience/typecast-autotag';
+
+autoTag('预约日期是2026年7月14日，会议14:30开始。', { language: 'zh' });
+// → '预约日期是二零二六年七月十四日，会议十四点三十分开始。'
+
+autoTag('最终比分是3-2，当前进度是72.5%。', { language: 'zh' });
+// → '最终比分是三比二，当前进度是百分之七十二点五。'
+
+autoTag('北京→上海，今晚阅读第3至5页。', { language: 'zh' });
+// → '北京到上海，今晚阅读第三页到五页。'
+
+manualTag('验证码是digits(2048)，总计money(5000元)。', { language: 'zh' });
+// → '验证码是二·零·四·八，总计五千元。'
+```
+
 ### 언어 모듈 직접 접근
 
 ```typescript
@@ -210,6 +233,12 @@ import { japanese } from '@neosapience/typecast-autotag';
 
 japanese.autoTag('電話番号は090-1234-5678です。');
 // → '電話番号はゼロ・きゅう・ゼロ、いち・に・さん・よん、ご・ろく・なな・はちです。'
+
+// 중국어 간체 모듈 직접 사용
+import { chinese } from '@neosapience/typecast-autotag';
+
+chinese.autoTag('手机号是138-0013-8000。');
+// → '手机号是一·三·八、零·零·一·三、八·零·零·零。'
 ```
 
 <br>
@@ -231,10 +260,10 @@ autoTag('010-1234-5678, 50000원', { language: 'ko', enabledTags: ['phone'] });
 // → '공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔, 50000원'
 ```
 
-| 옵션          | 타입               | 기본값 | 설명               |
-| ------------- | ------------------ | ------ | ------------------ |
-| `language`    | `'ko'｜'en'｜'ja'` | `'ko'` | 사용할 언어        |
-| `enabledTags` | `string[]`         | 전체   | 활성화할 태그 유형 |
+| 옵션          | 타입                     | 기본값 | 설명               |
+| ------------- | ------------------------ | ------ | ------------------ |
+| `language`    | `'ko'｜'en'｜'ja'｜'zh'` | `'ko'` | 사용할 언어        |
+| `enabledTags` | `string[]`               | 전체   | 활성화할 태그 유형 |
 
 </details>
 
@@ -301,7 +330,7 @@ import {
   getDefaultLanguage,
 } from '@neosapience/typecast-autotag';
 
-getSupportedLanguages(); // ['ko', 'en', 'ja']
+getSupportedLanguages(); // ['ko', 'en', 'ja', 'zh']
 getSupportedAutoTags(); // ['phone', 'datetime', 'time', 'date', ...]
 getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 ```
@@ -378,6 +407,23 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 | `unit`                    | 측정 단위와 일본어 조수사 | `25kg`, `2人`, `3本` | `にじゅうごキログラム`, `ふたり`, `さんぼん`                     |
 | `email`                   | 이메일 기호               | `help@example.jp`    | `help アットマーク example ドット jp`                            |
 | `direction`               | 이동 방향                 | `東京→大阪`          | `東京から大阪`                                                   |
+
+### 중국어 자동 태그 (자동 감지)
+
+| 태그                      | 설명                    | 입력                   | 출력                                 |
+| ------------------------- | ----------------------- | ---------------------- | ------------------------------------ |
+| `phone`                   | 전화번호                | `138-0013-8000`        | `一·三·八、零·零·一·三、八·零·零·零` |
+| `postalCode`              | 우편번호                | `邮编是100000`         | `邮编是一·零·零·零·零·零`            |
+| `date` / `datetime`       | 날짜와 시간             | `2026年7月14日`        | `二零二六年七月十四日`               |
+| `time`                    | 시각                    | `14:30`                | `十四点三十分`                       |
+| `range`                   | 시간·가격·페이지 범위   | `6–9点`                | `六点到九点`                         |
+| `money`                   | 금액                    | `¥12,800`              | `一万二千八百元`                     |
+| `score` / `ratio`         | 점수와 비율             | `最终比分是3-2`        | `最终比分是三比二`                   |
+| `percentage` / `fraction` | 퍼센트와 분수           | `72.5%`, `1/2`         | `百分之七十二点五`, `二分之一`       |
+| `order`                   | 장·순위·번호            | `第7章`, `No. 5`       | `第七章`, `编号五`                   |
+| `unit`                    | 측정 단위와 중국어 양사 | `25kg`, `2人`, `3本书` | `二十五千克`, `两人`, `三本书`       |
+| `email`                   | 이메일 기호             | `help@example.cn`      | `help 艾特 example 点 cn`            |
+| `direction`               | 이동 방향               | `北京→上海`            | `北京到上海`                         |
 
 ### 수동 전용 태그
 
@@ -510,11 +556,13 @@ autoTag('Your balance is $1,234.56.', { language: 'en' });
 ### 언어 모듈 직접 접근
 
 ```typescript
-import { korean, english } from '@neosapience/typecast-autotag';
+import { korean, english, japanese, chinese } from '@neosapience/typecast-autotag';
 
 // 언어별 함수 사용
 korean.autoTag('010-1234-5678');
 english.autoTag('555-123-4567');
+japanese.autoTag('090-1234-5678');
+chinese.autoTag('138-0013-8000');
 
 // 개별 태그 변환기는 언어 모듈을 통해 접근
 korean.name('김철수');
@@ -582,8 +630,10 @@ src/
     ├── tags/                   # 개별 태그 변환기
     └── utils/
 │       └── number-to-english.ts # 숫자 변환 유틸리티
-└── japanese/                   # 일본어 언어 모듈
-    └── index.ts                # 일본어 규칙 및 숫자 읽기
+├── japanese/                   # 일본어 언어 모듈
+│   └── index.ts                # 일본어 규칙 및 숫자 읽기
+└── chinese/                    # 중국어 간체 언어 모듈
+    └── index.ts                # 중국어 규칙 및 숫자 읽기
 ```
 
 <br>

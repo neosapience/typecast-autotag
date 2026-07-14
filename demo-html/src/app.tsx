@@ -1,26 +1,39 @@
 import { useState, useMemo, useEffect } from 'react';
-import { korean, english, japanese } from '@neosapience/typecast-autotag';
-import { Icons, categoryIconsKo, categoryIconsEn, categoryIconsJa } from './Icons';
+import { korean, english, japanese, chinese } from '@neosapience/typecast-autotag';
+import { Icons, categoryIconsKo, categoryIconsEn, categoryIconsJa, categoryIconsZh } from './Icons';
 import {
   examplesKo,
   examplesEn,
   examplesJa,
+  examplesZh,
   aiccExamplesKo,
   aiccExamplesEn,
   aiccExamplesJa,
+  aiccExamplesZh,
 } from './examples';
 import { useScrollAnimation } from './useScrollAnimation';
 
-type Language = 'ko' | 'en' | 'ja';
+type Language = 'ko' | 'en' | 'ja' | 'zh';
 
-const languageModules = { ko: korean, en: english, ja: japanese };
-const exampleSets = { ko: examplesKo, en: examplesEn, ja: examplesJa };
-const aiccExampleSets = { ko: aiccExamplesKo, en: aiccExamplesEn, ja: aiccExamplesJa };
-const categoryIconSets = { ko: categoryIconsKo, en: categoryIconsEn, ja: categoryIconsJa };
+const languageModules = { ko: korean, en: english, ja: japanese, zh: chinese };
+const exampleSets = { ko: examplesKo, en: examplesEn, ja: examplesJa, zh: examplesZh };
+const aiccExampleSets = {
+  ko: aiccExamplesKo,
+  en: aiccExamplesEn,
+  ja: aiccExamplesJa,
+  zh: aiccExamplesZh,
+};
+const categoryIconSets = {
+  ko: categoryIconsKo,
+  en: categoryIconsEn,
+  ja: categoryIconsJa,
+  zh: categoryIconsZh,
+};
 const manualTagInputs = {
   ko: 'name(홍길동)님의 전화번호는 phone(010-1234-5678)입니다.\n금액은 money(50000)원이고, 날짜는 date(2024-12-25)입니다.',
   en: "name(John)'s phone number is phone(555-1234).\nThe amount is money($100) and the date is date(2024-12-25).",
   ja: 'name(佐藤)様の電話番号はphone(090-1234-5678)です。\n金額はmoney(5000円)、日付はdate(2026-07-14)です。',
+  zh: 'name(王伟)的电话是phone(138-0013-8000)。\n金额是money(5000元)，日期是date(2026-07-14)。',
 };
 
 function App() {
@@ -104,51 +117,71 @@ function App() {
 
   const selectedAICC = aiccExamples.find((e) => e.id === selectedAICCId);
 
-  const t = (ko: string, en: string, ja: string): string =>
-    language === 'ko' ? ko : language === 'ja' ? ja : en;
+  const t = (ko: string, en: string, ja: string, zh: string): string =>
+    language === 'ko' ? ko : language === 'ja' ? ja : language === 'zh' ? zh : en;
   const ui = {
     subtitle: t(
       'TTS를 위한 텍스트 전처리 데모',
       'Text Preprocessing Demo for TTS',
-      'TTS向けテキスト前処理デモ'
+      'TTS向けテキスト前処理デモ',
+      '面向TTS的文本预处理演示'
     ),
-    singleExample: t('단일 예시', 'Single Examples', '単一例'),
-    all: t('전체', 'All', 'すべて'),
-    before: t('Before (원본)', 'Before (Original)', 'Before（原文）'),
-    after: t('After (오토태깅)', 'After (Auto-tagged)', 'After（自動タグ）'),
-    manualResult: t('수동 태깅 결과', 'Manual Tag Result', '手動タグ結果'),
-    combinedResult: t('자동 + 수동 태깅 결과', 'Auto + Manual Tag Result', '自動＋手動タグ結果'),
-    prev: t('이전', 'Prev', '前へ'),
-    next: t('다음', 'Next', '次へ'),
+    singleExample: t('단일 예시', 'Single Examples', '単一例', '单项示例'),
+    all: t('전체', 'All', 'すべて', '全部'),
+    before: t('Before (원본)', 'Before (Original)', 'Before（原文）', 'Before（原文）'),
+    after: t('After (오토태깅)', 'After (Auto-tagged)', 'After（自動タグ）', 'After（自动标注）'),
+    manualResult: t('수동 태깅 결과', 'Manual Tag Result', '手動タグ結果', '手动标注结果'),
+    combinedResult: t(
+      '자동 + 수동 태깅 결과',
+      'Auto + Manual Tag Result',
+      '自動＋手動タグ結果',
+      '自动＋手动标注结果'
+    ),
+    prev: t('이전', 'Prev', '前へ', '上一个'),
+    next: t('다음', 'Next', '次へ', '下一个'),
     longExample: t(
       '장문 예시 (AICC 시나리오)',
       'Long Text (AICC Scenarios)',
-      '長文例（AICCシナリオ）'
+      '長文例（AICCシナリオ）',
+      '长文本（AICC场景）'
     ),
-    selectScenario: t('시나리오 선택', 'Select Scenario', 'シナリオ選択'),
-    inputEditable: t('입력 (수정 가능)', 'Input (Editable)', '入力（編集可能）'),
-    autoTagResult: t('오토태깅 결과', 'Auto-tagged Result', '自動タグ結果'),
-    manualTagExperiment: t('수동 태그 실험', 'Manual Tag Experiment', '手動タグを試す'),
-    manualTagInput: t('수동 태그 입력', 'Manual Tag Input', '手動タグ入力'),
-    manualTagResult: t('수동 태그 처리 결과', 'Manual Tag Result', '手動タグ処理結果'),
+    selectScenario: t('시나리오 선택', 'Select Scenario', 'シナリオ選択', '选择场景'),
+    inputEditable: t('입력 (수정 가능)', 'Input (Editable)', '入力（編集可能）', '输入（可编辑）'),
+    autoTagResult: t('오토태깅 결과', 'Auto-tagged Result', '自動タグ結果', '自动标注结果'),
+    manualTagExperiment: t(
+      '수동 태그 실험',
+      'Manual Tag Experiment',
+      '手動タグを試す',
+      '手动标注试验'
+    ),
+    manualTagInput: t('수동 태그 입력', 'Manual Tag Input', '手動タグ入力', '手动标注输入'),
+    manualTagResult: t(
+      '수동 태그 처리 결과',
+      'Manual Tag Result',
+      '手動タグ処理結果',
+      '手动标注结果'
+    ),
     manualTagDesc: t(
       '괄호를 사용하여 수동으로 태그를 지정할 수 있습니다. 예: name(홍길동), phone(010-1234-5678)',
       'You can manually tag text using parentheses. Example: name(John), phone(555-1234)',
-      '括弧で手動タグを指定できます。例: name(佐藤), phone(090-1234-5678)'
+      '括弧で手動タグを指定できます。例: name(佐藤), phone(090-1234-5678)',
+      '可使用括号手动指定标注。例如：name(王伟)、phone(138-0013-8000)'
     ),
-    availableTags: t('사용 가능한 태그', 'Available Tags', '利用可能なタグ'),
-    autoTagTitle: t('자동 태깅', 'Auto Tagging', '自動タグ'),
+    availableTags: t('사용 가능한 태그', 'Available Tags', '利用可能なタグ', '可用标注'),
+    autoTagTitle: t('자동 태깅', 'Auto Tagging', '自動タグ', '自动标注'),
     autoTagDesc: t(
       '전화번호, 날짜, 시간, 금액 등 패턴을 자동으로 인식하여 TTS에 적합한 형태로 변환합니다.',
       'Automatically recognizes patterns like phone numbers, dates, times, and amounts for TTS.',
-      '電話番号、日付、時刻、金額などを認識し、TTS向けの読み方に変換します。'
+      '電話番号、日付、時刻、金額などを認識し、TTS向けの読み方に変換します。',
+      '自动识别电话号码、日期、时间和金额等模式，并转换为适合TTS的读法。'
     ),
-    manualTagTitle: t('수동 태깅', 'Manual Tagging', '手動タグ'),
-    combinedTagTitle: t('복합 태깅', 'Combined Tagging', '複合タグ'),
+    manualTagTitle: t('수동 태깅', 'Manual Tagging', '手動タグ', '手动标注'),
+    combinedTagTitle: t('복합 태깅', 'Combined Tagging', '複合タグ', '组合标注'),
     combinedTagDesc: t(
       '수동 태그가 먼저 처리된 후, 나머지 텍스트에 자동 태깅이 적용됩니다.',
       'Manual tags are processed first, then auto-tagging is applied.',
-      '手動タグを先に処理し、残りのテキストに自動タグを適用します。'
+      '手動タグを先に処理し、残りのテキストに自動タグを適用します。',
+      '先处理手动标注，再对其余文本应用自动标注。'
     ),
     madeFor: 'Made for',
   };
@@ -180,6 +213,12 @@ function App() {
               onClick={() => setLanguage('ja')}
             >
               <span className="lang-icon">{Icons.globe}</span>日本語
+            </button>
+            <button
+              className={`lang-btn ${language === 'zh' ? 'active' : ''}`}
+              onClick={() => setLanguage('zh')}
+            >
+              <span className="lang-icon">{Icons.globe}</span>简体中文
             </button>
           </div>
         </div>
@@ -362,7 +401,8 @@ function App() {
                   placeholder={t(
                     'name(이름), phone(전화번호), money(금액) 등의 태그를 사용해보세요...',
                     'Try tags like name(John), phone(555-1234), money($100)...',
-                    'name(佐藤), phone(090-1234-5678), money(500円)などをお試しください...'
+                    'name(佐藤), phone(090-1234-5678), money(500円)などをお試しください...',
+                    '请尝试name(王伟)、phone(138-0013-8000)、money(500元)等标注...'
                   )}
                   spellCheck={false}
                 />
@@ -558,6 +598,69 @@ function App() {
                       </div>
                     </div>
                   </>
+                ) : language === 'zh' ? (
+                  <>
+                    <div className="tag-category">
+                      <div className="tag-category-title">姓名和号码</div>
+                      <div className="tag-item">
+                        <code>name(王伟)</code>
+                        <span>姓名</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>phone(138-0013-8000)</code>
+                        <span>电话号码</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>digits(2048)</code>
+                        <span>逐位朗读</span>
+                      </div>
+                    </div>
+                    <div className="tag-category">
+                      <div className="tag-category-title">日期和时间</div>
+                      <div className="tag-item">
+                        <code>date(2026-07-14)</code>
+                        <span>日期</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>time(14:30)</code>
+                        <span>时间</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>datetime(2026-07-14T09:05)</code>
+                        <span>日期和时间</span>
+                      </div>
+                    </div>
+                    <div className="tag-category">
+                      <div className="tag-category-title">金额和比例</div>
+                      <div className="tag-item">
+                        <code>money(5000元)</code>
+                        <span>金额</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>percentage(72.5%)</code>
+                        <span>百分比</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>score(3-2)</code>
+                        <span>比赛比分</span>
+                      </div>
+                    </div>
+                    <div className="tag-category">
+                      <div className="tag-category-title">数值和单位</div>
+                      <div className="tag-item">
+                        <code>unit(25kg)</code>
+                        <span>单位</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>range(6–9点)</code>
+                        <span>范围</span>
+                      </div>
+                      <div className="tag-item">
+                        <code>number(1234)</code>
+                        <span>数值</span>
+                      </div>
+                    </div>
+                  </>
                 ) : (
                   <>
                     <div className="tag-category">
@@ -687,7 +790,7 @@ function App() {
             <div className="info-icon">{Icons.edit}</div>
             <h3>{ui.manualTagTitle}</h3>
             <p>
-              <code>{t('name(홍길동)', 'name(John)', 'name(佐藤)')}</code>,{' '}
+              <code>{t('name(홍길동)', 'name(John)', 'name(佐藤)', 'name(王伟)')}</code>,{' '}
               <code>digits(1234)</code>
             </p>
           </div>

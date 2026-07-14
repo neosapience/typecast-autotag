@@ -41,6 +41,7 @@ const {
 // ============================================================================
 import * as englishModule from './english';
 import * as japaneseModule from './japanese';
+import * as chineseModule from './chinese';
 export { MAX_INPUT_LENGTH } from './input-guard';
 
 const {
@@ -63,10 +64,21 @@ const {
   SUPPORTED_TAGS: JA_SUPPORTED_TAGS,
 } = japaneseModule;
 
+const {
+  autoTag: zhAutoTag,
+  extractAutoTags: zhExtractAutoTags,
+  manualTag: zhManualTag,
+  extractTags: zhExtractTags,
+  manualTagSelective: zhManualTagSelective,
+  SUPPORTED_AUTO_TAGS: ZH_SUPPORTED_AUTO_TAGS,
+  SUPPORTED_TAGS: ZH_SUPPORTED_TAGS,
+} = chineseModule;
+
 // Type imports
 import type { AutoTagOptions as KoAutoTagOptions, MatchResult as KoMatchResult } from './korean';
 import type { AutoTagOptions as EnAutoTagOptions, MatchResult as EnMatchResult } from './english';
 import type { AutoTagOptions as JaAutoTagOptions, MatchResult as JaMatchResult } from './japanese';
+import type { AutoTagOptions as ZhAutoTagOptions, MatchResult as ZhMatchResult } from './chinese';
 
 // ============================================================================
 // Type Definitions
@@ -75,7 +87,7 @@ import type { AutoTagOptions as JaAutoTagOptions, MatchResult as JaMatchResult }
 /**
  * Supported language codes
  */
-export type SupportedLanguage = 'ko' | 'en' | 'ja';
+export type SupportedLanguage = 'ko' | 'en' | 'ja' | 'zh';
 
 /**
  * Auto-tagging options
@@ -185,6 +197,15 @@ const languageModules: Record<SupportedLanguage, LanguageModule> = {
     manualTagSelective: jaManualTagSelective,
     supportedAutoTags: JA_SUPPORTED_AUTO_TAGS,
     supportedManualTags: JA_SUPPORTED_TAGS,
+  },
+  zh: {
+    autoTag: zhAutoTag as LanguageModule['autoTag'],
+    extractAutoTags: zhExtractAutoTags as LanguageModule['extractAutoTags'],
+    manualTag: zhManualTag,
+    extractTags: zhExtractTags,
+    manualTagSelective: zhManualTagSelective,
+    supportedAutoTags: ZH_SUPPORTED_AUTO_TAGS,
+    supportedManualTags: ZH_SUPPORTED_TAGS,
   },
 };
 
@@ -460,6 +481,7 @@ export function getSupportedManualTags(language?: SupportedLanguage): string[] {
 export { koreanModule as korean };
 export { englishModule as english };
 export { japaneseModule as japanese };
+export { chineseModule as chinese };
 
 // ============================================================================
 // Type re-exports
@@ -472,4 +494,6 @@ export type {
   EnMatchResult,
   JaAutoTagOptions,
   JaMatchResult,
+  ZhAutoTagOptions,
+  ZhMatchResult,
 };
