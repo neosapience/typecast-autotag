@@ -1,5 +1,11 @@
 # Changelog
 
+# [1.11.0](https://github.com/neosapience/typecast-autotag/compare/v1.10.0...v1.11.0) (2026-07-14)
+
+### Features
+
+- add Simplified Chinese auto-tagging for core TTS patterns in the JavaScript/browser SDK, with 31 demo examples and 67 regression tests ([a57cf70](https://github.com/neosapience/typecast-autotag/commit/a57cf70e1c0db8c798de1e2ec3aec0620e7528be))
+
 # [1.10.0](https://github.com/neosapience/typecast-autotag/compare/v1.9.0...v1.10.0) (2026-07-14)
 
 ### Features

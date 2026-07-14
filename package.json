@@ -1,6 +1,6 @@
 {
   "name": "@neosapience/typecast-autotag",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "Text preprocessing SDK for Typecast TTS API - automatically converts phone numbers, dates, names, and other patterns into speech-friendly formats for AICC environments",
   "license": "MIT",
   "repository": {
