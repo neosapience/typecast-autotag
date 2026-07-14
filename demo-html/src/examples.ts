@@ -269,6 +269,67 @@ export const examplesEn: Example[] = [
   },
 ];
 
+// Japanese examples
+export const examplesJa: Example[] = [
+  {
+    id: 1,
+    category: '電話番号',
+    description: '携帯電話',
+    original: '電話番号は090-1234-5678です。',
+  },
+  {
+    id: 2,
+    category: '電話番号',
+    description: 'フリーダイヤル',
+    original: '受付は0120-123-456です。',
+  },
+  {
+    id: 3,
+    category: '郵便番号',
+    description: '郵便記号付き',
+    original: 'お届け先は〒100-0001です。',
+  },
+  { id: 4, category: '日付', description: '年月日', original: '予約日は2026年7月14日です。' },
+  { id: 5, category: '日付', description: 'ISO形式', original: '締切は2026-12-24です。' },
+  { id: 6, category: '日付', description: '日時', original: '開始は2026-07-14T09:05です。' },
+  { id: 7, category: '時刻', description: '24時間形式', original: '会議は14:30に始まります。' },
+  { id: 8, category: '時刻', description: '営業時間', original: '営業時間は9:00〜18:00です。' },
+  { id: 9, category: '金額', description: '円記号', original: '料金は¥12,800です。' },
+  { id: 10, category: '金額', description: '小数付き', original: '合計は1,234.56円です。' },
+  { id: 11, category: '金額', description: '米ドル', original: '手数料は$19.95です。' },
+  { id: 12, category: '割合', description: 'パーセント', original: '進捗は72.5%です。' },
+  { id: 13, category: '割合', description: '試合スコア', original: 'スコアは3-2で勝利しました。' },
+  { id: 14, category: '割合', description: '比率', original: '画面の比率は16:9です。' },
+  { id: 15, category: '割合', description: '分数', original: '全体の1/2を使います。' },
+  { id: 16, category: '順序', description: '章番号', original: '第7章を読みます。' },
+  { id: 17, category: '順序', description: '番号表記', original: 'No. 5を選びます。' },
+  { id: 18, category: '単位', description: '重さ', original: '荷物は25kgです。' },
+  { id: 19, category: '単位', description: '距離', original: 'コースは42.195kmです。' },
+  { id: 20, category: '単位', description: '温度', original: '今朝は-5℃でした。' },
+  { id: 21, category: '単位', description: '容量', original: '水を500mL入れます。' },
+  { id: 22, category: '単位', description: 'データ容量', original: '保存容量は2TBです。' },
+  { id: 23, category: '助数詞', description: '人数', original: '参加者は1人と2人です。' },
+  { id: 24, category: '助数詞', description: '本と冊', original: '鉛筆を3本、本を8冊用意します。' },
+  { id: 25, category: '助数詞', description: '期間', original: '契約は6か月、保証は4年です。' },
+  { id: 26, category: '範囲', description: '時刻範囲', original: '受付は6–9時の間です。' },
+  { id: 27, category: '範囲', description: 'ページ範囲', original: '資料は3〜5ページです。' },
+  {
+    id: 28,
+    category: '記号',
+    description: 'メールアドレス',
+    original: '連絡先はhelp@example.jpです。',
+  },
+  { id: 29, category: '記号', description: '移動方向', original: '東京→大阪へ行く' },
+  { id: 30, category: '記号', description: '省略記号を保持', original: 'えっと……そうですね' },
+  {
+    id: 31,
+    category: '手動タグ',
+    description: '暗証番号と金額',
+    original: 'name(佐藤)様、暗証番号はdigits(2048)、合計はmoney(5000円)です。',
+    hasManualTag: true,
+  },
+];
+
 export interface AICCExample {
   id: string;
   category: string;
@@ -376,5 +437,50 @@ Voice: 1,234 minutes
 Data: 45.3GB
 
 Total Due: $64.50`,
+  },
+];
+
+export const aiccExamplesJa: AICCExample[] = [
+  {
+    id: 'main-menu',
+    category: 'IVRメニュー',
+    title: 'メインメニュー',
+    input: `タイプキャストお客様センターです。
+
+料金のお問い合わせは1番、
+配送状況は2番、
+返品のお手続きは3番、
+オペレーターへの接続は0番を押してください。
+
+現在の待ち時間は5分30秒です。
+受付時間は9:00〜18:00です。`,
+  },
+  {
+    id: 'delivery',
+    category: '配送',
+    title: '配送状況',
+    input: `配送状況をご案内します。
+
+注文番号: 2048
+注文日: 2026年7月14日
+お届け予定: 2026-07-16T14:30
+郵便番号: 〒100-0001
+お問い合わせ: 03-1234-5678
+
+送料は550円です。`,
+  },
+  {
+    id: 'subscription',
+    category: '契約',
+    title: 'ご利用状況',
+    input: `ご契約内容です。
+
+契約期間: 6か月
+月額料金: ¥12,800
+データ容量: 50GB
+現在の使用率: 72.5%
+サポート時間: 6–9時
+
+変更をご希望の場合はNo. 5を選択してください。`,
   },
 ];

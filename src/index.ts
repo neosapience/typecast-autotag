@@ -40,6 +40,7 @@ const {
 // English module import
 // ============================================================================
 import * as englishModule from './english';
+import * as japaneseModule from './japanese';
 export { MAX_INPUT_LENGTH } from './input-guard';
 
 const {
@@ -52,9 +53,20 @@ const {
   SUPPORTED_TAGS: EN_SUPPORTED_TAGS,
 } = englishModule;
 
+const {
+  autoTag: jaAutoTag,
+  extractAutoTags: jaExtractAutoTags,
+  manualTag: jaManualTag,
+  extractTags: jaExtractTags,
+  manualTagSelective: jaManualTagSelective,
+  SUPPORTED_AUTO_TAGS: JA_SUPPORTED_AUTO_TAGS,
+  SUPPORTED_TAGS: JA_SUPPORTED_TAGS,
+} = japaneseModule;
+
 // Type imports
 import type { AutoTagOptions as KoAutoTagOptions, MatchResult as KoMatchResult } from './korean';
 import type { AutoTagOptions as EnAutoTagOptions, MatchResult as EnMatchResult } from './english';
+import type { AutoTagOptions as JaAutoTagOptions, MatchResult as JaMatchResult } from './japanese';
 
 // ============================================================================
 // Type Definitions
@@ -63,7 +75,7 @@ import type { AutoTagOptions as EnAutoTagOptions, MatchResult as EnMatchResult }
 /**
  * Supported language codes
  */
-export type SupportedLanguage = 'ko' | 'en';
+export type SupportedLanguage = 'ko' | 'en' | 'ja';
 
 /**
  * Auto-tagging options
@@ -164,6 +176,15 @@ const languageModules: Record<SupportedLanguage, LanguageModule> = {
     manualTagSelective: enManualTagSelective,
     supportedAutoTags: EN_SUPPORTED_AUTO_TAGS,
     supportedManualTags: EN_SUPPORTED_TAGS,
+  },
+  ja: {
+    autoTag: jaAutoTag as LanguageModule['autoTag'],
+    extractAutoTags: jaExtractAutoTags as LanguageModule['extractAutoTags'],
+    manualTag: jaManualTag,
+    extractTags: jaExtractTags,
+    manualTagSelective: jaManualTagSelective,
+    supportedAutoTags: JA_SUPPORTED_AUTO_TAGS,
+    supportedManualTags: JA_SUPPORTED_TAGS,
   },
 };
 
@@ -438,9 +459,17 @@ export function getSupportedManualTags(language?: SupportedLanguage): string[] {
 
 export { koreanModule as korean };
 export { englishModule as english };
+export { japaneseModule as japanese };
 
 // ============================================================================
 // Type re-exports
 // ============================================================================
 
-export type { KoAutoTagOptions, KoMatchResult, EnAutoTagOptions, EnMatchResult };
+export type {
+  KoAutoTagOptions,
+  KoMatchResult,
+  EnAutoTagOptions,
+  EnMatchResult,
+  JaAutoTagOptions,
+  JaMatchResult,
+};
