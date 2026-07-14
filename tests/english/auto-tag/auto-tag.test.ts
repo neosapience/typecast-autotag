@@ -112,6 +112,13 @@ describe('autoTag core functionality', () => {
       expect(autoTag('Meet at 2:10.')).toBe('Meet at two ten AM.');
     });
 
+    it('distinguishes temperature ranges from standalone negative values', () => {
+      expect(autoTag('Range: -5°C to 10°C')).toBe(
+        'Range: minus five degrees Celsius to ten degrees Celsius'
+      );
+      expect(autoTag('Low: -5°C')).toBe('Low: minus five degrees Celsius');
+    });
+
     it('matches only explicit range separators', () => {
       expect(autoTag('Latency: 10t20ms.')).toBe('Latency: 10t20ms.');
       expect(autoTag('Bandwidth: 100Mbps t 200Mbps.')).toBe(

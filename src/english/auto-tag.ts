@@ -967,7 +967,7 @@ const AUTO_TAG_PATTERNS = {
     ],
     converter: (match: string) => {
       // Range
-      if (/\d(?:.|\s)*(?:[-~–—]|\s+to\s+)\d/i.test(match)) {
+      if (/(?:°[CcFf]|℃|℉)(?:\s*[-~–—]\s*|\s+to\s+)[+-]?\d/i.test(match)) {
         return temperatureRange(match);
       }
       // Temperature context
