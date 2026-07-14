@@ -1,5 +1,15 @@
 # Changelog
 
+# [1.9.0](https://github.com/neosapience/typecast-autotag/compare/v1.8.1...v1.9.0) (2026-07-14)
+
+### Features
+
+- improve Korean and English auto-tagging for attached number units, contextual scores, valid dates, currencies, explicit ranges, and manual-tag composition ([5cb40ca](https://github.com/neosapience/typecast-autotag/commit/5cb40cad223707e71d796aecc6887811c3c7e55e))
+
+### Security
+
+- enforce the 10,000-character public input limit and remove exponential backtracking from English temperature range detection ([5cb40ca](https://github.com/neosapience/typecast-autotag/commit/5cb40cad223707e71d796aecc6887811c3c7e55e))
+
 ## [1.8.1](https://github.com/neosapience/typecast-autotag/compare/v1.8.0...v1.8.1) (2026-06-18)
 
 
