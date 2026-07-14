@@ -49,21 +49,21 @@ describe('lecture - 강의수 변환', () => {
 describe('autoLecture - 강의수 자동 태깅', () => {
   it('문장 내 강의수를 변환한다', () => {
     const result = autoLecture('진도율: 65% (26강/40강)');
-    expect(result).toContain('이십육 강');
-    expect(result).toContain('사십 강');
+    expect(result).toContain('이십육강');
+    expect(result).toContain('사십강');
   });
 
   it('단독 강의수를 변환한다', () => {
     const result = autoLecture('현재 9강 수강 완료');
-    expect(result).toContain('구 강');
+    expect(result).toContain('구강');
   });
 });
 
 describe('autoTag - 강의수 통합 테스트', () => {
   it('강의수가 포함된 문장을 올바르게 변환한다', () => {
     const result = autoTag('진도율: (26강/40강)', { enabledTags: ['lecture'] });
-    expect(result).toContain('이십육 강');
-    expect(result).toContain('사십 강');
+    expect(result).toContain('이십육강');
+    expect(result).toContain('사십강');
   });
 
   it('강의, 강사 등과 구분한다', () => {

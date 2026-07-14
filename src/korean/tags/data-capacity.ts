@@ -51,6 +51,8 @@ const DATA_UNITS: Record<string, string> = {
   KW: '킬로와트',
   mw: '메가와트',
   MW: '메가와트',
+  tw: '테라와트',
+  TW: '테라와트',
   // 전압
   v: '볼트',
   V: '볼트',

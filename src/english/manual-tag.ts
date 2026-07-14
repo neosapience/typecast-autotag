@@ -31,6 +31,7 @@ import { temperature } from './tags/temperature';
 import { volume } from './tags/volume';
 import { dataCapacity } from './tags/data-capacity';
 import { inch } from './tags/inch';
+import { assertInputWithinLimit } from '../input-guard';
 
 /**
  * Available tag function mapping
@@ -109,6 +110,7 @@ export function manualTag(text: string): string {
   if (!text || text.length === 0) {
     return text;
   }
+  assertInputWithinLimit(text, 'english.manualTag');
 
   return text.replace(TAG_PATTERN, (match, tagName: string, value: string) => {
     const tagFunction = TAG_FUNCTIONS[tagName];
@@ -138,6 +140,7 @@ export function extractTags(
   if (!text || text.length === 0) {
     return [];
   }
+  assertInputWithinLimit(text, 'english.extractTags');
 
   const results: Array<{ tag: string; value: string; start: number; end: number }> = [];
   const pattern = new RegExp(`(${SUPPORTED_TAGS.join('|')})\\(([^)]*)\\)`, 'g');
@@ -172,6 +175,7 @@ export function manualTagSelective(text: string, allowedTags: string[]): string 
   if (!text || text.length === 0) {
     return text;
   }
+  assertInputWithinLimit(text, 'english.manualTagSelective');
 
   if (allowedTags.length === 0) {
     return text;

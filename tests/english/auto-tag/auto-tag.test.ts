@@ -1,4 +1,9 @@
-import { autoTag, extractAutoTags, SUPPORTED_AUTO_TAGS } from '../../../src/english/auto-tag';
+import {
+  autoTag,
+  autoTagWithManual,
+  extractAutoTags,
+  SUPPORTED_AUTO_TAGS,
+} from '../../../src/english/auto-tag';
 
 describe('autoTag core functionality', () => {
   describe('basic behavior', () => {
@@ -82,6 +87,52 @@ describe('autoTag core functionality', () => {
 
       expect(result).toContain('one one one');
       expect(result).toContain('three three three');
+    });
+  });
+
+  describe('punctuation and notation edge cases', () => {
+    it('handles labels, scores, hashtags, and Roman numerals', () => {
+      expect(autoTag('No. 8 is available')).toBe('Number eight is available');
+      expect(autoTag('The match ended 4:2')).toBe('The match ended four to two');
+      expect(autoTag('#BuildTogether starts today')).toBe('hashtag Build Together starts today');
+      expect(autoTag('Part IX starts here')).toBe('Part nine starts here');
+    });
+
+    it('handles decimal weights and en-dash page ranges without partial matches', () => {
+      expect(autoTag('The parcel weighs 2,345.67 grams')).toBe(
+        'The parcel weighs two thousand three hundred and forty-five point six seven grams'
+      );
+      expect(autoTag('Review pages 8–12 before class')).toBe(
+        'Review pages eight to twelve before class'
+      );
+    });
+
+    it('distinguishes contextual scores from clock times', () => {
+      expect(autoTag('Final score was 2:10.')).toBe('Final score was two to ten.');
+      expect(autoTag('Meet at 2:10.')).toBe('Meet at two ten AM.');
+    });
+
+    it('distinguishes temperature ranges from standalone negative values', () => {
+      expect(autoTag('Range: -5°C to 10°C')).toBe(
+        'Range: minus five degrees Celsius to ten degrees Celsius'
+      );
+      expect(autoTag('Low: -5°C')).toBe('Low: minus five degrees Celsius');
+    });
+
+    it('matches only explicit range separators', () => {
+      expect(autoTag('Latency: 10t20ms.')).toBe('Latency: 10t20ms.');
+      expect(autoTag('Bandwidth: 100Mbps t 200Mbps.')).toBe(
+        'Bandwidth: one hundred megabits per second t two hundred megabits per second.'
+      );
+      expect(autoTag('Wait 10 to 20ms.')).toBe('Wait ten to twenty milliseconds.');
+    });
+
+    it('applies manual tags through the direct language API', () => {
+      const result = autoTagWithManual('Hello name(Alex Lee), the balance is money(€25).');
+      expect(result).not.toContain('name(');
+      expect(result).not.toContain('money(');
+      expect(result).toContain('Alex Lee');
+      expect(result).toContain('twenty-five euros');
     });
   });
 });

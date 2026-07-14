@@ -1,5 +1,6 @@
 import { numberToOrdinal } from '../utils/number-to-english';
 import { year as yearTag } from './year';
+import { isValidCalendarDate } from '../../utils/date-validation';
 
 /** Month names */
 const MONTH_NAMES = [
@@ -188,6 +189,10 @@ export function date(input: number | string): string {
   }
 
   const { year, month, day } = parsed;
+
+  if (!isValidCalendarDate(year, month, day)) {
+    return str;
+  }
 
   // Return original if all values are missing
   if (year === undefined && month === undefined && day === undefined) {

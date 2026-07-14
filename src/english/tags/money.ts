@@ -35,6 +35,53 @@ export interface MoneyOptions {
   includeSpace?: boolean;
 }
 
+interface CurrencyWords {
+  unit: string;
+  singularUnit: string;
+  subunit: string;
+  singularSubunit: string;
+}
+
+const DOLLARS: CurrencyWords = {
+  unit: 'dollars',
+  singularUnit: 'dollar',
+  subunit: 'cents',
+  singularSubunit: 'cent',
+};
+
+const CURRENCY_BY_SYMBOL: Record<string, CurrencyWords> = {
+  $: DOLLARS,
+  '£': { unit: 'pounds', singularUnit: 'pound', subunit: 'pence', singularSubunit: 'penny' },
+  '€': { unit: 'euros', singularUnit: 'euro', subunit: 'cents', singularSubunit: 'cent' },
+  '¥': { unit: 'yen', singularUnit: 'yen', subunit: 'sen', singularSubunit: 'sen' },
+  '₩': { unit: 'won', singularUnit: 'won', subunit: 'jeon', singularSubunit: 'jeon' },
+};
+
+const CURRENCY_BY_NAME: Record<string, CurrencyWords> = {
+  dollar: DOLLARS,
+  dollars: DOLLARS,
+  usd: DOLLARS,
+  pound: CURRENCY_BY_SYMBOL['£']!,
+  pounds: CURRENCY_BY_SYMBOL['£']!,
+  gbp: CURRENCY_BY_SYMBOL['£']!,
+  euro: CURRENCY_BY_SYMBOL['€']!,
+  euros: CURRENCY_BY_SYMBOL['€']!,
+  eur: CURRENCY_BY_SYMBOL['€']!,
+  yen: CURRENCY_BY_SYMBOL['¥']!,
+  jpy: CURRENCY_BY_SYMBOL['¥']!,
+  won: CURRENCY_BY_SYMBOL['₩']!,
+  krw: CURRENCY_BY_SYMBOL['₩']!,
+};
+
+const SUBUNIT_BY_NAME: Record<string, [string, string]> = {
+  cent: ['cents', 'cent'],
+  cents: ['cents', 'cent'],
+  penny: ['pence', 'penny'],
+  pence: ['pence', 'penny'],
+  sen: ['sen', 'sen'],
+  jeon: ['jeon', 'jeon'],
+};
+
 /**
  * Remove thousand separators
  */
@@ -62,10 +109,13 @@ function removeThousandSeparators(str: string): string {
  * ```
  */
 export function money(input: number | string, options?: MoneyOptions): string {
-  const unit = options?.unit ?? 'dollars';
-  const singularUnit = options?.singularUnit ?? 'dollar';
-  const subunit = options?.subunit ?? 'cents';
-  const singularSubunit = options?.singularSubunit ?? 'cent';
+  const defaultCurrency: CurrencyWords = {
+    unit: options?.unit ?? DOLLARS.unit,
+    singularUnit: options?.singularUnit ?? DOLLARS.singularUnit,
+    subunit: options?.subunit ?? DOLLARS.subunit,
+    singularSubunit: options?.singularSubunit ?? DOLLARS.singularSubunit,
+  };
+  const { unit, singularUnit, subunit, singularSubunit } = defaultCurrency;
   const includeSpace = options?.includeSpace ?? true;
   const space = includeSpace ? ' ' : '';
 
@@ -75,6 +125,7 @@ export function money(input: number | string, options?: MoneyOptions): string {
     if (trimmed === '') return input;
 
     // Remove currency symbols: $, £, €, ¥, ₩
+    const symbol = trimmed.match(/^[$£€¥₩]/)?.[0] ?? '';
     let withoutCurrency = trimmed.replace(/^[$£€¥₩]\s*/, '');
 
     // Handle negative: -number
@@ -90,8 +141,43 @@ export function money(input: number | string, options?: MoneyOptions): string {
     const match = withoutCurrency.match(/^([\d,]+(?:\.\d+)?)\s*(.*)$/);
     if (match) {
       const numStr = removeThousandSeparators(match[1] ?? '');
-      const parsedUnit = match[2] || unit;
-      const parsedSingularUnit = parsedUnit === unit ? singularUnit : parsedUnit;
+      const rawSuffix = (match[2] ?? '').trim();
+      const magnitudeMatch = rawSuffix.match(
+        /^(thousand|million|billion|trillion)(?:\s+([a-z]+))?$/i
+      );
+      const magnitude = magnitudeMatch?.[1]?.toLowerCase() ?? '';
+      const rawCurrencyName = magnitudeMatch?.[2] ?? (magnitude ? '' : rawSuffix);
+      const currencyName = rawCurrencyName.toLowerCase();
+      const namedCurrency = CURRENCY_BY_NAME[currencyName];
+      const symbolCurrency = CURRENCY_BY_SYMBOL[symbol];
+      const genericCurrency = currencyName
+        ? {
+            ...defaultCurrency,
+            unit: rawCurrencyName,
+            singularUnit: rawCurrencyName.endsWith('s')
+              ? rawCurrencyName.slice(0, -1)
+              : rawCurrencyName,
+          }
+        : defaultCurrency;
+      const currency = symbolCurrency ?? namedCurrency ?? genericCurrency;
+      const parsedUnit = currency.unit;
+      const parsedSingularUnit = currency.singularUnit;
+      const parsedSubunit = currency.subunit;
+      const parsedSingularSubunit = currency.singularSubunit;
+
+      const standaloneSubunit = SUBUNIT_BY_NAME[currencyName];
+      if (standaloneSubunit && !magnitude) {
+        const value = Number(numStr);
+        if (!Number.isFinite(value)) return String(input);
+        const subunitWord = value === 1 ? standaloneSubunit[1] : standaloneSubunit[0];
+        return negativePrefix + numberToEnglish(value) + space + subunitWord;
+      }
+
+      if (magnitude) {
+        const value = Number(numStr);
+        if (!Number.isFinite(value)) return String(input);
+        return negativePrefix + numberToEnglish(value) + ' ' + magnitude + space + parsedUnit;
+      }
 
       // Handle decimal (cents)
       if (numStr.includes('.')) {
@@ -105,7 +191,7 @@ export function money(input: number | string, options?: MoneyOptions): string {
 
         // Cents only
         if (intNum === 0 && decNum > 0) {
-          const centsWord = decNum === 1 ? singularSubunit : subunit;
+          const centsWord = decNum === 1 ? parsedSingularSubunit : parsedSubunit;
           return negativePrefix + numberToEnglish(decNum) + space + centsWord;
         }
 
@@ -118,7 +204,7 @@ export function money(input: number | string, options?: MoneyOptions): string {
 
         // Both dollars and cents
         const unitWord = intNum === 1 ? parsedSingularUnit : parsedUnit;
-        const centsWord = decNum === 1 ? singularSubunit : subunit;
+        const centsWord = decNum === 1 ? parsedSingularSubunit : parsedSubunit;
         const intKorean = intNum === 0 ? 'zero' : numberToEnglish(intNum);
         return (
           negativePrefix +

@@ -59,7 +59,7 @@ export function order(input: number | string, options?: OrderOptions): string {
 
     // Parse "1st place", "2nd rank", etc. (ordinal + following word)
     const contextMatch = trimmed.match(
-      /^(?:the\s+|came\s+|finished\s+|ranked\s+)?(-?[\d,]+)\s*(?:st|nd|rd|th)\s*(place|rank|position|grade|level|round)?$/i
+      /^(?:the\s+|came\s+|finished\s+|ranked\s+)?(-?[\d,]+)\s*(?:st|nd|rd|th)\s*(place|rank|position|grade|level|round|prize)?$/i
     );
     if (contextMatch) {
       const numStr = removeThousandSeparators(contextMatch[1] ?? '');

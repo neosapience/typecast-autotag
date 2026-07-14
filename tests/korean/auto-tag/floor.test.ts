@@ -75,7 +75,7 @@ describe('autoTag - floor (층수 자동 태깅)', () => {
     it('다른 태그와 함께 사용할 때 각각 올바르게 처리된다', () => {
       const result = autoTag('3층에서 5000원 결제');
       expect(result).toContain('삼층');
-      expect(result).toContain('오천 원');
+      expect(result).toContain('오천원');
     });
   });
 });

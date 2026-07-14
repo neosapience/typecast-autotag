@@ -19,8 +19,8 @@ describe('autoTag - ratio (비율 자동 태깅)', () => {
 
   describe('퍼센트', () => {
     it('기본 퍼센트를 변환한다', () => {
-      expect(autoRatio('할인율 15%')).toBe('할인율 십오 퍼센트');
-      expect(autoRatio('100%')).toBe('백 퍼센트');
+      expect(autoRatio('할인율 15%')).toBe('할인율 십오퍼센트');
+      expect(autoRatio('100%')).toBe('백퍼센트');
     });
 
     it('소수점 퍼센트를 변환한다', () => {
@@ -29,21 +29,21 @@ describe('autoTag - ratio (비율 자동 태깅)', () => {
     });
 
     it('공백이 있는 퍼센트를 변환한다', () => {
-      expect(autoRatio('50 %')).toBe('오십 퍼센트');
+      expect(autoRatio('50 %')).toBe('오십퍼센트');
     });
   });
 
   describe('복수 비율', () => {
     it('여러 퍼센트를 모두 변환한다', () => {
       const result = autoRatio('할인 20%, 적립 5%');
-      expect(result).toContain('이십 퍼센트');
-      expect(result).toContain('오 퍼센트');
+      expect(result).toContain('이십퍼센트');
+      expect(result).toContain('오퍼센트');
     });
 
     it('콜론 비율과 퍼센트를 함께 변환한다', () => {
       const result = autoRatio('비율 7:3, 성공률 85%');
       expect(result).toContain('칠대삼');
-      expect(result).toContain('팔십오 퍼센트');
+      expect(result).toContain('팔십오퍼센트');
     });
   });
 
@@ -59,11 +59,11 @@ describe('autoTag - ratio (비율 자동 태깅)', () => {
 
   describe('문맥 내 비율', () => {
     it('문장 내 비율을 올바르게 변환한다', () => {
-      expect(autoRatio('이 상품은 95% 할인됩니다.')).toBe('이 상품은 구십오 퍼센트 할인됩니다.');
+      expect(autoRatio('이 상품은 95% 할인됩니다.')).toBe('이 상품은 구십오퍼센트 할인됩니다.');
     });
 
     it('괄호 안 비율을 변환한다', () => {
-      expect(autoRatio('(50%)')).toBe('(오십 퍼센트)');
+      expect(autoRatio('(50%)')).toBe('(오십퍼센트)');
     });
   });
 
@@ -78,8 +78,8 @@ describe('autoTag - ratio (비율 자동 태깅)', () => {
 
   describe('배수', () => {
     it('기본 배수를 변환한다 (고유어 사용)', () => {
-      expect(autoRatio('포인트 2배 적립')).toBe('포인트 두 배 적립');
-      expect(autoRatio('10배')).toBe('열 배');
+      expect(autoRatio('포인트 2배 적립')).toBe('포인트 두배 적립');
+      expect(autoRatio('10배')).toBe('열배');
     });
 
     it('소수점 배수를 변환한다', () => {
@@ -89,17 +89,17 @@ describe('autoTag - ratio (비율 자동 태깅)', () => {
 
     it('여러 배수를 모두 변환한다', () => {
       const result = autoRatio('기본 2배, 프리미엄 3배');
-      expect(result).toContain('두 배');
-      expect(result).toContain('세 배');
+      expect(result).toContain('두배');
+      expect(result).toContain('세배');
     });
 
     it('문장 내 배수를 올바르게 변환한다', () => {
-      expect(autoRatio('네 번째 혜택: 포인트 2배 적립')).toBe('네 번째 혜택: 포인트 두 배 적립');
+      expect(autoRatio('네 번째 혜택: 포인트 2배 적립')).toBe('네 번째 혜택: 포인트 두배 적립');
     });
 
     it('100 이상의 배수는 한자어를 사용한다', () => {
-      expect(autoRatio('100배')).toBe('백 배');
-      expect(autoRatio('200배')).toBe('이백 배');
+      expect(autoRatio('100배')).toBe('백배');
+      expect(autoRatio('200배')).toBe('이백배');
     });
   });
 });

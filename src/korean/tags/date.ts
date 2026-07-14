@@ -1,4 +1,5 @@
 import { numberToKorean } from '../utils/number-to-korean';
+import { isValidCalendarDate } from '../../utils/date-validation';
 
 /**
  * 월 발음 불규칙 처리 (국립국어원 표준 발음법)
@@ -184,6 +185,10 @@ export function date(input: number | string): string {
 
   const { year, month, day } = parsed;
 
+  if (!isValidCalendarDate(year, month, day)) {
+    return str;
+  }
+
   // 모든 값이 없으면 원본 반환
   if (year === undefined && month === undefined && day === undefined) {
     return str;
@@ -199,11 +204,9 @@ export function date(input: number | string): string {
     parts.push(numberToKorean(year) + '년');
   }
 
-  // 월 처리 (0도 허용하여 발음)
+  // 월 처리
   if (month !== undefined && !isNaN(month)) {
-    if (month === 0) {
-      parts.push('영 월');
-    } else if (IRREGULAR_MONTH_READINGS[month]) {
+    if (IRREGULAR_MONTH_READINGS[month]) {
       // 불규칙 발음 처리 (6월 → 유 월, 10월 → 시 월)
       parts.push(IRREGULAR_MONTH_READINGS[month] + ' 월');
     } else {
@@ -211,13 +214,9 @@ export function date(input: number | string): string {
     }
   }
 
-  // 일 처리 (0도 허용하여 발음)
+  // 일 처리
   if (day !== undefined && !isNaN(day)) {
-    if (day === 0) {
-      parts.push('영 일');
-    } else {
-      parts.push(numberToKorean(day) + ' 일');
-    }
+    parts.push(numberToKorean(day) + ' 일');
   }
 
   let result = parts.join(' ');

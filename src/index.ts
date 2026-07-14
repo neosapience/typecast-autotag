@@ -40,6 +40,7 @@ const {
 // English module import
 // ============================================================================
 import * as englishModule from './english';
+export { MAX_INPUT_LENGTH } from './input-guard';
 
 const {
   autoTag: enAutoTag,

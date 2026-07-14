@@ -129,7 +129,7 @@ export function temperatureRange(input: string, options?: TemperatureOptions): s
 
   // 온도 범위 패턴: N도~M도, N℃~M℃ 등
   const rangeMatch = trimmed.match(
-    /^([+-]?[\d,]+(?:\.\d+)?)\s*(℃|℉|°[CcFf]|[Kk]|도|켈빈)?\s*[~-]\s*([+-]?[\d,]+(?:\.\d+)?)\s*(℃|℉|°[CcFf]|[Kk]|도|켈빈)?$/
+    /^([+-]?[\d,]+(?:\.\d+)?)\s*(℃|℉|°[CcFf]|[Kk]|도|켈빈)?\s*[-~–—]\s*([+-]?[\d,]+(?:\.\d+)?)\s*(℃|℉|°[CcFf]|[Kk]|도|켈빈)?$/
   );
 
   if (rangeMatch) {

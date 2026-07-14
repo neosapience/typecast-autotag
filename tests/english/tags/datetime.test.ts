@@ -137,19 +137,20 @@ describe('datetime', () => {
   });
 
   describe('invalid input', () => {
-    it('converts date and keeps invalid time', () => {
-      // Invalid time parts are kept as-is while date is converted
-      expect(datetime('2024-01-15T25:00')).toBe('January fifteenth, twenty twenty-four at 25:00');
+    it('keeps an invalid time unchanged', () => {
+      expect(datetime('2024-01-15T25:00')).toBe('2024-01-15T25:00');
     });
 
-    it('converts date and keeps invalid minutes', () => {
-      expect(datetime('2024-01-15T14:60')).toBe('January fifteenth, twenty twenty-four at 14:60');
+    it('keeps invalid minutes unchanged', () => {
+      expect(datetime('2024-01-15T14:60')).toBe('2024-01-15T14:60');
     });
 
-    it('converts date and keeps invalid seconds', () => {
-      expect(datetime('2024-01-15T14:30:60')).toBe(
-        'January fifteenth, twenty twenty-four at 14:30:60'
-      );
+    it('keeps invalid seconds unchanged', () => {
+      expect(datetime('2024-01-15T14:30:60')).toBe('2024-01-15T14:30:60');
+    });
+
+    it('keeps an invalid calendar date unchanged', () => {
+      expect(datetime('2024-02-30T14:30')).toBe('2024-02-30T14:30');
     });
   });
 
