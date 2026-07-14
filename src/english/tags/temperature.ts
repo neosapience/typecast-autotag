@@ -120,8 +120,7 @@ export function temperatureRange(input: string): string {
   const trimmed = input.trim();
   if (trimmed === '') return input;
 
-  // Split by ~ or -
-  const parts = trimmed.split(/\s*[~]\s*/);
+  const parts = trimmed.split(/\s*[-~–—]\s*|\s+to\s+/i);
   if (parts.length === 2) {
     const temp1 = temperature(parts[0] ?? '');
     const temp2 = temperature(parts[1] ?? '');

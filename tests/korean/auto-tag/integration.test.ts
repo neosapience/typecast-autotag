@@ -11,7 +11,7 @@ describe('autoTag 통합 테스트', () => {
       const text = '주문이 완료되었습니다. 결제금액: 49900원, 연락처: 010-1234-5678';
       const result = autoTag(text);
 
-      expect(result).toContain('사만구천구백 원');
+      expect(result).toContain('사만구천구백원');
       expect(result).toContain('공 . 일 . 공, 일 . 이 . 삼 . 사, 오 . 육 . 칠 . 팔');
     });
 
@@ -19,14 +19,14 @@ describe('autoTag 통합 테스트', () => {
       const text = '다음 회의는 2024-01-15T14:30에 예정되어 있습니다.';
       const result = autoTag(text);
 
-      expect(result).toContain('이천이십사년 일 월 십오 일 오후 두 시 삼십 분');
+      expect(result).toContain('이천이십사년 일월 십오일 오후 두시 삼십분');
     });
 
     it('고객 정보 메시지', () => {
       const text = '생년월일: 19940616, 연락처: 010-9876-5432';
       const result = autoTag(text);
 
-      expect(result).toContain('천구백구십사년 유 월 십육 일');
+      expect(result).toContain('천구백구십사년 유월 십육일');
       expect(result).toContain('공 . 일 . 공, 구 . 팔 . 칠 . 육, 오 . 사 . 삼 . 이');
     });
 
@@ -34,29 +34,29 @@ describe('autoTag 통합 테스트', () => {
       const text = '총 결제금액 150000원이 카드로 승인되었습니다.';
       const result = autoTag(text);
 
-      expect(result).toContain('십오만 원');
+      expect(result).toContain('십오만원');
     });
 
     it('대기 시간 안내', () => {
       const text = '예상 대기시간은 약 15m입니다.';
       const result = autoTag(text);
 
-      expect(result).toContain('십오 분');
+      expect(result).toContain('십오분');
     });
 
     it('순위 안내', () => {
       const text = '현재 순위: 3등, 점수: 95점';
       const result = autoTag(text);
 
-      expect(result).toContain('삼 등');
-      expect(result).toContain('구십오 점');
+      expect(result).toContain('삼등');
+      expect(result).toContain('구십오점');
     });
 
     it('수량 안내', () => {
       const text = '장바구니에 5개 상품이 담겨 있습니다.';
       const result = autoTag(text);
 
-      expect(result).toContain('다섯 개');
+      expect(result).toContain('다섯개');
     });
   });
 
@@ -67,8 +67,8 @@ describe('autoTag 통합 테스트', () => {
       const result = autoTag(text);
 
       expect(result).toContain('천구백구십년생'); // 1990년생
-      expect(result).toContain('이천이십사년 일 월 십오 일 오전 열 시'); // datetime
-      expect(result).toContain('오만 원'); // money
+      expect(result).toContain('이천이십사년 일월 십오일 오전 열시'); // datetime
+      expect(result).toContain('오만원'); // money
       expect(result).toContain('일 . 오 . 팔 . 팔 . 일 . 이 . 삼 . 사'); // phone
     });
 
@@ -82,9 +82,9 @@ describe('autoTag 통합 테스트', () => {
       `;
       const result = autoTag(text);
 
-      expect(result).toContain('이천이십사년 일 월 십오 일 오후 두 시 삼십 분');
-      expect(result).toContain('십이만오천 원');
-      expect(result).toContain('세 개');
+      expect(result).toContain('이천이십사년 일월 십오일 오후 두시 삼십분');
+      expect(result).toContain('십이만오천원');
+      expect(result).toContain('세개');
       expect(result).toContain('공 . 일 . 공, 일 . 이 . 삼 . 사, 오 . 육 . 칠 . 팔');
     });
   });
@@ -104,7 +104,7 @@ describe('autoTag 통합 테스트', () => {
       const result = autoTag(text);
 
       // 한 번에 datetime으로 처리되어야 함
-      expect(result).toContain('오후 두 시 삼십 분'); // 시간이 포함되어야 함
+      expect(result).toContain('오후 두시 삼십분'); // 시간이 포함되어야 함
     });
 
     it('패턴 사이의 텍스트 보존', () => {
@@ -127,14 +127,14 @@ describe('autoTag 통합 테스트', () => {
       const text = '"5000원"이 결제되었습니다';
       const result = autoTag(text, { enabledTags: ['money'] });
 
-      expect(result).toBe('"오천 원"이 결제되었습니다');
+      expect(result).toBe('"오천원"이 결제되었습니다');
     });
 
     it('특수 기호가 포함된 텍스트', () => {
       const text = '★ 특가 ★ 9900원!';
       const result = autoTag(text, { enabledTags: ['money'] });
 
-      expect(result).toBe('★ 특가 ★ 구천구백 원!');
+      expect(result).toBe('★ 특가 ★ 구천구백원!');
     });
   });
 
@@ -143,14 +143,14 @@ describe('autoTag 통합 테스트', () => {
       const text = '🎉 축하합니다! 10000원 당첨! 🎊';
       const result = autoTag(text, { enabledTags: ['money'] });
 
-      expect(result).toBe('🎉 축하합니다! 일만 원 당첨! 🎊');
+      expect(result).toBe('🎉 축하합니다! 일만원 당첨! 🎊');
     });
 
     it('한자가 포함된 텍스트', () => {
       const text = '金額: 5000원';
       const result = autoTag(text, { enabledTags: ['money'] });
 
-      expect(result).toBe('金額: 오천 원');
+      expect(result).toBe('金額: 오천원');
     });
   });
 });

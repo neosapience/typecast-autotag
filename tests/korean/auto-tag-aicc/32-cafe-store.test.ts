@@ -9,14 +9,14 @@ import { autoTag, extractAutoTags } from '../../../src/korean/auto-tag';
 describe('AICC 시나리오 32: 카페 및 매장 주문 안내', () => {
   it('카페 픽업 안내의 짧은 주문번호를 자연수로 변환한다', () => {
     const input = '주문번호 1234 고객님, 아메리카노 2잔 준비되었습니다.';
-    const expected = '주문번호 천이백삼십사 고객님, 아메리카노 두 잔 준비되었습니다.';
+    const expected = '주문번호 천이백삼십사 고객님, 아메리카노 두잔 준비되었습니다.';
 
     expect(autoTag(input)).toBe(expected);
   });
 
   it('매장 결제 완료 안내의 짧은 주문번호를 자연수로 변환한다', () => {
     const input = '김철수님 주문번호 1234 상품이 5만원에 결제 되었습니다';
-    const expected = '김철수님 주문번호 천이백삼십사 상품이 오 만원 에 결제 되었습니다';
+    const expected = '김철수님 주문번호 천이백삼십사 상품이 오만원 에 결제 되었습니다';
 
     expect(autoTag(input)).toBe(expected);
   });

@@ -18,6 +18,15 @@ function removeThousandSeparators(str: string): string {
   return str.replace(/,/g, '');
 }
 
+function romanToNumber(roman: string): number {
+  const values: Record<string, number> = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+  return [...roman.toUpperCase()].reduceRight((total, letter, index, chars) => {
+    const value = values[letter] ?? 0;
+    const next = values[chars[index + 1] ?? ''] ?? 0;
+    return total + (value < next ? -value : value);
+  }, 0);
+}
+
 /**
  * Convert lecture number to English words
  *
@@ -41,12 +50,12 @@ export function lecture(input: string, options?: LectureOptions): string {
 
   // Parse "Lesson N", "Chapter N", "Episode N", "Part N", "Unit N", "Section N", "Lecture N" format
   const labelMatch = trimmed.match(
-    /^(lesson|chapter|episode|part|unit|section|lecture)\s*#?\s*([\d,]+)$/i
+    /^(lesson|chapter|episode|part|unit|section|lecture)\s*#?\s*([\d,]+|[IVXLCDM]+)$/i
   );
   if (labelMatch) {
     const label = labelMatch[1] ?? '';
     const numStr = removeThousandSeparators(labelMatch[2] ?? '');
-    const num = parseInt(numStr, 10);
+    const num = /^\d/.test(numStr) ? parseInt(numStr, 10) : romanToNumber(numStr);
 
     if (isNaN(num) || num < 0) {
       return input;

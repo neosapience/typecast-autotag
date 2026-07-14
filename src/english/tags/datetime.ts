@@ -45,6 +45,8 @@ export function datetime(input: string, options?: DatetimeOptions): string {
     const dateStr = dateTag(datePart);
     const timeStr = timeTag(timePart, { use24Hour: options?.use24Hour });
 
+    if (dateStr === datePart || timeStr === timePart) return input;
+
     return dateStr + ' at ' + timeStr;
   }
 
@@ -59,6 +61,8 @@ export function datetime(input: string, options?: DatetimeOptions): string {
 
     const dateStr = dateTag(datePart);
     const timeStr = timeTag(timePart, { use24Hour: options?.use24Hour });
+
+    if (dateStr === datePart || timeStr === timePart) return input;
 
     return dateStr + ' at ' + timeStr;
   }

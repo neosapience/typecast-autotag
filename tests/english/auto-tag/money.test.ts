@@ -23,7 +23,7 @@ describe('autoTag - money (amount auto-tagging)', () => {
   describe('currency words', () => {
     it('converts number + dollars', () => {
       expect(autoMoney('100 dollars')).toBe('one hundred dollars');
-      expect(autoMoney('50 USD')).toBe('fifty USD');
+      expect(autoMoney('50 USD')).toBe('fifty dollars');
     });
 
     it('converts number + euros', () => {
@@ -37,19 +37,23 @@ describe('autoTag - money (amount auto-tagging)', () => {
 
   describe('currency symbols', () => {
     it('converts pound symbol', () => {
-      // The money function uses default 'dollars' unit, but pattern should preserve currency
-      const result = autoMoney('£100');
-      expect(result).toContain('one hundred');
+      expect(autoMoney('£100')).toBe('one hundred pounds');
     });
 
     it('converts euro symbol', () => {
-      const result = autoMoney('€50');
-      expect(result).toContain('fifty');
+      expect(autoMoney('€50')).toBe('fifty euros');
     });
 
     it('converts yen symbol', () => {
-      const result = autoMoney('¥1000');
-      expect(result).toContain('one thousand');
+      expect(autoMoney('¥1000')).toBe('one thousand yen');
+    });
+
+    it('converts won symbol', () => {
+      expect(autoMoney('₩4500')).toBe('four thousand five hundred won');
+    });
+
+    it('converts a symbol amount with a magnitude', () => {
+      expect(autoMoney('$2.5 million')).toBe('two point five million dollars');
     });
   });
 

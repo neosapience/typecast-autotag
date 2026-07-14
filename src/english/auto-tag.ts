@@ -35,6 +35,9 @@ import { temperature, temperatureRange } from './tags/temperature';
 import { volume } from './tags/volume';
 import { dataCapacity } from './tags/data-capacity';
 import { inch } from './tags/inch';
+import { assertInputWithinLimit } from '../input-guard';
+import { isValidCalendarDate } from '../utils/date-validation';
+import { manualTag } from './manual-tag';
 
 /**
  * Special unit characters to pronunciation mapping
@@ -161,6 +164,33 @@ export interface MatchResult {
  * - Pattern description: Specifies what format each pattern detects
  */
 const AUTO_TAG_PATTERNS = {
+  scoreRatio: {
+    patterns: [/\b(?:score|ratio)(?:\s+(?:is|was))?\s*[:=]?\s*\d{1,3}\s*:\s*\d{1,3}\b/gi],
+    converter: (match: string) => {
+      const parts = match.match(/^(.*?)(\d{1,3}\s*:\s*\d{1,3})$/);
+      return parts ? (parts[1] ?? '') + ratio(parts[2] ?? '') : match;
+    },
+  },
+
+  hashtag: {
+    patterns: [/#(?:[A-Za-z][A-Za-z0-9_]*)/g],
+    converter: (match: string) =>
+      'hashtag ' +
+      match
+        .slice(1)
+        .replace(/_/g, ' ')
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2'),
+  },
+
+  pageRange: {
+    patterns: [/\bpages?\s+\d+\s*[-–—]\s*\d+\b/gi],
+    converter: (match: string) => {
+      const parts = match.match(/^(pages?)\s+(\d+)\s*[-–—]\s*(\d+)$/i);
+      if (!parts) return match;
+      return `${parts[1]} ${numberToEnglish(Number(parts[2]))} to ${numberToEnglish(Number(parts[3]))}`;
+    },
+  },
+
   /**
    * Phone number patterns (US format)
    * - Standard: (xxx) xxx-xxxx, xxx-xxx-xxxx
@@ -261,7 +291,7 @@ const AUTO_TAG_PATTERNS = {
   time: {
     patterns: [
       // Time range: HH:MM~HH:MM (match first)
-      /\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM|am|pm)?\s*[-~to]+\s*\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM|am|pm)?/gi,
+      /\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM|am|pm)?(?:\s*[-~–—]\s*|\s+to\s+)\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM|am|pm)?/gi,
       // HH:MM AM/PM format
       /\b\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.)\b/gi,
       // HH:MM or HH:MM:SS - not following a date
@@ -269,8 +299,8 @@ const AUTO_TAG_PATTERNS = {
     ],
     converter: (match: string) => {
       // Time range
-      if (/\d{1,2}:\d{2}.*[-~to]+.*\d{1,2}:\d{2}/i.test(match)) {
-        const parts = match.split(/\s*[-~]+\s*|\s+to\s+/i);
+      if (/\d{1,2}:\d{2}/.test(match)) {
+        const parts = match.split(/\s*[-~–—]\s*|\s+to\s+/i);
         if (parts.length === 2) {
           const time1 = time(parts[0] ?? '');
           const time2 = time(parts[1] ?? '');
@@ -291,7 +321,7 @@ const AUTO_TAG_PATTERNS = {
   date: {
     patterns: [
       // Date range: YYYY-MM-DD ~ YYYY-MM-DD (match first)
-      /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\s*[-~to]+\s*\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\b/gi,
+      /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}(?:\s*[-~–—]\s*|\s+to\s+)\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\b/gi,
       // YYYYMMDD format (8 digits, birthdate format)
       // Year range: 1900-2099
       /\b(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])(?!-\d)\b/g,
@@ -306,12 +336,12 @@ const AUTO_TAG_PATTERNS = {
       // US format: MM/DD/YYYY
       /\b(?:0?[1-9]|1[0-2])\/(?:0?[1-9]|[12]\d|3[01])\/\d{4}\b/g,
       // ISO format: YYYY-MM-DD (not followed by time)
-      /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}(?!\s*\d{1,2}:\d{2})(?!\s*T\d)/g,
+      /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}(?!\d)(?!\s*\d{1,2}:\d{2})(?!\s*T\d)/g,
     ],
     converter: (match: string) => {
       // Date range
-      if (/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\s*[-~to]+\s*\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/i.test(match)) {
-        const parts = match.split(/\s*[-~]+\s*|\s+to\s+/i);
+      if (/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(match)) {
+        const parts = match.split(/\s*[-~–—]\s*|\s+to\s+/i);
         if (parts.length === 2) {
           const date1 = date(parts[0] ?? '');
           const date2 = date(parts[1] ?? '');
@@ -325,6 +355,8 @@ const AUTO_TAG_PATTERNS = {
       if (monthDayMatch) {
         const monthName = monthDayMatch[1] ?? '';
         const dayNum = parseInt(monthDayMatch[2] ?? '0', 10);
+        const monthNum = new Date(`${monthName} 1, 2000`).getMonth() + 1;
+        if (!isValidCalendarDate(undefined, monthNum, dayNum)) return match;
         return monthName + ' ' + numberToOrdinal(dayNum);
       }
       // Ordinal day + of + month (no year): 25th of December → the twenty-fifth of December
@@ -334,6 +366,8 @@ const AUTO_TAG_PATTERNS = {
       if (dayOfMonthMatch) {
         const dayNum = parseInt(dayOfMonthMatch[1] ?? '0', 10);
         const monthName = dayOfMonthMatch[2] ?? '';
+        const monthNum = new Date(`${monthName} 1, 2000`).getMonth() + 1;
+        if (!isValidCalendarDate(undefined, monthNum, dayNum)) return match;
         return 'the ' + numberToOrdinal(dayNum) + ' of ' + monthName;
       }
       return date(match);
@@ -349,7 +383,9 @@ const AUTO_TAG_PATTERNS = {
   money: {
     patterns: [
       // Money range: $100~$200 (match first)
-      /\$[\d,]+(?:\.\d+)?\s*[-~to]+\s*\$[\d,]+(?:\.\d+)?/gi,
+      /[$£€¥₩][\d,]+(?:\.\d+)?(?:\s*[-~–—]\s*|\s+to\s+)[$£€¥₩][\d,]+(?:\.\d+)?/gi,
+      // Symbol + large-number magnitude: $2.5 million
+      /[$£€¥₩][\d,]+(?:\.\d+)?\s*(?:thousand|million|billion|trillion)\b/gi,
       // Dollar with symbol: $100, $1,000.00
       /\$[\d,]+(?:\.\d+)?/g,
       // Pound: £100
@@ -358,13 +394,15 @@ const AUTO_TAG_PATTERNS = {
       /€[\d,]+(?:\.\d+)?/g,
       // Yen: ¥100
       /¥[\d,]+(?:\.\d+)?/g,
+      // Won: ₩100
+      /₩[\d,]+(?:\.\d+)?/g,
       // Number + currency word: 100 dollars, 50 USD, 30 euros
-      /[\d,]+(?:\.\d+)?\s*(?:dollars?|USD|pounds?|GBP|euros?|EUR|yen|JPY|cents?)\b/gi,
+      /[\d,]+(?:\.\d+)?\s*(?:(?:thousand|million|billion|trillion)\s+)?(?:dollars?|USD|pounds?|GBP|euros?|EUR|yen|JPY|won|KRW|cents?)\b/gi,
     ],
     converter: (match: string) => {
       // Money range
-      if (/\$[\d,]+(?:\.\d+)?\s*[-~to]+\s*\$[\d,]+(?:\.\d+)?/i.test(match)) {
-        const parts = match.split(/\s*[-~]+\s*|\s+to\s+/i);
+      if (/^[$£€¥₩][\d,]+/.test(match)) {
+        const parts = match.split(/\s*[-~–—]\s*|\s+to\s+/i);
         if (parts.length === 2) {
           const money1 = money(parts[0] ?? '');
           const money2 = money(parts[1] ?? '');
@@ -384,7 +422,7 @@ const AUTO_TAG_PATTERNS = {
       // Year with label: year 2024, in 2024
       /\b(?:year|in)\s*(?:19|20)\d{2}\b/gi,
       // Year range: 2020~2024
-      /\b(?:19|20)\d{2}\s*[-~to]+\s*(?:19|20)\d{2}\b/gi,
+      /\b(?:19|20)\d{2}(?:\s*[-~–—]\s*|\s+to\s+)(?:19|20)\d{2}\b/gi,
     ],
     converter: (match: string) => year(match),
   },
@@ -425,7 +463,7 @@ const AUTO_TAG_PATTERNS = {
   order: {
     patterns: [
       // Nth place/rank/position
-      /\b\d+(?:st|nd|rd|th)\s+(?:place|rank|position|grade|level|round)\b/gi,
+      /\b\d+(?:st|nd|rd|th)\s+(?:place|rank|position|grade|level|round|prize)\b/gi,
       // Queue context: Nth in queue, Nth in line
       /\b\d+(?:st|nd|rd|th)\s+in\s+(?:queue|line)\b/gi,
       // Ordinal numbers with context: the 1st, came 2nd
@@ -554,20 +592,20 @@ const AUTO_TAG_PATTERNS = {
   minsec: {
     patterns: [
       // Milliseconds range: 50~100ms (match first)
-      /\b\d+\s*[-~to]+\s*\d+\s*ms\b/gi,
+      /\b\d+(?:\s*[-~–—]\s*|\s+to\s+)\d+\s*ms\b/gi,
       // Standalone milliseconds: 10ms, 100ms
       /\b\d+\s*ms\b/gi,
       // Microseconds range: 1~5µs, 1~5us
-      /\b\d+\s*[-~to]+\s*\d+\s*[µu]s\b/gi,
+      /\b\d+(?:\s*[-~–—]\s*|\s+to\s+)\d+\s*[µu]s\b/gi,
       // Standalone microseconds: 10µs, 10us
       /\b\d+\s*[µu]s\b/gi,
       // Nanoseconds range: 1~5ns
-      /\b\d+\s*[-~to]+\s*\d+\s*ns\b/gi,
+      /\b\d+(?:\s*[-~–—]\s*|\s+to\s+)\d+\s*ns\b/gi,
       // Standalone nanoseconds: 10ns
       /\b\d+\s*ns\b/gi,
       // Time range: 1h30m~2h, 5m~10m
-      /\b\d+h(?:\d+m)?(?:\d+s)?[-~to]+\d+h(?:\d+m)?(?:\d+s)?\b/gi,
-      /\b\d+m(?:\d+s)?[-~to]+\d+m(?:\d+s)?\b/gi,
+      /\b\d+h(?:\d+m)?(?:\d+s)?(?:\s*[-~–—]\s*|\s+to\s+)\d+h(?:\d+m)?(?:\d+s)?\b/gi,
+      /\b\d+m(?:\d+s)?(?:\s*[-~–—]\s*|\s+to\s+)\d+m(?:\d+s)?\b/gi,
       // English: 1h30m20s, 1h30m, 1h
       /\b\d+h(?:\d+m)?(?:\d+s)?\b/gi,
       // English: NmNs combination
@@ -591,7 +629,9 @@ const AUTO_TAG_PATTERNS = {
       };
 
       // SI time unit range: N~Munit
-      const siTimeRangeMatch = match.match(/^(\d+)\s*[-~to]+\s*(\d+)\s*([µu]?[mnpf]?s)$/i);
+      const siTimeRangeMatch = match.match(
+        /^(\d+)(?:\s*[-~–—]\s*|\s+to\s+)(\d+)\s*([µu]?[mnpf]?s)$/i
+      );
       if (siTimeRangeMatch) {
         const num1 = parseInt(siTimeRangeMatch[1] ?? '0', 10);
         const num2 = parseInt(siTimeRangeMatch[2] ?? '0', 10);
@@ -610,7 +650,7 @@ const AUTO_TAG_PATTERNS = {
       }
 
       // English range (5m~10m, etc.) - use (?:[-~]|\s+to\s+) to avoid matching 't' in words like 'minutes'
-      const engRangeMatch = match.match(/^(.+?)(?:[-~]|\s+to\s+)(.+)$/i);
+      const engRangeMatch = match.match(/^(.+?)(?:[-~–—]|\s+to\s+)(.+)$/i);
       if (engRangeMatch) {
         const time1 = minsec(engRangeMatch[1]?.trim() ?? '');
         const time2 = minsec(engRangeMatch[2]?.trim() ?? '');
@@ -729,7 +769,7 @@ const AUTO_TAG_PATTERNS = {
   weight: {
     patterns: [
       // Weight: number + kg/mg/lb/oz/ton (kg, mg first)
-      /[\d,]+(?:\.\d+)?\s*(?:kg|mg|lbs?|oz|tons?|kilograms?|grams?|milligrams?|ounces?|pounds?)/gi,
+      /[\d,]+(?:\.\d+)?\s*(?:kg|mg|lbs?|oz|tons?|kilograms?|grams?|milligrams?|ounces?|pounds?)\b/gi,
       // Weight: number + g (lowercase only, not followed by letters)
       /[\d,]+(?:\.\d+)?\s*g(?![a-zA-Z])/g,
     ],
@@ -883,8 +923,8 @@ const AUTO_TAG_PATTERNS = {
    */
   lecture: {
     patterns: [
-      // Lesson/Chapter/Episode + N
-      /\b(?:lesson|chapter|episode|part|unit|section|lecture)\s*#?\s*[\d,]+\b/gi,
+      // Lesson/Chapter/Episode + Arabic or Roman numeral
+      /\b(?:lesson|chapter|episode|part|unit|section|lecture)\s*#?\s*(?:[\d,]+|[IVXLCDM]+)\b/gi,
     ],
     converter: (match: string) => lecture(match),
   },
@@ -917,7 +957,7 @@ const AUTO_TAG_PATTERNS = {
   temperature: {
     patterns: [
       // Temperature range: N°C~M°C
-      /[+-]?[\d,]+(?:\.\d+)?\s*(?:°[CcFf]|℃|℉)\s*[-~to]+\s*[+-]?[\d,]+(?:\.\d+)?\s*(?:°[CcFf]|℃|℉)/gi,
+      /[+-]?[\d,]+(?:\.\d+)?\s*(?:°[CcFf]|℃|℉)(?:\s*[-~–—]\s*|\s+to\s+)[+-]?[\d,]+(?:\.\d+)?\s*(?:°[CcFf]|℃|℉)/gi,
       // Standalone: N°C, N°F
       /[+-]?[\d,]+(?:\.\d+)?\s*(?:°[CcFf]|℃|℉)/g,
       // Kelvin: NK
@@ -927,7 +967,7 @@ const AUTO_TAG_PATTERNS = {
     ],
     converter: (match: string) => {
       // Range
-      if (/[-~to]+/i.test(match) && match.match(/\d.*[-~to]+.*\d/i)) {
+      if (/\d(?:.|\s)*(?:[-~–—]|\s+to\s+)\d/i.test(match)) {
         return temperatureRange(match);
       }
       // Temperature context
@@ -968,7 +1008,7 @@ const AUTO_TAG_PATTERNS = {
   dataCapacity: {
     patterns: [
       // Data speed range: 100Mbps~200Mbps (match first)
-      /[\d,]+(?:\.\d+)?\s*(?:Gbps|Mbps|Kbps|gbps|mbps|kbps|bps)\s*[-~to]+\s*[\d,]+(?:\.\d+)?\s*(?:Gbps|Mbps|Kbps|gbps|mbps|kbps|bps)/gi,
+      /[\d,]+(?:\.\d+)?\s*(?:Gbps|Mbps|Kbps|gbps|mbps|kbps|bps)(?:\s*[-~–—]\s*|\s+to\s+)[\d,]+(?:\.\d+)?\s*(?:Gbps|Mbps|Kbps|gbps|mbps|kbps|bps)/gi,
       // Data capacity: NGB, NMB, NTB, NKB
       /[+-]?[\d,]+(?:\.\d+)?\s*(?:TB|GB|MB|KB|tb|gb|mb|kb)/g,
       // Data speed: NMbps, NKbps, NGbps
@@ -986,7 +1026,7 @@ const AUTO_TAG_PATTERNS = {
     converter: (match: string) => {
       // Data speed range: 100Mbps~200Mbps
       const rangeMatch = match.match(
-        /^([\d,]+(?:\.\d+)?)\s*(Gbps|Mbps|Kbps|bps)\s*[-~to]+\s*([\d,]+(?:\.\d+)?)\s*(Gbps|Mbps|Kbps|bps)$/i
+        /^([\d,]+(?:\.\d+)?)\s*(Gbps|Mbps|Kbps|bps)(?:\s*[-~–—]\s*|\s+to\s+)([\d,]+(?:\.\d+)?)\s*(Gbps|Mbps|Kbps|bps)$/i
       );
       if (rangeMatch) {
         const num1 = rangeMatch[1] ?? '';
@@ -1143,6 +1183,7 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
   if (!text || text.length === 0) {
     return text;
   }
+  assertInputWithinLimit(text, 'english.autoTag');
 
   const enabledTags = options?.enabledTags ?? SUPPORTED_AUTO_TAGS;
 
@@ -1261,6 +1302,7 @@ export function extractAutoTags(
   if (!text || text.length === 0) {
     return [];
   }
+  assertInputWithinLimit(text, 'english.extractAutoTags');
 
   const enabledTags = options?.enabledTags ?? SUPPORTED_AUTO_TAGS;
   const allMatches: MatchResult[] = [];
@@ -1332,10 +1374,7 @@ export function extractAutoTags(
  * ```
  */
 export function autoTagWithManual(text: string, autoTagOptions?: AutoTagOptions): string {
-  // To apply manualTag first, import is needed but to prevent circular reference
-  // this function only applies autoTag
-  // Guide to import from manual-tag.ts to use this
-  return autoTag(text, autoTagOptions);
+  return autoTag(manualTag(text), autoTagOptions);
 }
 
 // Convenience functions for individual tag auto-conversion

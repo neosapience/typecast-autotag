@@ -125,8 +125,8 @@ export function year(input: number | string, options?: YearOptions): string {
       return prefix + ' ' + yearWord + suffix;
     }
 
-    // Parse year range: YYYY~YYYY, YYYY-YYYY
-    const rangeMatch = trimmed.match(/^([\d,]+)\s*[-~]+\s*([\d,]+)$/);
+    // Parse year range: YYYY~YYYY, YYYY-YYYY, YYYY to YYYY
+    const rangeMatch = trimmed.match(/^([\d,]+)(?:\s*[-~–—]\s*|\s+to\s+)([\d,]+)$/i);
     if (rangeMatch) {
       const num1Str = removeThousandSeparators(rangeMatch[1] ?? '');
       const num2Str = removeThousandSeparators(rangeMatch[2] ?? '');

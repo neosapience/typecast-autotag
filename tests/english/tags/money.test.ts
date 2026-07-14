@@ -114,16 +114,21 @@ describe('money', () => {
       expect(money('0')).toBe('zero dollars');
     });
 
-    it('converts "€100" to one hundred dollars (symbol removed)', () => {
-      expect(money('€100')).toBe('one hundred dollars');
+    it('preserves the euro currency', () => {
+      expect(money('€100')).toBe('one hundred euros');
     });
 
-    it('converts "£100" to one hundred dollars (symbol removed)', () => {
-      expect(money('£100')).toBe('one hundred dollars');
+    it('preserves the pound currency', () => {
+      expect(money('£100')).toBe('one hundred pounds');
     });
 
-    it('converts "¥100" to one hundred dollars (symbol removed)', () => {
-      expect(money('¥100')).toBe('one hundred dollars');
+    it('preserves the yen currency', () => {
+      expect(money('¥100')).toBe('one hundred yen');
+    });
+
+    it('preserves subunits and large-number magnitudes', () => {
+      expect(money('£1.01')).toBe('one pound and one penny');
+      expect(money('$2.5 million')).toBe('two point five million dollars');
     });
   });
 

@@ -40,6 +40,8 @@ import { volume } from './tags/volume';
 import { dataCapacity } from './tags/data-capacity';
 import { inch } from './tags/inch';
 import { address } from './tags/address';
+import { assertInputWithinLimit } from '../input-guard';
+import { manualTag } from './manual-tag';
 
 /**
  * 주소로 인식되는 줄인지 확인하는 패턴들
@@ -141,6 +143,120 @@ function shouldRemoveBracketContent(content: string): boolean {
  */
 function isKoreanSyllable(char: string): boolean {
   return char >= '가' && char <= '힣';
+}
+
+const KOREAN_NUMBER_WORDS =
+  '영공일이삼사오육칠팔구십백천만억조경해자양구간정재극항아승기나유타불가사의무량대수한두세네하나둘셋넷다섯여섯일곱여덟아홉열스물서른마흔쉰예순일흔여든아흔';
+const KOREAN_SPOKEN_UNITS = [
+  '세제곱센티미터',
+  '세제곱미터',
+  '제곱미터',
+  '킬로와트시',
+  '메가와트시',
+  '테라바이트',
+  '기가바이트',
+  '메가바이트',
+  '킬로바이트',
+  '기가비피에스',
+  '메가비피에스',
+  '킬로비피에스',
+  '킬로그램',
+  '밀리그램',
+  '킬로미터',
+  '센티미터',
+  '밀리미터',
+  '밀리리터',
+  '테라와트',
+  '메가와트',
+  '킬로와트',
+  '킬로볼트',
+  '밀리암페어',
+  '경원',
+  '조원',
+  '억원',
+  '만원',
+  '천원',
+  '와트시',
+  '비피에스',
+  '바이트',
+  '퍼센트',
+  '파운드',
+  '달러',
+  '유로',
+  '크레딧',
+  '켈빈',
+  '화씨',
+  '갤런',
+  '리터',
+  '그램',
+  '와트',
+  '볼트',
+  '암페어',
+  '인치',
+  '주일',
+  '년간',
+  '개월',
+  '학기',
+  '분기',
+  '번째',
+  '단계',
+  '시간',
+  '미터',
+  '시시',
+  '자리',
+  '마일',
+  '평',
+  '톤',
+  '도',
+  '원',
+  '엔',
+  '점',
+  '개',
+  '마리',
+  '명',
+  '대',
+  '장',
+  '권',
+  '곳',
+  '병',
+  '잔',
+  '그루',
+  '송이',
+  '쌍',
+  '벌',
+  '켤레',
+  '채',
+  '건',
+  '회',
+  '번',
+  '주',
+  '달',
+  '박',
+  '강',
+  '종',
+  '층',
+  '등',
+  '위',
+  '배',
+  '년',
+  '월',
+  '일',
+  '시',
+  '분',
+  '초',
+];
+const KOREAN_UNIT_SUFFIXES = '에서|까지|부터|으로|로|은|는|이|가|을|를|와|과|의|에|도|만|씩';
+const KOREAN_NUMBER_UNIT_PATTERN = new RegExp(
+  `(?<![가-힣])([${KOREAN_NUMBER_WORDS}]+)\\s+(${KOREAN_SPOKEN_UNITS.join('|')})(?=$|[^가-힣]|(?:${KOREAN_UNIT_SUFFIXES}))`,
+  'g'
+);
+
+/**
+ * TTS가 숫자와 단위를 하나의 어절로 읽도록 변환된 구간의 공백을 제거한다.
+ * 자연어 원문의 중의성을 피하기 위해 auto-tag 변환 결과에만 적용한다.
+ */
+function attachKoreanNumberUnits(text: string): string {
+  return text.replace(KOREAN_NUMBER_UNIT_PATTERN, '$1$2');
 }
 
 /**
@@ -522,6 +638,35 @@ export interface MatchResult {
  * - 패턴 설명: 각 패턴이 어떤 형식을 탐지하는지 명시
  */
 const AUTO_TAG_PATTERNS = {
+  scripture: {
+    patterns: [/[가-힣]+\s+\d{1,3}:\d{1,3}(?=\s*(?:말씀|구절))/g],
+    converter: (match: string) => {
+      const parts = match.match(/^([가-힣]+)\s+(\d{1,3}):(\d{1,3})$/);
+      if (!parts) return match;
+      return `${parts[1]} ${numberToKorean(Number(parts[2]))}장 ${numberToKorean(Number(parts[3]))}절`;
+    },
+  },
+
+  email: {
+    patterns: [/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?:으로|로)?/gi],
+    converter: (match: string) => match.replace('@', ' 골뱅이 ').replace(/\./g, ' 점 '),
+  },
+
+  score: {
+    patterns: [
+      /(?:점수|스코어|비율)(?:은|는|이|가)?\s*[:=]?\s*\d{1,3}\s*:\s*\d{1,3}/g,
+      /\d{1,3}\s*[-–—]\s*\d{1,3}(?:로|으로)(?=\s*(?:이겼|졌|승리|패배))/g,
+    ],
+    converter: (match: string) => {
+      const contextual = match.match(/^(.*?)(\d{1,3}\s*:\s*\d{1,3})$/);
+      if (contextual) return (contextual[1] ?? '') + ratio(contextual[2] ?? '');
+
+      const parts = match.match(/^(\d{1,3})\s*[-–—]\s*(\d{1,3})(로|으로)$/);
+      if (!parts) return match;
+      return ratio(`${parts[1]}:${parts[2]}`) + parts[3];
+    },
+  },
+
   /**
    * 주소 패턴 (괄호 안에 주소 정보가 있는 경우만)
    * - 괄호 안에 "~동," 형태의 행정구역명이 있을 때만 처리
@@ -853,7 +998,9 @@ const AUTO_TAG_PATTERNS = {
   time: {
     patterns: [
       // HH:MM~HH:MM 시간 범위 (먼저 매칭)
-      /\d{1,2}:\d{2}(?::\d{2})?\s*[~-]\s*\d{1,2}:\d{2}(?::\d{2})?/g,
+      /\d{1,2}:\d{2}(?::\d{2})?\s*[-~–—]\s*\d{1,2}:\d{2}(?::\d{2})?/g,
+      // 단위를 한 번만 쓰는 시간 범위: 6–9시
+      /\d{1,2}\s*[-~–—]\s*\d{1,2}시/g,
       // HH:MM 또는 HH:MM:SS - 날짜 뒤에 오지 않는 경우만
       /(?<!\d[-/.]\d{1,2}[-/.])(?<!\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\s*)(?<!\d[-/.])(?<=^|[^\d])\d{1,2}:\d{2}(?::\d{2})?(?=$|[^\d:])/g,
       // 한글 시간: 오전/오후 N시 M분 S초
@@ -866,13 +1013,17 @@ const AUTO_TAG_PATTERNS = {
     ],
     converter: (match: string) => {
       // 시간 범위인 경우
-      if (/\d{1,2}:\d{2}.*[~-].*\d{1,2}:\d{2}/.test(match)) {
-        const parts = match.split(/\s*[~-]\s*/);
+      if (/\d{1,2}:\d{2}.*[-~–—].*\d{1,2}:\d{2}/.test(match)) {
+        const parts = match.split(/\s*[-~–—]\s*/);
         if (parts.length === 2) {
           const time1 = time(parts[0] ?? '');
           const time2 = time(parts[1] ?? '');
           return time1 + '에서 ' + time2;
         }
+      }
+      const sharedHourRange = match.match(/^(\d{1,2})\s*[-~–—]\s*(\d{1,2})시$/);
+      if (sharedHourRange) {
+        return time(`${sharedHourRange[1]}시`) + '에서 ' + time(`${sharedHourRange[2]}시`);
       }
       return time(match);
     },
@@ -895,7 +1046,7 @@ const AUTO_TAG_PATTERNS = {
       // 뒤에 -숫자가 오면 접수번호 등으로 간주하여 제외
       /\b(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])(?!-\d)\b/g,
       // YYYY-MM-DD 형식 (시간이 뒤따르지 않는 경우만)
-      /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}(?!\s*\d{1,2}:\d{2})(?!\s*T\d)/g,
+      /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}(?!\d)(?!\s*\d{1,2}:\d{2})(?!\s*T\d)/g,
       // 한글 날짜: YYYY년 M월 D일 (생략 가능) - 월/일 뒤의 공백은 포함하지 않음
       /\d{4}년\s*(?:\d{1,2}월)?(?:\s*\d{1,2}일)?(?:생)?/g,
       // 한글 월일만: M월 D일
@@ -926,8 +1077,12 @@ const AUTO_TAG_PATTERNS = {
    */
   money: {
     patterns: [
-      // N원~M원 금액 범위 (먼저 매칭)
-      /[\d,]+\s*원\s*[~]\s*[\d,]+\s*원/g,
+      // 단위를 한 번만 쓰는 범위: N-M원, N-M달러
+      /[\d,]+(?:\.\d+)?\s*[-~–—]\s*[\d,]+(?:\.\d+)?\s*(?:원|달러|유로|엔|파운드)/g,
+      // N원~M원 금액 범위
+      /[\d,]+\s*원\s*[-~–—]\s*[\d,]+\s*원/g,
+      // 숫자 + 외화 단위
+      /[\d,]+(?:\.\d+)?\s*(?:만|억|조|경)?\s*(?:달러|유로|엔|파운드)/g,
       // 음수 금액: -숫자원 (공백 없이 바로 붙는 경우만, 원조/원형 등 단어 제외)
       /-[\d,]+(?:\.\d+)?원(?![조형래본점피칙할단주])(?![ \t]*[년월일시분초])/g,
       // 한글 숫자 혼합: N억 N천만원, N억원
@@ -940,16 +1095,30 @@ const AUTO_TAG_PATTERNS = {
       /[₩]\s*[\d,]+/g,
     ],
     converter: (match: string) => {
-      // 금액 범위인 경우
-      if (/[\d,]+\s*원\s*[~]\s*[\d,]+\s*원/.test(match)) {
-        const parts = match.split(/\s*[~]\s*/);
-        if (parts.length === 2) {
-          const money1 = money(parts[0] ?? '');
-          const money2 = money(parts[1] ?? '');
-          return money1 + '에서 ' + money2;
-        }
+      const sharedUnitRange = match.match(
+        /^([\d,]+(?:\.\d+)?)\s*[-~–—]\s*([\d,]+(?:\.\d+)?)\s*(원|달러|유로|엔|파운드)$/
+      );
+      if (sharedUnitRange) {
+        const unit = sharedUnitRange[3] ?? '';
+        return (
+          money((sharedUnitRange[1] ?? '') + unit, { includeSpace: false }) +
+          '에서 ' +
+          money((sharedUnitRange[2] ?? '') + unit, { includeSpace: false })
+        );
       }
-      return money(match);
+
+      const repeatedUnitRange = match.match(/^([\d,]+\s*원)\s*[-~–—]\s*([\d,]+\s*원)$/);
+      if (repeatedUnitRange) {
+        return (
+          money(repeatedUnitRange[1] ?? '', { includeSpace: false }) +
+          '에서 ' +
+          money(repeatedUnitRange[2] ?? '', { includeSpace: false })
+        );
+      }
+
+      return /(?:달러|유로|엔|파운드)$/.test(match)
+        ? money(match.replace(/\s+/g, ''), { includeSpace: false })
+        : money(match);
     },
   },
 
@@ -1014,7 +1183,8 @@ const AUTO_TAG_PATTERNS = {
       // N단계
       /(?<![0-9])[\d,]+\s*단계/g,
     ],
-    converter: (match: string) => order(match),
+    converter: (match: string) =>
+      match.endsWith('단계') ? order(match, { includeSpace: false }) : order(match),
   },
 
   /**
@@ -1041,12 +1211,13 @@ const AUTO_TAG_PATTERNS = {
    */
   piece: {
     patterns: [
-      // N개, N마리, N명, N대, N장, N권, N병, N잔, N그루, N송이, N쌍, N벌, N켤레, N채, N건, N회
+      // N개, N마리, N명, N대, N장, N권, N곳, N병, N잔, N그루, N송이, N쌍, N벌, N켤레, N채, N건, N회
       // 단위 뒤에 한글이 이어져도 매칭 (예: "5개의")
       // "개월"은 제외 (duration에서 처리)
-      /(?<![0-9])[\d,]+(?:\.\d+)?\s*(?:개(?!월)|마리|명|대|장|권|병|잔|그루|송이|쌍|벌|켤레|채|건|회)/g,
+      /(?<![0-9])[\d,]+(?:\.\d+)?\s*(?:개(?!월)|마리|명|대|장|권|곳|병|잔|그루|송이|쌍|벌|켤레|채|건|회)/g,
     ],
-    converter: (match: string) => piece(match),
+    converter: (match: string) =>
+      match.endsWith('곳') ? piece(match, { includeSpace: false }) : piece(match),
   },
 
   /**
@@ -1296,13 +1467,13 @@ const AUTO_TAG_PATTERNS = {
   duration: {
     patterns: [
       // N~M시간 범위 (먼저 매칭)
-      /\d+\s*[~]\s*\d+\s*시간/g,
+      /\d+\s*[-~–—]\s*\d+\s*시간/g,
       // N~M일 범위 (일째, 일차 등 제외)
-      /\d+\s*[~]\s*\d+\s*일(?![째차생간])/g,
+      /\d+\s*[-~–—]\s*\d+\s*일(?![째차생간])/g,
       // N~M개월 범위
-      /\d+\s*[~]\s*\d+\s*개월/g,
+      /\d+\s*[-~–—]\s*\d+\s*개월/g,
       // N~M주 범위
-      /\d+\s*[~]\s*\d+\s*주(?![문제])/g,
+      /\d+\s*[-~–—]\s*\d+\s*주(?![문제])/g,
       // N일 이내/이후/이상/이하
       /(?<![0-9])[\d,]+\s*일\s*(?:이내|이후|이상|이하)/g,
       // 최대/최소 N일
@@ -1329,7 +1500,7 @@ const AUTO_TAG_PATTERNS = {
     ],
     converter: (match: string) => {
       // 기간 범위인 경우 (N~M시간, N~M일 등) - 한자어 수사 사용
-      const rangeMatch = match.match(/^(\d+)\s*[~]\s*(\d+)\s*(시간|일|개월|주)$/);
+      const rangeMatch = match.match(/^(\d+)\s*[-~–—]\s*(\d+)\s*(시간|일|개월|주)$/);
       if (rangeMatch) {
         const num1 = parseInt(rangeMatch[1] ?? '0', 10);
         const num2 = parseInt(rangeMatch[2] ?? '0', 10);
@@ -1338,7 +1509,7 @@ const AUTO_TAG_PATTERNS = {
         const koreanNum1 = numberToKorean(num1);
         const koreanNum2 = numberToKorean(num2);
 
-        return koreanNum1 + '에서 ' + koreanNum2 + ' ' + unit;
+        return koreanNum1 + unit + '에서 ' + koreanNum2 + unit;
       }
 
       // "기간: N일" 형태에서 숫자+일만 추출해서 변환
@@ -1347,7 +1518,7 @@ const AUTO_TAG_PATTERNS = {
         const prefix = match.replace(/([\d,]+)\s*일.*$/, '');
         return prefix + duration(durationMatch[0]);
       }
-      return duration(match);
+      return /(?:주|년)$/.test(match) ? duration(match, { includeSpace: false }) : duration(match);
     },
   },
 
@@ -1673,8 +1844,10 @@ const AUTO_TAG_PATTERNS = {
    */
   temperature: {
     patterns: [
+      // 단위를 한 번만 쓰는 온도 범위: -5~10℃
+      /[+-]?[\d,]+(?:\.\d+)?\s*[-~–—]\s*[+-]?[\d,]+(?:\.\d+)?\s*(?:℃|℉|°[CcFf])/g,
       // 온도 범위: N℃~M℃, N도~M도
-      /[+-]?[\d,]+(?:\.\d+)?\s*(?:℃|℉|°[CcFf])\s*[~-]\s*[+-]?[\d,]+(?:\.\d+)?\s*(?:℃|℉|°[CcFf])/g,
+      /[+-]?[\d,]+(?:\.\d+)?\s*(?:℃|℉|°[CcFf])\s*[-~–—]\s*[+-]?[\d,]+(?:\.\d+)?\s*(?:℃|℉|°[CcFf])/g,
       // 단독 온도: N℃, N℉, N°C, N°F
       /[+-]?[\d,]+(?:\.\d+)?\s*(?:℃|℉|°[CcFf])/g,
       // 켈빈: NK, N켈빈 (대문자 K만)
@@ -1684,7 +1857,7 @@ const AUTO_TAG_PATTERNS = {
     ],
     converter: (match: string) => {
       // 범위인 경우
-      if (/[~-]/.test(match) && match.match(/\d.*[~-].*\d/)) {
+      if (/[-~–—]/.test(match) && match.match(/\d.*[-~–—].*\d/)) {
         return temperatureRange(match);
       }
       // 기온/온도 컨텍스트
@@ -1728,8 +1901,8 @@ const AUTO_TAG_PATTERNS = {
       /[\d,]+(?:\.\d+)?\s*(?:Gbps|Mbps|Kbps|gbps|mbps|kbps|bps)/gi,
       // 전력량: NkWh, NMWh, NWh
       /[+-]?[\d,]+(?:\.\d+)?\s*(?:MWh|kWh|Wh|mwh|kwh|wh)/g,
-      // 전력: NkW, NMW, NW
-      /[\d,]+(?:\.\d+)?\s*(?:MW|kW|W|mw|kw)(?![a-zA-Z])/g,
+      // 전력: NkW, NMW, NTW, NW
+      /[\d,]+(?:\.\d+)?\s*(?:TW|MW|kW|W|tw|mw|kw)(?![a-zA-Z])/g,
       // 전압: NkV, NV
       /[\d,]+(?:\.\d+)?\s*(?:kV|V|kv)(?![a-zA-Z])/g,
       // 전류: NmA, NA (뒤에 영문자나 /가 없는 경우만 - A/S 등 제외)
@@ -1750,7 +1923,9 @@ const AUTO_TAG_PATTERNS = {
         const converted2 = dataCapacity(num2 + unit2);
         return converted1 + '에서 ' + converted2;
       }
-      return dataCapacity(match);
+      return /TW$/i.test(match)
+        ? dataCapacity(match, { includeSpace: false })
+        : dataCapacity(match);
     },
   },
 
@@ -1951,11 +2126,11 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
   if (!text || text.length === 0) {
     return text;
   }
-
-  // 주소로 인식되는 줄에서 불필요한 괄호를 먼저 제거 (전처리)
-  const preprocessedText = preprocessAddressLines(text);
+  assertInputWithinLimit(text, 'korean.autoTag');
 
   const enabledTags = options?.enabledTags ?? SUPPORTED_AUTO_TAGS;
+  // address가 비활성화된 호출은 원문을 전처리하지 않는다.
+  const preprocessedText = enabledTags.includes('address') ? preprocessAddressLines(text) : text;
 
   // 매칭 결과 수집
   const allMatches: MatchResult[] = [];
@@ -2036,12 +2211,13 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
     }
 
     // 변환된 텍스트 추가
-    result += match.converted;
+    const converted = attachKoreanNumberUnits(match.converted);
+    result += converted;
 
     // 변환된 텍스트 뒤에 다음 문자가 한글, 영문, 숫자인 경우 공백 추가
     // (TTS에서 자연스럽게 읽히도록)
     const nextChar = preprocessedText[match.end];
-    const convertedEndsWithSpace = match.converted.endsWith(' ');
+    const convertedEndsWithSpace = converted.endsWith(' ');
     if (nextChar && !convertedEndsWithSpace && /[가-힣a-zA-Z0-9]/.test(nextChar)) {
       result += ' ';
     }
@@ -2088,6 +2264,7 @@ export function extractAutoTags(
   if (!text || text.length === 0) {
     return [];
   }
+  assertInputWithinLimit(text, 'korean.extractAutoTags');
 
   const enabledTags = options?.enabledTags ?? SUPPORTED_AUTO_TAGS;
   const allMatches: MatchResult[] = [];
@@ -2159,10 +2336,7 @@ export function extractAutoTags(
  * ```
  */
 export function autoTagWithManual(text: string, autoTagOptions?: AutoTagOptions): string {
-  // manualTag를 먼저 적용하려면 import가 필요하지만 순환 참조 방지를 위해
-  // 이 함수는 manual-tag.ts에서 import하여 사용하도록 가이드
-  // 여기서는 autoTag만 적용
-  return autoTag(text, autoTagOptions);
+  return autoTag(manualTag(text), autoTagOptions);
 }
 
 // 편의를 위한 개별 태그별 자동 변환 함수

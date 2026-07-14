@@ -36,6 +36,7 @@ import { volume } from './tags/volume';
 import { dataCapacity } from './tags/data-capacity';
 import { inch } from './tags/inch';
 import { address } from './tags/address';
+import { assertInputWithinLimit } from '../input-guard';
 
 /**
  * 사용 가능한 태그 함수 매핑
@@ -123,6 +124,7 @@ export function manualTag(text: string): string {
   if (!text || text.length === 0) {
     return text;
   }
+  assertInputWithinLimit(text, 'korean.manualTag');
 
   return text.replace(TAG_PATTERN, (match, tagName: string, value: string) => {
     const tagFunction = TAG_FUNCTIONS[tagName];
@@ -152,6 +154,7 @@ export function extractTags(
   if (!text || text.length === 0) {
     return [];
   }
+  assertInputWithinLimit(text, 'korean.extractTags');
 
   const results: Array<{ tag: string; value: string; start: number; end: number }> = [];
   const pattern = new RegExp(`(${SUPPORTED_TAGS.join('|')})\\(([^)]*)\\)`, 'g');
@@ -186,6 +189,7 @@ export function manualTagSelective(text: string, allowedTags: string[]): string 
   if (!text || text.length === 0) {
     return text;
   }
+  assertInputWithinLimit(text, 'korean.manualTagSelective');
 
   if (allowedTags.length === 0) {
     return text;

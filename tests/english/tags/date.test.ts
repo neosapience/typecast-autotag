@@ -101,9 +101,15 @@ describe('date', () => {
     });
   });
 
-  describe('invalid date format (pronunciation test)', () => {
-    it('handles month 0 day 0', () => {
-      expect(date('2000-00-00')).toBe('two thousand');
+  describe('calendar validation', () => {
+    it('returns invalid calendar dates unchanged', () => {
+      expect(date('2000-00-00')).toBe('2000-00-00');
+      expect(date('2024-02-30')).toBe('2024-02-30');
+      expect(date('2023-02-29')).toBe('2023-02-29');
+    });
+
+    it('accepts leap day in a leap year', () => {
+      expect(date('2024-02-29')).toBe('February twenty-ninth, twenty twenty-four');
     });
 
     it('handles single digit month and day', () => {
