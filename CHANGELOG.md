@@ -1,5 +1,7 @@
 # Changelog
 
+# [1.12.0](https://github.com/neosapience/typecast-autotag/compare/v1.11.0...v1.12.0) (2026-07-15)
+
 # [1.11.0](https://github.com/neosapience/typecast-autotag/compare/v1.10.0...v1.11.0) (2026-07-14)
 
 ### Features
