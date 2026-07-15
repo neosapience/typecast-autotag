@@ -371,6 +371,57 @@ export const examplesZh: Example[] = [
   },
 ];
 
+// Taiwan Mandarin examples
+export const examplesZhTw: Example[] = [
+  { id: 1, category: '電話號碼', description: '手機號碼', original: '手機號碼是0912-345-678。' },
+  { id: 2, category: '電話號碼', description: '市內電話', original: '客服電話是02-2345-6789。' },
+  {
+    id: 3,
+    category: '郵遞區號',
+    description: '五碼郵遞區號',
+    original: '收件地址的郵遞區號是10617。',
+  },
+  { id: 4, category: '日期', description: '年月日', original: '預約日期是2026年7月14日。' },
+  { id: 5, category: '日期', description: 'ISO格式', original: '截止日期是2026-12-24。' },
+  { id: 6, category: '日期', description: '日期與時間', original: '開始時間是2026-07-14T09:05。' },
+  { id: 7, category: '時間', description: '二十四小時制', original: '會議14:30開始。' },
+  { id: 8, category: '時間', description: '營業時間', original: '營業時間是9:00至18:00。' },
+  { id: 9, category: '金額', description: '新臺幣', original: '費用是NT$12,800。' },
+  { id: 10, category: '金額', description: '小數金額', original: '總計1,234.56元。' },
+  { id: 11, category: '金額', description: '美元', original: '手續費是$19.95。' },
+  { id: 12, category: '比例', description: '百分比', original: '目前進度是72.5%。' },
+  { id: 13, category: '比例', description: '比賽比數', original: '最終比數是3-2。' },
+  { id: 14, category: '比例', description: '畫面比例', original: '畫面比例是16:9。' },
+  { id: 15, category: '比例', description: '分數', original: '已經完成1/2。' },
+  { id: 16, category: '順序', description: '章節編號', original: '請閱讀第7章。' },
+  { id: 17, category: '順序', description: '編號寫法', original: '請選擇No. 5。' },
+  { id: 18, category: '單位', description: '重量', original: '包裹重25kg。' },
+  { id: 19, category: '單位', description: '距離', original: '路線長42.195km。' },
+  { id: 20, category: '單位', description: '溫度', original: '今天早上是-5℃。' },
+  { id: 21, category: '單位', description: '容量', original: '請加入500mL水。' },
+  { id: 22, category: '單位', description: '資料容量', original: '儲存容量是2TB。' },
+  { id: 23, category: '量詞', description: '人數', original: '參加者有1人和2人。' },
+  { id: 24, category: '量詞', description: '商品與書籍', original: '購買2個商品和12本書。' },
+  { id: 25, category: '量詞', description: '期間', original: '合約期為6個月，保固4年。' },
+  { id: 26, category: '範圍', description: '時間範圍', original: '客服時間是6–9點。' },
+  { id: 27, category: '範圍', description: '頁碼範圍', original: '今晚閱讀第3至5頁。' },
+  { id: 28, category: '符號', description: '電子信箱', original: '信箱是help@example.tw。' },
+  { id: 29, category: '符號', description: '移動方向', original: '台北→高雄出發' },
+  { id: 30, category: '符號', description: '保留刪節號', original: '嗯……我想想' },
+  { id: 32, category: '識別碼', description: '訂單編號', original: '訂單編號是AB-2048。' },
+  { id: 33, category: '識別碼', description: '銀行帳號', original: '銀行帳號是012345。' },
+  { id: 34, category: '識別碼', description: '航班號碼', original: '航班號是BR108。' },
+  { id: 35, category: '識別碼', description: '驗證碼', original: '驗證碼是804216。' },
+  { id: 36, category: '識別碼', description: '經文章節', original: '請讀約翰福音3:16。' },
+  {
+    id: 31,
+    category: '手動標籤',
+    description: '驗證碼與金額',
+    original: 'name(王偉)，驗證碼是digits(2048)，總計money(5000新臺幣)。',
+    hasManualTag: true,
+  },
+];
+
 export interface AICCExample {
   id: string;
   category: string;
@@ -568,5 +619,50 @@ export const aiccExamplesZh: AICCExample[] = [
 客服时间: 6–9点
 
 如需变更，请选择No. 5。`,
+  },
+];
+
+export const aiccExamplesZhTw: AICCExample[] = [
+  {
+    id: 'main-menu',
+    category: 'IVR選單',
+    title: '主選單',
+    input: `歡迎致電Typecast客服中心。
+
+帳單查詢請按1，
+物流查詢請按2，
+退款申請請按3，
+轉接專員請按0。
+
+目前等待時間約為5分鐘30秒。
+服務時間是9:00至18:00。`,
+  },
+  {
+    id: 'delivery',
+    category: '物流',
+    title: '配送狀態',
+    input: `為您播報配送狀態。
+
+訂單編號: AB-2048
+下單日期: 2026年7月14日
+預計送達: 2026-07-16T14:30
+郵遞區號: 10617
+客服電話: 02-2345-6789
+
+運費為NT$550。`,
+  },
+  {
+    id: 'travel',
+    category: '航空',
+    title: '航班資訊',
+    input: `您的航班資訊如下。
+
+航班號: BR108
+出發時間: 2026-07-18T09:30
+登機門: No. 5
+驗證碼: 804216
+行李重量上限: 25kg
+
+如需協助，請撥0912-345-678。`,
   },
 ];

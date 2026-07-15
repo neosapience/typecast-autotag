@@ -184,3 +184,19 @@ export const categoryIconsZh: Record<string, ReactElement> = {
   符号: Icons.tag,
   手动标签: Icons.layers,
 };
+
+export const categoryIconsZhTw: Record<string, ReactElement> = {
+  電話號碼: Icons.phone,
+  郵遞區號: Icons.hash,
+  日期: Icons.calendar,
+  時間: Icons.clock,
+  金額: Icons.dollar,
+  比例: Icons.percent,
+  順序: Icons.hash,
+  單位: Icons.ruler,
+  量詞: Icons.hash,
+  範圍: Icons.ruler,
+  符號: Icons.tag,
+  識別碼: Icons.hash,
+  手動標籤: Icons.layers,
+};
