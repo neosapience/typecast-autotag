@@ -45,6 +45,21 @@ describe('Japanese auto-tagging', () => {
   });
 
   it.each([
+    ['注文番号はAB-2048です。', '注文番号はA・B、に・ゼロ・よん・はちです。'],
+    ['口座番号は012345です。', '口座番号はゼロ・いち・に・さん・よん・ごです。'],
+    ['便名はNH2048です。', '便名はN・H・に・ゼロ・よん・はちです。'],
+    ['認証コードは804216です。', '認証コードははち・ゼロ・よん・に・いち・ろくです。'],
+  ])('reads contextual Japanese identifiers: %s', (input, expected) => {
+    expect(japanese.autoTag(input)).toBe(expected);
+  });
+
+  it('keeps scripture references distinct from clock times', () => {
+    expect(japanese.autoTag('ヨハネ3:16を読んでください。')).toBe(
+      'ヨハネさんしょうじゅうろくせつを読んでください。'
+    );
+  });
+
+  it.each([
     ['予約日は2026年7月14日です。', '予約日はにせんにじゅうろくねんしちがつじゅうよっかです。'],
     ['発売日は4月1日です。', '発売日はしがつついたちです。'],
     ['締切は2026-12-24です。', '締切はにせんにじゅうろくねんじゅうにがつにじゅうよっかです。'],
@@ -53,7 +68,7 @@ describe('Japanese auto-tagging', () => {
       '開始は2026-07-14T09:05です。',
       '開始はにせんにじゅうろくねんしちがつじゅうよっかくじごふんです。',
     ],
-    ['会議は14:30に始まります。', '会議はじゅうよんじさんじゅっぷんに始まります。'],
+    ['会議は14:30に始まります。', '会議はじゅうよじさんじゅっぷんに始まります。'],
     ['受付は9時5分からです。', '受付はくじごふんからです。'],
   ])('reads valid dates and times: %s', (input, expected) => {
     expect(japanese.autoTag(input)).toBe(expected);
@@ -126,6 +141,15 @@ describe('Japanese auto-tagging', () => {
     expect(japanese.autoTag(input)).toBe(expected);
   });
 
+  it('uses irregular hour and 件 readings', () => {
+    expect(japanese.autoTag('受付は14時、終了は19時です。')).toBe(
+      '受付はじゅうよじ、終了はじゅうくじです。'
+    );
+    expect(japanese.autoTag('1件、6件、8件、10件、100件')).toBe(
+      'いっけん、ろっけん、はっけん、じゅっけん、ひゃっけん'
+    );
+  });
+
   it.each([
     ['東京→大阪へ行く', '東京から大阪へ行く'],
     ['連絡先はhelp@example.jpです。', '連絡先はhelp アットマーク example ドット jpです。'],
@@ -166,7 +190,7 @@ describe('Japanese auto-tagging', () => {
 
 describe('Japanese top-level API exposure', () => {
   it('registers ja and exposes its direct namespace', () => {
-    expect(getSupportedLanguages()).toEqual(['ko', 'en', 'ja', 'zh']);
+    expect(getSupportedLanguages()).toEqual(['ko', 'en', 'ja', 'zh', 'zh-TW']);
     expect(getSupportedAutoTags('ja')).toContain('phone');
     expect(getSupportedManualTags('ja')).toContain('digits');
     expect(japanese.autoTag('価格は500円です。')).toBe('価格はごひゃくえんです。');

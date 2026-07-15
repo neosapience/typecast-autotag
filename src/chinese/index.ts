@@ -7,7 +7,7 @@ const LARGE_UNITS = ['', '万', '亿', '兆', '京'];
 const NUMBER = '[+-]?(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?';
 const RANGE_SEPARATOR = '\\s*(?:-|~|〜|～|–|—|至|到)\\s*';
 const UNIT =
-  '(?:Mbps|GHz|kWh|TB|GB|MB|kg|mg|km|cm|mm|mL|ml|℃|°C|小时|分钟|秒钟|星期|个月|人民币|美元|欧元|英镑|页|人|个|件|台|本|张|次|层|点|时|分|秒|天|日|周|月|年|元|L|m|g)';
+  '(?:Mbps|GHz|kWh|TB|GB|MB|kg|mg|km|cm|mm|mL|ml|℃|°C|小时|小時|分钟|分鐘|秒钟|秒鐘|星期|个月|個月|人民币|人民幣|美元|欧元|歐元|英镑|英鎊|页|頁|人|个|個|件|台|本|张|張|次|层|層|点|點|时|時|分|秒|天|日|周|月|年|元|L|m|g)';
 
 function readSmallGroup(value: number): string {
   const digits = String(value).padStart(4, '0');
@@ -139,6 +139,8 @@ function phoneReading(input: string): string {
     groups = [digits.slice(0, 3), digits.slice(3, 7), digits.slice(7)];
   } else if (digits.length === 10 && /^(?:400|800)/.test(digits)) {
     groups = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6)];
+  } else if (digits.length === 10 && digits.startsWith('09')) {
+    groups = [digits.slice(0, 4), digits.slice(4, 7), digits.slice(7)];
   } else {
     groups = input
       .split('-')
@@ -176,16 +178,19 @@ const UNIT_READINGS: Record<string, string> = {
 export function readUnit(number: string, unit: string): string {
   const value = integerValue(number);
   if (value !== undefined) {
-    if (['人', '个', '件', '台', '本', '张', '次', '层', '页'].includes(unit)) {
+    if (
+      ['人', '个', '個', '件', '台', '本', '张', '張', '次', '层', '層', '页', '頁'].includes(unit)
+    ) {
       return `${quantityReading(value)}${unit}`;
     }
-    if ((unit === '点' || unit === '时') && value <= 23) return `${numberToChinese(value)}点`;
-    if (unit === '小时') return `${quantityReading(value)}小时`;
-    if (unit === '分钟') return `${quantityReading(value)}分钟`;
-    if (unit === '秒钟') return `${quantityReading(value)}秒钟`;
+    if (['点', '點', '时', '時'].includes(unit) && value <= 23)
+      return `${numberToChinese(value)}点`;
+    if (unit === '小时' || unit === '小時') return `${quantityReading(value)}小时`;
+    if (unit === '分钟' || unit === '分鐘') return `${quantityReading(value)}分钟`;
+    if (unit === '秒钟' || unit === '秒鐘') return `${quantityReading(value)}秒钟`;
     if (unit === '天') return `${quantityReading(value)}天`;
     if (unit === '年') return `${quantityReading(value)}年`;
-    if (unit === '个月') return `${quantityReading(value)}个月`;
+    if (unit === '个月' || unit === '個月') return `${quantityReading(value)}个月`;
     if (unit === '周' || unit === '星期') return `${quantityReading(value)}${unit}`;
   }
   return `${numberToChinese(number)}${UNIT_READINGS[unit] ?? unit}`;
@@ -198,12 +203,19 @@ function currencyReading(amount: string, currency: string): string {
     '￥': '元',
     元: '元',
     人民币: '元',
+    人民幣: '元',
+    新台币: '新台币',
+    新台幣: '新台币',
+    新臺幣: '新台币',
+    NT$: '新台币',
     $: '美元',
     美元: '美元',
     '€': '欧元',
     欧元: '欧元',
+    歐元: '欧元',
     '£': '英镑',
     英镑: '英镑',
+    英鎊: '英镑',
   };
   return `${numberToChinese(normalized)}${names[currency] ?? currency}`;
 }
@@ -211,6 +223,10 @@ function currencyReading(amount: string, currency: string): string {
 export const SUPPORTED_AUTO_TAGS = [
   'phone',
   'postalCode',
+  'serial',
+  'account',
+  'flight',
+  'scripture',
   'datetime',
   'date',
   'time',
@@ -251,13 +267,43 @@ const RULES: Rule[] = [
   {
     tagType: 'phone',
     pattern:
-      /(?<!\d)(?:(?:\+86[- ]?)?1[3-9]\d(?:[- ]?\d{4}){2}|(?:400|800)-?\d{3}-?\d{4}|0\d{2,3}-\d{7,8})(?!\d)/g,
+      /(?<!\d)(?:(?:\+86[- ]?)?1[3-9]\d(?:[- ]?\d{4}){2}|(?:400|800)-?\d{3}-?\d{4}|09\d{2}-?\d{3}-?\d{3}|0[2-8]-\d{3,4}-\d{4}|0\d{2,3}-\d{7,8})(?!\d)/g,
     convert: (match) => phoneReading(match[0]),
   },
   {
     tagType: 'postalCode',
-    pattern: /(?:邮政编码|邮编)(?:是|为|：|:)?\s*\d{6}(?!\d)/g,
-    convert: (match) => match[0].replace(/\d{6}/, (digits) => digitsToChinese(digits)),
+    pattern:
+      /(?:邮政编码|邮编|郵政編碼|郵編|郵遞區號)(?:是|为|為|：|:)?\s*(?:\d{3}-?\d{3}|\d{5}|\d{3})(?!\d)/g,
+    convert: (match) =>
+      match[0].replace(/\d{3}-?\d{3}|\d{5}|\d{3}/, (digits) => digitsToChinese(digits)),
+  },
+  {
+    tagType: 'serial',
+    pattern:
+      /((?:(?:订单|訂單|预约|預約|确认|確認|产品|產品)(?:编号|編號)|序列号|序列號|序号|序號|验证码|驗證碼|确认码|確認碼)(?:是|为|為|：|:)?\s*)([A-Z0-9]+(?:[-‐‑‒–—][A-Z0-9]+)*)/gi,
+    convert: (match) => `${match[1]}${digitsToChinese((match[2] ?? '').toUpperCase())}`,
+  },
+  {
+    tagType: 'account',
+    pattern:
+      /((?:账号|帳號|银行账号|銀行帳號|会员编号|會員編號|客户编号|客戶編號)(?:是|为|為|：|:)?\s*)([A-Z0-9]+(?:[-‐‑‒–—][A-Z0-9]+)*)/gi,
+    convert: (match) => `${match[1]}${digitsToChinese((match[2] ?? '').toUpperCase())}`,
+  },
+  {
+    tagType: 'flight',
+    pattern: /((?:航班|班机|班機)(?:号|號)?(?:是|为|為|：|:)?\s*)([A-Z]{2,3}-?\d{1,4})/gi,
+    convert: (match) => `${match[1]}${digitsToChinese((match[2] ?? '').toUpperCase())}`,
+  },
+  {
+    tagType: 'scripture',
+    pattern:
+      /(?:创世记|創世記|出埃及记|出埃及記|诗篇|詩篇|箴言|马太福音|馬太福音|马可福音|馬可福音|路加福音|约翰福音|約翰福音|使徒行传|使徒行傳|罗马书|羅馬書)\s*\d{1,3}:\d{1,3}/g,
+    convert: (match) =>
+      match[0].replace(
+        /(\d{1,3}):(\d{1,3})$/,
+        (_, chapter: string, verse: string) =>
+          `${numberToChinese(chapter)}章${numberToChinese(verse)}节`
+      ),
   },
   {
     tagType: 'datetime',
@@ -312,7 +358,7 @@ const RULES: Rule[] = [
       const from = match[1] ?? '';
       const to = match[2] ?? '';
       const unit = match[3] ?? '';
-      if ((unit === '点' || unit === '时') && [from, to].some((item) => Number(item) > 23)) {
+      if (['点', '點', '时', '時'].includes(unit) && [from, to].some((item) => Number(item) > 23)) {
         return match[0];
       }
       return `${readUnit(from, unit)}到${readUnit(to, unit)}`;
@@ -320,10 +366,10 @@ const RULES: Rule[] = [
   },
   {
     tagType: 'time',
-    pattern: /(?<!\d)(?:\d{1,2}:\d{2}(?::\d{2})?|\d{1,2}(?:点|时)(?:\d{1,2}分)?)(?!\d)/g,
+    pattern: /(?<!\d)(?:\d{1,2}:\d{2}(?::\d{2})?|\d{1,2}(?:点|點|时|時)(?:\d{1,2}分)?)(?!\d)/g,
     convert: (match): string => {
       const colon = match[0].match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-      const chinese = match[0].match(/^(\d{1,2})(?:点|时)(?:(\d{1,2})分)?$/);
+      const chinese = match[0].match(/^(\d{1,2})(?:点|點|时|時)(?:(\d{1,2})分)?$/);
       const parts = colon ?? chinese;
       if (!parts) return match[0];
       return (
@@ -337,10 +383,15 @@ const RULES: Rule[] = [
   },
   {
     tagType: 'money',
-    pattern: new RegExp(`(?:[¥￥$€£]\\s*${NUMBER}|${NUMBER}\\s*(?:人民币|美元|欧元|英镑|元))`, 'g'),
+    pattern: new RegExp(
+      `(?:(?:NT\\$|[¥￥$€£])\\s*${NUMBER}|${NUMBER}\\s*(?:人民币|人民幣|新台币|新台幣|新臺幣|美元|欧元|歐元|英镑|英鎊|元))`,
+      'g'
+    ),
     convert: (match): string => {
-      const prefix = match[0].match(/^([¥￥$€£])\s*(.+)$/);
-      const suffix = match[0].match(/^(.+?)\s*(人民币|美元|欧元|英镑|元)$/);
+      const prefix = match[0].match(/^(NT\$|[¥￥$€£])\s*(.+)$/);
+      const suffix = match[0].match(
+        /^(.+?)\s*(人民币|人民幣|新台币|新台幣|新臺幣|美元|欧元|歐元|英镑|英鎊|元)$/
+      );
       return prefix
         ? currencyReading(prefix[2] ?? '', prefix[1] ?? '')
         : suffix
@@ -351,7 +402,7 @@ const RULES: Rule[] = [
   {
     tagType: 'score',
     pattern:
-      /(?:比分|得分)(?:是|为|：|:)?\s*\d+\s*[-:比]\s*\d+|\d+\s*[-:]\s*\d+(?=\s*(?:获胜|胜|失利|落败|战平|结束))/g,
+      /(?:比分|比數|得分)(?:是|为|為|：|:)?\s*\d+\s*[-:比]\s*\d+|\d+\s*[-:]\s*\d+(?=\s*(?:获胜|獲勝|胜|勝|失利|落败|落敗|战平|戰平|结束|結束))/g,
     convert: (match) =>
       match[0].replace(
         /(\d+)\s*[-:比]\s*(\d+)/,
@@ -360,7 +411,7 @@ const RULES: Rule[] = [
   },
   {
     tagType: 'ratio',
-    pattern: /(?:比例|比率)(?:是|为|：|:)?\s*\d+(?:\.\d+)?\s*[:比]\s*\d+(?:\.\d+)?/g,
+    pattern: /(?:比例|比率)(?:是|为|為|：|:)?\s*\d+(?:\.\d+)?\s*[:比]\s*\d+(?:\.\d+)?/g,
     convert: (match) =>
       match[0].replace(
         /(\d+(?:\.\d+)?)\s*[:比]\s*(\d+(?:\.\d+)?)/,
@@ -382,7 +433,7 @@ const RULES: Rule[] = [
   },
   {
     tagType: 'order',
-    pattern: /第\d+(?:章|集|期|位|名|页|号|回)|No\.\s*\d+/gi,
+    pattern: /第\d+(?:章|集|期|位|名|页|頁|号|號|回)|No\.\s*\d+/gi,
     convert: (match): string => {
       const no = match[0].match(/^No\.\s*(\d+)$/i);
       if (no) return `编号${numberToChinese(no[1] ?? '')}`;

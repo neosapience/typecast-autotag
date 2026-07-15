@@ -33,6 +33,19 @@ describe('Chinese auto-tagging', () => {
     expect(chinese.autoTag(input)).toBe(expected);
   });
 
+  it.each([
+    ['订单编号是AB-2048。', '订单编号是A·B、二·零·四·八。'],
+    ['账号是012345。', '账号是零·一·二·三·四·五。'],
+    ['航班号是MU512。', '航班号是M·U·五·一·二。'],
+    ['验证码是804216。', '验证码是八·零·四·二·一·六。'],
+  ])('reads contextual Chinese identifiers: %s', (input, expected) => {
+    expect(chinese.autoTag(input)).toBe(expected);
+  });
+
+  it('keeps scripture references distinct from clock times', () => {
+    expect(chinese.autoTag('请读约翰福音3:16。')).toBe('请读约翰福音三章十六节。');
+  });
+
   it('does not partially match longer identifiers as phone or postal numbers', () => {
     expect(chinese.autoTag('编号138001380001。', { enabledTags: ['phone'] })).toBe(
       '编号138001380001。'
@@ -160,7 +173,7 @@ describe('Chinese auto-tagging', () => {
 
 describe('Chinese top-level API exposure', () => {
   it('registers zh and exposes its direct namespace', () => {
-    expect(getSupportedLanguages()).toEqual(['ko', 'en', 'ja', 'zh']);
+    expect(getSupportedLanguages()).toEqual(['ko', 'en', 'ja', 'zh', 'zh-TW']);
     expect(getSupportedAutoTags('zh')).toContain('phone');
     expect(getSupportedManualTags('zh')).toContain('digits');
     expect(chinese.autoTag('价格是500元。')).toBe('价格是五百元。');
