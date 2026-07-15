@@ -42,6 +42,7 @@ const {
 import * as englishModule from './english';
 import * as japaneseModule from './japanese';
 import * as chineseModule from './chinese';
+import * as taiwaneseMandarinModule from './taiwanese-mandarin';
 export { MAX_INPUT_LENGTH } from './input-guard';
 
 const {
@@ -74,11 +75,25 @@ const {
   SUPPORTED_TAGS: ZH_SUPPORTED_TAGS,
 } = chineseModule;
 
+const {
+  autoTag: zhTwAutoTag,
+  extractAutoTags: zhTwExtractAutoTags,
+  manualTag: zhTwManualTag,
+  extractTags: zhTwExtractTags,
+  manualTagSelective: zhTwManualTagSelective,
+  SUPPORTED_AUTO_TAGS: ZH_TW_SUPPORTED_AUTO_TAGS,
+  SUPPORTED_TAGS: ZH_TW_SUPPORTED_TAGS,
+} = taiwaneseMandarinModule;
+
 // Type imports
 import type { AutoTagOptions as KoAutoTagOptions, MatchResult as KoMatchResult } from './korean';
 import type { AutoTagOptions as EnAutoTagOptions, MatchResult as EnMatchResult } from './english';
 import type { AutoTagOptions as JaAutoTagOptions, MatchResult as JaMatchResult } from './japanese';
 import type { AutoTagOptions as ZhAutoTagOptions, MatchResult as ZhMatchResult } from './chinese';
+import type {
+  AutoTagOptions as ZhTwAutoTagOptions,
+  MatchResult as ZhTwMatchResult,
+} from './taiwanese-mandarin';
 
 // ============================================================================
 // Type Definitions
@@ -87,7 +102,7 @@ import type { AutoTagOptions as ZhAutoTagOptions, MatchResult as ZhMatchResult }
 /**
  * Supported language codes
  */
-export type SupportedLanguage = 'ko' | 'en' | 'ja' | 'zh';
+export type SupportedLanguage = 'ko' | 'en' | 'ja' | 'zh' | 'zh-TW';
 
 /**
  * Auto-tagging options
@@ -206,6 +221,15 @@ const languageModules: Record<SupportedLanguage, LanguageModule> = {
     manualTagSelective: zhManualTagSelective,
     supportedAutoTags: ZH_SUPPORTED_AUTO_TAGS,
     supportedManualTags: ZH_SUPPORTED_TAGS,
+  },
+  'zh-TW': {
+    autoTag: zhTwAutoTag as LanguageModule['autoTag'],
+    extractAutoTags: zhTwExtractAutoTags as LanguageModule['extractAutoTags'],
+    manualTag: zhTwManualTag,
+    extractTags: zhTwExtractTags,
+    manualTagSelective: zhTwManualTagSelective,
+    supportedAutoTags: ZH_TW_SUPPORTED_AUTO_TAGS,
+    supportedManualTags: ZH_TW_SUPPORTED_TAGS,
   },
 };
 
@@ -482,6 +506,7 @@ export { koreanModule as korean };
 export { englishModule as english };
 export { japaneseModule as japanese };
 export { chineseModule as chinese };
+export { taiwaneseMandarinModule as taiwaneseMandarin };
 
 // ============================================================================
 // Type re-exports
@@ -496,4 +521,6 @@ export type {
   JaMatchResult,
   ZhAutoTagOptions,
   ZhMatchResult,
+  ZhTwAutoTagOptions,
+  ZhTwMatchResult,
 };

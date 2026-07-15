@@ -134,10 +134,10 @@ function yearReading(year: number | string): string {
 
 function hourReading(hour: number): string {
   if (hour === 0) return 'れいじ';
-  if (hour === 4) return 'よじ';
-  if (hour === 7) return 'しちじ';
-  if (hour === 9) return 'くじ';
-  return `${numberToJapanese(hour)}じ`;
+  return `${numberToJapanese(hour)
+    .replace(/よん$/, 'よ')
+    .replace(/なな$/, 'しち')
+    .replace(/きゅう$/, 'く')}じ`;
 }
 
 function minuteReading(minute: number): string {
@@ -230,6 +230,14 @@ function counterReading(value: number, unit: string): string {
       .replace(/じゅう$/, 'じゅっ')
       .replace(/ひゃく$/, 'ひゃっ')}さつ`;
   }
+  if (unit === '件') {
+    return `${reading
+      .replace(/いち$/, 'いっ')
+      .replace(/ろく$/, 'ろっ')
+      .replace(/はち$/, 'はっ')
+      .replace(/じゅう$/, 'じゅっ')
+      .replace(/ひゃく$/, 'ひゃっ')}けん`;
+  }
   return `${reading}${{ 件: 'けん', 台: 'だい', 枚: 'まい', ページ: 'ページ' }[unit] ?? unit}`;
 }
 
@@ -312,6 +320,10 @@ function currencyReading(amount: string, currency: string): string {
 export const SUPPORTED_AUTO_TAGS = [
   'phone',
   'postalCode',
+  'serial',
+  'account',
+  'flight',
+  'scripture',
   'datetime',
   'date',
   'time',
@@ -358,6 +370,34 @@ const RULES: Rule[] = [
     tagType: 'postalCode',
     pattern: /〒?\d{3}-\d{4}/g,
     convert: (match) => `郵便番号${phoneReading(match[0].replace('〒', ''))}`,
+  },
+  {
+    tagType: 'serial',
+    pattern:
+      /((?:(?:注文|予約|確認|製品|シリアル)番号|(?:認証|確認)コード|ワンタイムパスワード)(?:は|が|：|:)?\s*)([A-Z0-9]+(?:[-‐‑‒–—][A-Z0-9]+)*)/gi,
+    convert: (match) => `${match[1]}${digitsToJapanese((match[2] ?? '').toUpperCase())}`,
+  },
+  {
+    tagType: 'account',
+    pattern:
+      /((?:口座番号|会員番号|顧客番号)(?:は|が|：|:)?\s*)([A-Z0-9]+(?:[-‐‑‒–—][A-Z0-9]+)*)/gi,
+    convert: (match) => `${match[1]}${digitsToJapanese((match[2] ?? '').toUpperCase())}`,
+  },
+  {
+    tagType: 'flight',
+    pattern: /((?:便名|フライト)(?:は|が|：|:)?\s*)([A-Z]{2,3}-?\d{1,4})/gi,
+    convert: (match) => `${match[1]}${digitsToJapanese((match[2] ?? '').toUpperCase())}`,
+  },
+  {
+    tagType: 'scripture',
+    pattern:
+      /(?:創世記|出エジプト記|詩篇|詩編|箴言|マタイ(?:による福音書)?|マルコ(?:による福音書)?|ルカ(?:による福音書)?|ヨハネ(?:による福音書)?|使徒言行録|ローマ(?:人への手紙)?)\s*\d{1,3}:\d{1,3}/g,
+    convert: (match) =>
+      match[0].replace(
+        /(\d{1,3}):(\d{1,3})$/,
+        (_, chapter: string, verse: string) =>
+          `${numberToJapanese(chapter)}しょう${numberToJapanese(verse)}せつ`
+      ),
   },
   {
     tagType: 'datetime',

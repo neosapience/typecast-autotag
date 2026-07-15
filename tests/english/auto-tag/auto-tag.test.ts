@@ -109,6 +109,7 @@ describe('autoTag core functionality', () => {
 
     it('distinguishes contextual scores from clock times', () => {
       expect(autoTag('Final score was 2:10.')).toBe('Final score was two to ten.');
+      expect(autoTag('Score: 3-2.')).toBe('Score: three to two.');
       expect(autoTag('Meet at 2:10.')).toBe('Meet at two ten AM.');
     });
 

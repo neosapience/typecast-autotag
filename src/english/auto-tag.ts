@@ -165,10 +165,10 @@ export interface MatchResult {
  */
 const AUTO_TAG_PATTERNS = {
   scoreRatio: {
-    patterns: [/\b(?:score|ratio)(?:\s+(?:is|was))?\s*[:=]?\s*\d{1,3}\s*:\s*\d{1,3}\b/gi],
+    patterns: [/\b(?:score|ratio)(?:\s+(?:is|was))?\s*[:=]?\s*\d{1,3}\s*[-:]\s*\d{1,3}\b/gi],
     converter: (match: string) => {
-      const parts = match.match(/^(.*?)(\d{1,3}\s*:\s*\d{1,3})$/);
-      return parts ? (parts[1] ?? '') + ratio(parts[2] ?? '') : match;
+      const parts = match.match(/^(.*?)(\d{1,3}\s*[-:]\s*\d{1,3})$/);
+      return parts ? (parts[1] ?? '') + ratio((parts[2] ?? '').replace('-', ':')) : match;
     },
   },
 

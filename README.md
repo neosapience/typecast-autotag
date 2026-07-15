@@ -25,14 +25,15 @@
 
 This library supports **multiple languages** for TTS text preprocessing:
 
-| Language                          | Status               | Module     |
-| --------------------------------- | -------------------- | ---------- |
-| **Korean** (한국어)               | ✅ Full Support      | `korean`   |
-| **English**                       | ✅ Full Support      | `english`  |
-| **Japanese** (日本語)             | ✅ Core TTS Patterns | `japanese` |
-| **Simplified Chinese** (简体中文) | ✅ Core TTS Patterns | `chinese`  |
+| Language                          | Status               | Module              |
+| --------------------------------- | -------------------- | ------------------- |
+| **Korean** (한국어)               | ✅ Full Support      | `korean`            |
+| **English**                       | ✅ Full Support      | `english`           |
+| **Japanese** (日本語)             | ✅ Core TTS Patterns | `japanese`          |
+| **Simplified Chinese** (简体中文) | ✅ Core TTS Patterns | `chinese`           |
+| **Taiwan Mandarin** (繁體中文)    | ✅ Core TTS Patterns | `taiwaneseMandarin` |
 
-> Japanese and Simplified Chinese are currently exposed by the JavaScript and browser package. The native C, Python, and Java bindings retain their existing Korean and English entry points.
+> Japanese, Simplified Chinese, and Taiwan Mandarin are currently exposed by the JavaScript and browser package. The native C, Python, and Java bindings retain their existing Korean and English entry points.
 
 ## Supported Environments
 
@@ -85,13 +86,17 @@ autoTag('受付は6–9時、料金は¥12,800です。', { language: 'ja' });
 // Simplified Chinese auto-tagging
 autoTag('客服时间是6–9点，费用是¥12,800。', { language: 'zh' });
 // → '客服时间是六点到九点，费用是一万二千八百元。'
+
+// Taiwan Mandarin auto-tagging
+autoTag('客服時間是6–9點，費用是NT$12,800。', { language: 'zh-TW' });
+// → '客服時間是六點到九點，費用是一萬二千八百新臺幣。'
 ```
 
 <br>
 
 ## Features
 
-- **Multi-language Support**: Korean, English, Japanese, and Simplified Chinese TTS text preprocessing.
+- **Multi-language Support**: Korean, English, Japanese, Simplified Chinese, and Taiwan Mandarin TTS text preprocessing.
 - **Auto-tagging**: Automatically detects and converts patterns like phone numbers, dates, times, and amounts.
 - **Manual-tagging**: Explicitly tag text with `tagName(value)` syntax for precise control.
 - **Zero Dependencies**: Lightweight, fast, and tree-shakeable. Supports both ESM and CommonJS.
@@ -183,7 +188,7 @@ autoTagWithManual('name(김철수)님, 010-1234-5678로 연락주세요.', { lan
 import { autoTag, manualTag } from '@neosapience/typecast-autotag';
 
 autoTag('予約日は2026年7月14日、会議は14:30です。', { language: 'ja' });
-// → '予約日はにせんにじゅうろくねんしちがつじゅうよっか、会議はじゅうよんじさんじゅっぷんです。'
+// → '予約日はにせんにじゅうろくねんしちがつじゅうよっか、会議はじゅうよじさんじゅっぷんです。'
 
 autoTag('スコアは3-2、進捗は72.5%です。', { language: 'ja' });
 // → 'スコアはさんたいに、進捗はななじゅうにてんごパーセントです。'
@@ -213,6 +218,24 @@ manualTag('验证码是digits(2048)，总计money(5000元)。', { language: 'zh'
 // → '验证码是二·零·四·八，总计五千元。'
 ```
 
+### Taiwan Mandarin Text Processing
+
+```typescript
+import { autoTag, manualTag } from '@neosapience/typecast-autotag';
+
+autoTag('手機號碼是0912-345-678，郵遞區號是10617。', { language: 'zh-TW' });
+// → '手機號碼是零·九·一·二、三·四·五、六·七·八，郵遞區號是一·零·六·一·七。'
+
+autoTag('訂單編號是AB-2048，航班號是BR108。', { language: 'zh-TW' });
+// → '訂單編號是A·B、二·零·四·八，航班號是B·R·一·零·八。'
+
+autoTag('請讀約翰福音3:16，總計NT$1,280。', { language: 'zh-TW' });
+// → '請讀約翰福音三章十六節，總計一千二百八十新臺幣。'
+
+manualTag('驗證碼是digits(2048)，總計money(5000新臺幣)。', { language: 'zh-TW' });
+// → '驗證碼是二·零·四·八，總計五千新臺幣。'
+```
+
 ### Direct Language Module Access
 
 ```typescript
@@ -239,6 +262,12 @@ import { chinese } from '@neosapience/typecast-autotag';
 
 chinese.autoTag('手机号是138-0013-8000。');
 // → '手机号是一·三·八、零·零·一·三、八·零·零·零。'
+
+// Use Taiwan Mandarin module directly
+import { taiwaneseMandarin } from '@neosapience/typecast-autotag';
+
+taiwaneseMandarin.autoTag('手機號碼是0912-345-678。');
+// → '手機號碼是零·九·一·二、三·四·五、六·七·八。'
 ```
 
 <br>
@@ -260,10 +289,10 @@ autoTag('$500, 555-1234', { language: 'en', enabledTags: ['phone'] });
 // → '$500, five five five, one two three four'
 ```
 
-| Option        | Type                     | Default | Description         |
-| ------------- | ------------------------ | ------- | ------------------- |
-| `language`    | `'ko'｜'en'｜'ja'｜'zh'` | `'ko'`  | Language to use     |
-| `enabledTags` | `string[]`               | all     | Tag types to enable |
+| Option        | Type                              | Default | Description         |
+| ------------- | --------------------------------- | ------- | ------------------- |
+| `language`    | `'ko'｜'en'｜'ja'｜'zh'｜'zh-TW'` | `'ko'`  | Language to use     |
+| `enabledTags` | `string[]`                        | all     | Tag types to enable |
 
 </details>
 
@@ -340,7 +369,7 @@ import {
   getDefaultLanguage,
 } from '@neosapience/typecast-autotag';
 
-getSupportedLanguages(); // ['ko', 'en', 'ja', 'zh']
+getSupportedLanguages(); // ['ko', 'en', 'ja', 'zh', 'zh-TW']
 getSupportedAutoTags(); // ['phone', 'datetime', 'time', 'date', ...]
 getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 ```
@@ -408,7 +437,7 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 | `phone`                   | Phone number               | `090-1234-5678`      | `ゼロ・きゅう・ゼロ、いち・に・さん・よん、ご・ろく・なな・はち` |
 | `postalCode`              | Postal code                | `〒100-0001`         | `郵便番号いち・ゼロ・ゼロ、ゼロ・ゼロ・ゼロ・いち`               |
 | `date` / `datetime`       | Date and time              | `2026年7月14日`      | `にせんにじゅうろくねんしちがつじゅうよっか`                     |
-| `time`                    | Time                       | `14:30`              | `じゅうよんじさんじゅっぷん`                                     |
+| `time`                    | Time                       | `14:30`              | `じゅうよじさんじゅっぷん`                                       |
 | `range`                   | Time, price, or page range | `6–9時`              | `ろくじからくじ`                                                 |
 | `money`                   | Currency                   | `¥12,800`            | `いちまんにせんはっぴゃくえん`                                   |
 | `score` / `ratio`         | Score or ratio             | `スコアは3-2`        | `スコアはさんたいに`                                             |
@@ -417,6 +446,9 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 | `unit`                    | Measurements and counters  | `25kg`, `2人`, `3本` | `にじゅうごキログラム`, `ふたり`, `さんぼん`                     |
 | `email`                   | Email symbols              | `help@example.jp`    | `help アットマーク example ドット jp`                            |
 | `direction`               | Direction arrow            | `東京→大阪`          | `東京から大阪`                                                   |
+| `serial` / `account`      | Contextual identifiers     | `注文番号はAB-2048`  | `注文番号はA・B、に・ゼロ・よん・はち`                           |
+| `flight`                  | Flight number              | `便名はNH2048`       | `便名はN・H・に・ゼロ・よん・はち`                               |
+| `scripture`               | Scripture reference        | `ヨハネ3:16`         | `ヨハネさんしょうじゅうろくせつ`                                 |
 
 ### Simplified Chinese Auto-tags (Automatically Detected)
 
@@ -434,6 +466,25 @@ getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 | `unit`                    | Measurements and counters  | `25kg`, `2人`, `3本书` | `二十五千克`, `两人`, `三本书`       |
 | `email`                   | Email symbols              | `help@example.cn`      | `help 艾特 example 点 cn`            |
 | `direction`               | Direction arrow            | `北京→上海`            | `北京到上海`                         |
+| `serial` / `account`      | Contextual identifiers     | `订单编号是AB-2048`    | `订单编号是A·B、二·零·四·八`         |
+| `flight`                  | Flight number              | `航班号是MU512`        | `航班号是M·U·五·一·二`               |
+| `scripture`               | Scripture reference        | `约翰福音3:16`         | `约翰福音三章十六节`                 |
+
+### Taiwan Mandarin Auto-tags (Automatically Detected)
+
+| Tag                  | Description            | Input                 | Output                                 |
+| -------------------- | ---------------------- | --------------------- | -------------------------------------- |
+| `phone`              | Taiwan phone number    | `0912-345-678`        | `零·九·一·二、三·四·五、六·七·八`      |
+| `postalCode`         | Taiwan postal code     | `郵遞區號是10617`     | `郵遞區號是一·零·六·一·七`             |
+| `date` / `datetime`  | Date and time          | `2026年7月14日`       | `二零二六年七月十四日`                 |
+| `time` / `range`     | Time and range         | `6–9點`               | `六點到九點`                           |
+| `money`              | Taiwan currency        | `NT$12,800`           | `一萬二千八百新臺幣`                   |
+| `score` / `ratio`    | Score or ratio         | `最終比數是3-2`       | `最終比數是三比二`                     |
+| `unit`               | Taiwan measurements    | `25kg`, `30cm`, `2TB` | `二十五公斤`, `三十公分`, `二太位元組` |
+| `serial` / `account` | Contextual identifiers | `訂單編號是AB-2048`   | `訂單編號是A·B、二·零·四·八`           |
+| `flight`             | Flight number          | `航班號是BR108`       | `航班號是B·R·一·零·八`                 |
+| `scripture`          | Scripture reference    | `約翰福音3:16`        | `約翰福音三章十六節`                   |
+| `email`              | Email symbols          | `help@example.tw`     | `help 小老鼠 example 點 tw`            |
 
 ### Manual-only Tags
 
@@ -638,8 +689,10 @@ src/
 │       └── number-to-english.ts # Number conversion utilities
 ├── japanese/                   # Japanese language module
 │   └── index.ts                # Japanese rules and number readings
-└── chinese/                    # Simplified Chinese language module
-    └── index.ts                # Chinese rules and number readings
+├── chinese/                    # Simplified Chinese language module
+│   └── index.ts                # Chinese rules and number readings
+└── taiwanese-mandarin/         # Taiwan Mandarin adapter
+    └── index.ts                # Taiwan readings over shared Chinese rules
 ```
 
 <br>

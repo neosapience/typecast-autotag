@@ -1,12 +1,14 @@
 import {
   aiccExamplesJa,
   aiccExamplesZh,
+  aiccExamplesZhTw,
   examplesEn,
   examplesJa,
   examplesKo,
   examplesZh,
+  examplesZhTw,
 } from '../demo-html/src/examples';
-import { chinese, english, japanese, korean } from '../src/index';
+import { chinese, english, japanese, korean, taiwaneseMandarin } from '../src/index';
 
 describe('demo example consistency', () => {
   it.each([
@@ -14,6 +16,12 @@ describe('demo example consistency', () => {
     ['English', examplesEn, english.autoTag, english.autoTagWithManual],
     ['Japanese', examplesJa, japanese.autoTag, japanese.autoTagWithManual],
     ['Chinese', examplesZh, chinese.autoTag, chinese.autoTagWithManual],
+    [
+      'Taiwan Mandarin',
+      examplesZhTw,
+      taiwaneseMandarin.autoTag,
+      taiwaneseMandarin.autoTagWithManual,
+    ],
   ] as const)(
     '%s examples do not leave numeric placeholders behind',
     (_language, examples, tag, tagWithManual) => {
@@ -50,6 +58,15 @@ describe('demo example consistency', () => {
   it('keeps Chinese AICC scenarios free of numeric placeholders', () => {
     for (const example of aiccExamplesZh) {
       expect({ id: example.id, result: chinese.autoTag(example.input) }).toEqual({
+        id: example.id,
+        result: expect.not.stringMatching(/\d/),
+      });
+    }
+  });
+
+  it('keeps Taiwan Mandarin AICC scenarios free of numeric placeholders', () => {
+    for (const example of aiccExamplesZhTw) {
+      expect({ id: example.id, result: taiwaneseMandarin.autoTag(example.input) }).toEqual({
         id: example.id,
         result: expect.not.stringMatching(/\d/),
       });
