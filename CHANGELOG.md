@@ -1,5 +1,18 @@
 # Changelog
 
+# [1.13.0](https://github.com/neosapience/typecast-autotag/compare/v1.12.0...v1.13.0) (2026-07-16)
+
+
+### Bug Fixes
+
+* address multilingual autotag review findings ([f8e3d48](https://github.com/neosapience/typecast-autotag/commit/f8e3d48446a5dfd4812564a20336f5ab884f3154))
+
+
+### Features
+
+* improve multilingual AICC autotagging ([03dd5f8](https://github.com/neosapience/typecast-autotag/commit/03dd5f8ea8c335c0372fbe7c278ae78efeb2f783))
+* support all SSFM v3.0 languages ([30b0ce3](https://github.com/neosapience/typecast-autotag/commit/30b0ce3ea678fdf3887eb07095fbe271fd84ee46))
+
 # [1.12.0](https://github.com/neosapience/typecast-autotag/compare/v1.11.0...v1.12.0) (2026-07-15)
 
 # [1.11.0](https://github.com/neosapience/typecast-autotag/compare/v1.10.0...v1.11.0) (2026-07-14)
