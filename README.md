@@ -378,7 +378,7 @@ import {
   getDefaultLanguage,
 } from '@neosapience/typecast-autotag';
 
-getSupportedLanguages(); // Legacy aliases followed by all 37 SSFM v3.0 codes
+getSupportedLanguages(); // 5 short codes, 33 other official codes, then kor/eng/jpn/zho
 getSupportedAutoTags(); // ['phone', 'datetime', 'time', 'date', ...]
 getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 ```

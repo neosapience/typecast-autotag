@@ -53,7 +53,10 @@ const AICC_PROMPTS = {
 describe('SSFM v3.0 language coverage', () => {
   it('registers every official TTS language code', () => {
     expect(SUPPORTED_TTS_LANGUAGES).toHaveLength(37);
-    expect(getSupportedLanguages()).toEqual(expect.arrayContaining([...SUPPORTED_TTS_LANGUAGES]));
+    expect(getSupportedLanguages()).toHaveLength(42);
+    expect(new Set(getSupportedLanguages())).toEqual(
+      new Set([...SUPPORTED_TTS_LANGUAGES, 'ko', 'en', 'ja', 'zh', 'zh-TW'])
+    );
   });
 
   it.each(SUPPORTED_TTS_LANGUAGES)('routes %s without falling back or throwing', (language) => {
