@@ -483,7 +483,7 @@ const RULES: Rule[] = [
     tagType: 'percentage',
     pattern: new RegExp(`(?:${NUMBER}\\s*[%％٪]|[%％٪]\\s*${NUMBER})`, 'gu'),
     convert: (value, language): string => {
-      const numeric = value.match(new RegExp(NUMBER, 'u'))?.[0];
+      const numeric = value.replace(/[%％٪]/gu, '').trim();
       if (!numeric) return value;
       const converted = numberToWords(numeric, language);
       return /^\s*[%％٪]/u.test(value) ? `%${converted}` : `${converted}%`;
