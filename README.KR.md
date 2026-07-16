@@ -23,17 +23,22 @@
 
 ## 언어 지원
 
-이 라이브러리는 TTS 텍스트 전처리를 위한 **다국어**를 지원합니다:
+JavaScript·브라우저 패키지는 **SSFM v3.0 TTS 전체 언어**를 지원합니다:
 
-| 언어                         | 상태                  | 모듈                |
-| ---------------------------- | --------------------- | ------------------- |
-| **한국어** (Korean)          | ✅ 전체 지원          | `korean`            |
-| **영어** (English)           | ✅ 전체 지원          | `english`           |
-| **일본어** (Japanese)        | ✅ 핵심 TTS 패턴 지원 | `japanese`          |
-| **중국어 간체** (简体中文)   | ✅ 핵심 TTS 패턴 지원 | `chinese`           |
-| **대만 Mandarin** (繁體中文) | ✅ 핵심 TTS 패턴 지원 | `taiwaneseMandarin` |
+| 언어 단계                    | 상태                          | 언어 코드           |
+| ---------------------------- | ----------------------------- | ------------------- |
+| **한국어** (Korean)          | ✅ 전체 패턴 지원             | `ko`, `kor`         |
+| **영어** (English)           | ✅ 전체 패턴 지원             | `en`, `eng`         |
+| **일본어** (Japanese)        | ✅ 핵심 TTS 패턴 지원         | `ja`, `jpn`         |
+| **중국어 간체** (简体中文)   | ✅ 핵심 TTS 패턴 지원         | `zh`, `zho`         |
+| **대만 Mandarin** (繁體中文) | ✅ 핵심 TTS 패턴 지원         | `zh-TW`             |
+| **그 외 SSFM v3.0 언어**     | ✅ 공통 숫자 패턴 지원 (33개) | 아래 ISO 639-3 코드 |
 
-> 일본어·중국어 간체·대만 Mandarin은 현재 JavaScript·브라우저 패키지에서 제공합니다. 네이티브 C·Python·Java 바인딩은 기존 한국어·영어 진입점을 유지합니다.
+SSFM v3.0 공식 언어 코드(37개): `ara`, `ben`, `bul`, `ces`, `dan`, `deu`, `ell`, `eng`, `fin`, `fra`, `hin`, `hrv`, `hun`, `ind`, `ita`, `jpn`, `kor`, `msa`, `nan`, `nld`, `nor`, `pan`, `pol`, `por`, `ron`, `rus`, `slk`, `spa`, `swe`, `tam`, `tgl`, `tha`, `tur`, `ukr`, `vie`, `yue`, `zho`.
+
+전용 규칙 모듈이 없는 33개 언어는 로케일별 소수 표기와 주요 언어의 고유 숫자 문자를 포함해 독립된 `number`, `percentage`, `phone` 패턴을 보수적으로 자동 변환합니다. 수동 태그는 `name`, `digits`, `serial`, `account`도 제공합니다. 날짜·시간·통화·단위의 의미를 별도로 추론하지 않으며, 형식화된 날짜·시간·점수·범위는 모호한 오변환으로부터 보호합니다. `nan`은 TTS가 읽을 수 있는 번체 중국어 표기 숫자를 대체 표현으로 사용합니다.
+
+> 공식 언어 코드 37개는 현재 JavaScript·브라우저 패키지에서 제공합니다. 네이티브 C·Python·Java 바인딩은 기존 한국어·영어 진입점을 유지합니다.
 
 ## 지원 환경
 
@@ -66,7 +71,7 @@
 
 ---
 
-전화번호, 날짜, 금액 등을 한국어·영어·일본어·중국어 간체·대만 Mandarin의 자연스러운 음성 패턴으로 변환합니다. [Typecast](https://typecast.ai) TTS API 및 AICC (AI Contact Center) 환경을 위해 제작되었습니다.
+숫자와 언어별 패턴을 자연스러운 음성 텍스트로 변환합니다. [Typecast](https://typecast.ai) TTS API 및 AICC (AI Contact Center) 환경을 위해 제작되었습니다.
 
 ```typescript
 import { autoTag } from '@neosapience/typecast-autotag';
@@ -90,13 +95,17 @@ autoTag('客服时间是6–9点，费用是¥12,800。', { language: 'zh' });
 // 대만 Mandarin 자동 태깅
 autoTag('客服時間是6–9點，費用是NT$12,800。', { language: 'zh-TW' });
 // → '客服時間是六點到九點，費用是一萬二千八百新臺幣。'
+
+// 스페인어 공통 숫자 패턴 (공식 ISO 639-3 코드)
+autoTag('Total 1,234.5 and 72.5%.', { language: 'spa' });
+// → 'Total mil doscientos treinta y cuatro punto cinco and setenta y dos punto cinco%.'
 ```
 
 <br>
 
 ## 기능
 
-- **다국어 지원**: 한국어·영어·일본어·중국어 간체·대만 Mandarin TTS 텍스트 전처리 지원.
+- **TTS 37개 언어 지원**: SSFM v3.0의 모든 ISO 639-3 언어 코드와 기존 단축 코드를 지원.
 - **자동 태깅**: 전화번호, 날짜, 시간, 금액 등의 패턴을 자동으로 감지하여 변환.
 - **수동 태깅**: `tagName(value)` 구문으로 명시적 제어 가능.
 - **제로 디펜던시**: 가볍고 빠르며 트리 쉐이킹 가능. ESM과 CommonJS 모두 지원.
@@ -289,10 +298,10 @@ autoTag('010-1234-5678, 50000원', { language: 'ko', enabledTags: ['phone'] });
 // → '공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔, 50000원'
 ```
 
-| 옵션          | 타입                              | 기본값 | 설명               |
-| ------------- | --------------------------------- | ------ | ------------------ |
-| `language`    | `'ko'｜'en'｜'ja'｜'zh'｜'zh-TW'` | `'ko'` | 사용할 언어        |
-| `enabledTags` | `string[]`                        | 전체   | 활성화할 태그 유형 |
+| 옵션          | 타입                | 기본값 | 설명                                    |
+| ------------- | ------------------- | ------ | --------------------------------------- |
+| `language`    | `SupportedLanguage` | `'ko'` | 공식 ISO 639-3 코드 또는 지원 단축 코드 |
+| `enabledTags` | `string[]`          | 전체   | 활성화할 태그 유형                      |
 
 </details>
 
@@ -359,7 +368,7 @@ import {
   getDefaultLanguage,
 } from '@neosapience/typecast-autotag';
 
-getSupportedLanguages(); // ['ko', 'en', 'ja', 'zh', 'zh-TW']
+getSupportedLanguages(); // 기존 단축 코드와 SSFM v3.0 공식 코드 37개
 getSupportedAutoTags(); // ['phone', 'datetime', 'time', 'date', ...]
 getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 ```

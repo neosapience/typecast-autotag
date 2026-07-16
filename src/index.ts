@@ -43,7 +43,10 @@ import * as englishModule from './english';
 import * as japaneseModule from './japanese';
 import * as chineseModule from './chinese';
 import * as taiwaneseMandarinModule from './taiwanese-mandarin';
+import { createGenericLanguageModule, GENERIC_TTS_LANGUAGES } from './generic-language';
+import type { GenericTtsLanguage, TtsLanguage } from './generic-language';
 export { MAX_INPUT_LENGTH } from './input-guard';
+export { SUPPORTED_TTS_LANGUAGES } from './generic-language';
 
 const {
   autoTag: enAutoTag,
@@ -102,7 +105,7 @@ import type {
 /**
  * Supported language codes
  */
-export type SupportedLanguage = 'ko' | 'en' | 'ja' | 'zh' | 'zh-TW';
+export type SupportedLanguage = TtsLanguage | 'ko' | 'en' | 'ja' | 'zh' | 'zh-TW';
 
 /**
  * Auto-tagging options
@@ -182,10 +185,14 @@ interface LanguageModule {
   extractTags: (text: string) => ExtractedTag[];
   manualTagSelective: (text: string, allowedTags: string[]) => string;
   supportedAutoTags: readonly string[];
-  supportedManualTags: string[];
+  supportedManualTags: readonly string[];
 }
 
-const languageModules: Record<SupportedLanguage, LanguageModule> = {
+const genericLanguageModules = Object.fromEntries(
+  GENERIC_TTS_LANGUAGES.map((language) => [language, createGenericLanguageModule(language)])
+) as Record<GenericTtsLanguage, LanguageModule>;
+
+const languageModules = {
   ko: {
     autoTag: koAutoTag,
     extractAutoTags: koExtractAutoTags,
@@ -231,7 +238,13 @@ const languageModules: Record<SupportedLanguage, LanguageModule> = {
     supportedAutoTags: ZH_TW_SUPPORTED_AUTO_TAGS,
     supportedManualTags: ZH_TW_SUPPORTED_TAGS,
   },
-};
+  ...genericLanguageModules,
+} as unknown as Record<SupportedLanguage, LanguageModule>;
+
+languageModules.kor = languageModules.ko;
+languageModules.eng = languageModules.en;
+languageModules.jpn = languageModules.ja;
+languageModules.zho = languageModules.zh;
 
 // ============================================================================
 // Default Language Configuration

@@ -74,6 +74,9 @@ importers:
       release-it:
         specifier: ^20.2.0
         version: 20.2.1(@types/node@26.1.0)
+      to-words:
+        specifier: 5.6.1
+        version: 5.6.1
       ts-jest:
         specifier: ^29.2.5
         version: 29.4.11(@babel/core@8.0.1)(@jest/transform@30.4.1)(@jest/types@30.4.1)(babel-jest@30.4.1(@babel/core@8.0.1))(esbuild@0.28.1)(jest-util@30.4.1)(jest@30.4.2(@types/node@26.1.0)(babel-plugin-macros@3.1.0))(typescript@6.0.3)
@@ -3039,6 +3042,11 @@ packages:
 
   tmpl@1.0.5:
     resolution: {integrity: sha512-3f0uOEAQwIqGuWW2MVzYg8fV/QNnc/IpuJNG837rLuczAaLVHslWHZQj4IGiEl5Hs3kkbhwL9Ab7Hrsmuj+Smw==}
+
+  to-words@5.6.1:
+    resolution: {integrity: sha512-I2tQDzfUjFUbBiRFkoN4qYvm88us5h/hXayyfsszlWK21NY5fGRU0BOURrejmh55isf6lEt1rCstW9ezkdXFyw==}
+    engines: {node: '>=20.0.0'}
+    hasBin: true
 
   ts-api-utils@2.5.0:
     resolution: {integrity: sha512-OJ/ibxhPlqrMM0UiNHJ/0CKQkoKF243/AEmplt3qpRgkW8VG7IfOS41h7V8TjITqdByHzrjcS/2si+y4lIh8NA==}
@@ -6485,6 +6493,8 @@ snapshots:
       picomatch: 4.0.5
 
   tmpl@1.0.5: {}
+
+  to-words@5.6.1: {}
 
   ts-api-utils@2.5.0(typescript@6.0.3):
     dependencies:
