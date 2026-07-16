@@ -402,9 +402,15 @@ function timeToWords(value: string, language: GenericTtsLanguage): string {
 
 function datetimeToWords(value: string, language: GenericTtsLanguage): string {
   const match = new RegExp(`^(${DATE_PATTERN})(?:T|\\s+)(${TIME_PATTERN})$`, 'u').exec(value);
-  return match
-    ? `${dateToWords(match[1] ?? '', language)}, ${timeToWords(match[2] ?? '', language)}`
-    : value;
+  if (!match) return value;
+
+  const date = match[1] ?? '';
+  const time = match[2] ?? '';
+  const convertedDate = dateToWords(date, language);
+  const convertedTime = timeToWords(time, language);
+  return convertedDate === date || convertedTime === time
+    ? value
+    : `${convertedDate}, ${convertedTime}`;
 }
 
 const CURRENCY_CODES = {
@@ -475,8 +481,13 @@ const RULES: Rule[] = [
   },
   {
     tagType: 'percentage',
-    pattern: new RegExp(`${NUMBER}\\s*[%％٪]`, 'gu'),
-    convert: (value, language) => `${numberToWords(value.replace(/\s*[%％٪]$/, ''), language)}%`,
+    pattern: new RegExp(`(?:${NUMBER}\\s*[%％٪]|[%％٪]\\s*${NUMBER})`, 'gu'),
+    convert: (value, language): string => {
+      const numeric = value.match(new RegExp(NUMBER, 'u'))?.[0];
+      if (!numeric) return value;
+      const converted = numberToWords(numeric, language);
+      return /^\s*[%％٪]/u.test(value) ? `%${converted}` : `${converted}%`;
+    },
   },
   {
     tagType: 'unit',
@@ -527,6 +538,7 @@ function findMatches(
   if (enabled?.size === 0) return [];
 
   const candidates: Array<MatchResult & { priority: number }> = [];
+  const protectedDatetimes: Array<{ start: number; end: number }> = [];
   RULES.forEach((rule, priority) => {
     if (enabled && !enabled.has(rule.tagType)) return;
     rule.pattern.lastIndex = 0;
@@ -536,7 +548,11 @@ function findMatches(
       const end = start + match[0].length;
       if (!isStandalone(text, start, end, match[0])) continue;
       const converted = rule.convert(match[0], language);
-      if (converted === match[0]) continue;
+      if (converted === match[0]) {
+        if (rule.tagType === 'datetime') protectedDatetimes.push({ start, end });
+        continue;
+      }
+      if (protectedDatetimes.some((range) => start >= range.start && end <= range.end)) continue;
       candidates.push({
         original: match[0],
         converted,

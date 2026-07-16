@@ -128,7 +128,14 @@ describe('generic language safety and manual tags', () => {
 
   it('normalizes localized percent and minus symbols', () => {
     expect(autoTag('٧٢٫٥٪', { language: 'ara' })).toBe('اثنان و سبعون فاصلة خمسة%');
+    expect(autoTag('%50 indirim', { language: 'tur' })).toBe('%elli indirim');
     expect(autoTag('−12,5', { language: 'deu' })).toBe('minus zwölf komma fünf');
+  });
+
+  it('leaves a whole datetime unchanged when either segment is invalid', () => {
+    expect(autoTag('2024-13-01T09:30', { language: 'tur' })).toBe('2024-13-01T09:30');
+    expect(autoTag('2024-12-01T25:30', { language: 'tur' })).toBe('2024-12-01T25:30');
+    expect(extractAutoTags('2024-13-01T09:30', { language: 'tur' })).toEqual([]);
   });
 
   it('localizes dates and times while reading ranges and identifiers safely', () => {
