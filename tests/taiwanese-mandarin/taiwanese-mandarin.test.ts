@@ -107,7 +107,9 @@ describe('Taiwan Mandarin auto-tagging', () => {
 
 describe('Taiwan Mandarin top-level API exposure', () => {
   it('registers zh-TW and exposes its direct namespace', () => {
-    expect(getSupportedLanguages()).toEqual(['ko', 'en', 'ja', 'zh', 'zh-TW']);
+    expect(getSupportedLanguages()).toEqual(
+      expect.arrayContaining(['ko', 'en', 'ja', 'zh', 'zh-TW', 'zho'])
+    );
     expect(getSupportedAutoTags('zh-TW')).toContain('phone');
     expect(getSupportedManualTags('zh-TW')).toContain('digits');
     expect(taiwaneseMandarin.autoTag('總計NT$500。')).toBe('總計五百新臺幣。');

@@ -27,7 +27,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "scripts": {
     "build": "node scripts/build.js",
@@ -106,6 +107,7 @@
     "lint-staged": "^17.0.8",
     "prettier": "^3.4.2",
     "release-it": "^20.2.0",
+    "to-words": "5.6.1",
     "ts-jest": "^29.2.5",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",

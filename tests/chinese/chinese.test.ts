@@ -173,7 +173,9 @@ describe('Chinese auto-tagging', () => {
 
 describe('Chinese top-level API exposure', () => {
   it('registers zh and exposes its direct namespace', () => {
-    expect(getSupportedLanguages()).toEqual(['ko', 'en', 'ja', 'zh', 'zh-TW']);
+    expect(getSupportedLanguages()).toEqual(
+      expect.arrayContaining(['ko', 'en', 'ja', 'zh', 'zh-TW', 'zho'])
+    );
     expect(getSupportedAutoTags('zh')).toContain('phone');
     expect(getSupportedManualTags('zh')).toContain('digits');
     expect(chinese.autoTag('价格是500元。')).toBe('价格是五百元。');

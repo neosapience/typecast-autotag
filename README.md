@@ -23,17 +23,22 @@
 
 ## Language Support
 
-This library supports **multiple languages** for TTS text preprocessing:
+The JavaScript and browser package accepts every **SSFM v3.0 TTS language**:
 
-| Language                          | Status               | Module              |
-| --------------------------------- | -------------------- | ------------------- |
-| **Korean** (한국어)               | ✅ Full Support      | `korean`            |
-| **English**                       | ✅ Full Support      | `english`           |
-| **Japanese** (日本語)             | ✅ Core TTS Patterns | `japanese`          |
-| **Simplified Chinese** (简体中文) | ✅ Core TTS Patterns | `chinese`           |
-| **Taiwan Mandarin** (繁體中文)    | ✅ Core TTS Patterns | `taiwaneseMandarin` |
+| Language tier                     | Status                          | Language codes        |
+| --------------------------------- | ------------------------------- | --------------------- |
+| **Korean** (한국어)               | ✅ Full patterns                | `ko`, `kor`           |
+| **English**                       | ✅ Full patterns                | `en`, `eng`           |
+| **Japanese** (日本語)             | ✅ Core TTS patterns            | `ja`, `jpn`           |
+| **Simplified Chinese** (简体中文) | ✅ Core TTS patterns            | `zh`, `zho`           |
+| **Traditional Han-script voices** | ✅ Core TTS patterns            | `zh-TW`, `nan`, `yue` |
+| **Other SSFM v3.0 languages**     | ✅ Common TTS patterns (31)     | ISO 639-3 codes below |
 
-> Japanese, Simplified Chinese, and Taiwan Mandarin are currently exposed by the JavaScript and browser package. The native C, Python, and Java bindings retain their existing Korean and English entry points.
+Official SSFM v3.0 language codes (37): `ara`, `ben`, `bul`, `ces`, `dan`, `deu`, `ell`, `eng`, `fin`, `fra`, `hin`, `hrv`, `hun`, `ind`, `ita`, `jpn`, `kor`, `msa`, `nan`, `nld`, `nor`, `pan`, `pol`, `por`, `ron`, `rus`, `slk`, `spa`, `swe`, `tam`, `tgl`, `tha`, `tur`, `ukr`, `vie`, `yue`, `zho`.
+
+For the 31 languages without a dedicated rule module, auto-tagging handles `datetime`, `date`, `time`, `money`, `phone`, `percentage`, `range`, `unit`, `serial`, and `number` patterns. It uses locale-specific date order, month names, currency names, decimal separators, 12/24-hour conventions, and common native digit scripts. Manual tags add `name`, `digits`, and `account`. Ambiguous numbers joined to grammatical ordinal or case suffixes remain unchanged so a cardinal rewrite does not damage pronunciation. The `nan` and `yue` codes reuse the Traditional Chinese pattern pipeline while retaining their own TTS voice selection.
+
+> All 37 official codes are currently exposed by the JavaScript and browser package. The native C, Python, and Java bindings retain their existing Korean and English entry points.
 
 ## Supported Environments
 
@@ -66,7 +71,7 @@ This library supports **multiple languages** for TTS text preprocessing:
 
 ---
 
-Transform phone numbers, dates, currency, and more into natural speech patterns. Built for [Typecast](https://typecast.ai) TTS API and AICC (AI Contact Center) environments.
+Transform numbers and language-specific patterns into natural speech text. Built for [Typecast](https://typecast.ai) TTS API and AICC (AI Contact Center) environments.
 
 ```typescript
 import { autoTag } from '@neosapience/typecast-autotag';
@@ -90,13 +95,17 @@ autoTag('客服时间是6–9点，费用是¥12,800。', { language: 'zh' });
 // Taiwan Mandarin auto-tagging
 autoTag('客服時間是6–9點，費用是NT$12,800。', { language: 'zh-TW' });
 // → '客服時間是六點到九點，費用是一萬二千八百新臺幣。'
+
+// Spanish common numeric patterns (official ISO 639-3 code)
+autoTag('Total 1,234.5 and 72.5%.', { language: 'spa' });
+// → 'Total mil doscientos treinta y cuatro punto cinco and setenta y dos punto cinco%.'
 ```
 
 <br>
 
 ## Features
 
-- **Multi-language Support**: Korean, English, Japanese, Simplified Chinese, and Taiwan Mandarin TTS text preprocessing.
+- **37 TTS Languages**: Accepts every SSFM v3.0 ISO 639-3 language code, plus existing short aliases.
 - **Auto-tagging**: Automatically detects and converts patterns like phone numbers, dates, times, and amounts.
 - **Manual-tagging**: Explicitly tag text with `tagName(value)` syntax for precise control.
 - **Zero Dependencies**: Lightweight, fast, and tree-shakeable. Supports both ESM and CommonJS.
@@ -289,10 +298,10 @@ autoTag('$500, 555-1234', { language: 'en', enabledTags: ['phone'] });
 // → '$500, five five five, one two three four'
 ```
 
-| Option        | Type                              | Default | Description         |
-| ------------- | --------------------------------- | ------- | ------------------- |
-| `language`    | `'ko'｜'en'｜'ja'｜'zh'｜'zh-TW'` | `'ko'`  | Language to use     |
-| `enabledTags` | `string[]`                        | all     | Tag types to enable |
+| Option        | Type                | Default | Description                                  |
+| ------------- | ------------------- | ------- | -------------------------------------------- |
+| `language`    | `SupportedLanguage` | `'ko'`  | Official ISO 639-3 code or a supported alias |
+| `enabledTags` | `string[]`          | all     | Tag types to enable                          |
 
 </details>
 
@@ -369,7 +378,7 @@ import {
   getDefaultLanguage,
 } from '@neosapience/typecast-autotag';
 
-getSupportedLanguages(); // ['ko', 'en', 'ja', 'zh', 'zh-TW']
+getSupportedLanguages(); // 5 short codes, 33 other official codes, then kor/eng/jpn/zho
 getSupportedAutoTags(); // ['phone', 'datetime', 'time', 'date', ...]
 getSupportedManualTags(); // ['name', 'month', 'day', 'date', ...]
 ```

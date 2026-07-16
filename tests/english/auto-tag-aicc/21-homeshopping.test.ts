@@ -32,7 +32,7 @@ describe('AICC Scenario 21: Home Shopping Order and Returns', () => {
 
   it('converts promotional sale announcement correctly', () => {
     const input =
-      'Flash sale announcement.\n\nOngoing time-limited sale:\nBroadcast window: 14:00 to 15:00 (time remaining: 25m30s)\n\nToday\'s featured item:\nItem: Premium Vacuum Cleaner Set\nOriginal price: $599.00\nSale price: $399.00 (33% off)\nAdditional discount: instant card discount $50.00\nFinal price: $349.00\n\nLimited quantity: 127 of 500 units remaining\nPurchase limit: 2 per customer\n\nFree gifts:\n1st gift: Extra filters, 5 pack ($50.00 value)\n2nd gift: Storage stand ($29.00 value)\n\nInterest-free installments: 12 months available\nMonthly payment: $29.08\n\nTo order now, press 1.\nFor other products, press 2.\nTo save to wishlist, press 3.';
+      "Flash sale announcement.\n\nOngoing time-limited sale:\nBroadcast window: 14:00 to 15:00 (time remaining: 25m30s)\n\nToday's featured item:\nItem: Premium Vacuum Cleaner Set\nOriginal price: $599.00\nSale price: $399.00 (33% off)\nAdditional discount: instant card discount $50.00\nFinal price: $349.00\n\nLimited quantity: 127 of 500 units remaining\nPurchase limit: 2 per customer\n\nFree gifts:\n1st gift: Extra filters, 5 pack ($50.00 value)\n2nd gift: Storage stand ($29.00 value)\n\nInterest-free installments: 12 months available\nMonthly payment: $29.08\n\nTo order now, press 1.\nFor other products, press 2.\nTo save to wishlist, press 3.";
 
     const result = autoTag(input);
     expect(result).toContain('two PM');
