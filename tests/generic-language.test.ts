@@ -91,6 +91,12 @@ describe('SSFM v3.0 language coverage', () => {
     expect(autoTag('Call 555-123-4567.', { language: 'eng' })).toContain('five five five');
     expect(autoTag('価格は500円です。', { language: 'jpn' })).toBe('価格はごひゃくえんです。');
     expect(autoTag('价格是500元。', { language: 'zho' })).toBe('价格是五百元。');
+    expect(autoTag('日期是2024年1月25日。', { language: 'nan' })).toBe(
+      '日期是二零二四年一月二十五日。'
+    );
+    expect(autoTag('日期係2024年1月25日。', { language: 'yue' })).toBe(
+      '日期係二零二四年一月二十五日。'
+    );
   });
 });
 
@@ -122,9 +128,29 @@ describe('generic language safety and manual tags', () => {
     expect(autoTag('−12,5', { language: 'deu' })).toBe('minus zwölf komma fünf');
   });
 
-  it('does not reinterpret dates, times, ranges, or embedded identifiers', () => {
+  it('localizes dates and times while reading ranges and identifiers safely', () => {
     const input = '2026-07-16 16.07.2026 14:30 pages 3–5 score 2:1 ZX-407';
-    expect(autoTag(input, { language: 'fra' })).toBe(input);
+    expect(autoTag(input, { language: 'fra' })).toBe(
+      'seize juillet deux mille vingt-six seize juillet deux mille vingt-six, quatorze:trente pages trois–cinq score deux:un Z X, quatre zéro sept'
+    );
+  });
+
+  it('localizes currency names and preserves compact units', () => {
+    expect(
+      autoTag('Am 25.01.2024 kostet es 59,90 $ und wiegt 35.000kg.', { language: 'deu' })
+    ).toBe(
+      'Am fünfundzwanzig. Januar zwei tausend vierundzwanzig kostet es neunundfünfzig komma neunzig US-Dollar und wiegt fünfunddreißig tausendkg.'
+    );
+    expect(autoTag('$5.00', { language: 'deu' })).toBe('fünf US-Dollar');
+  });
+
+  it('handles localized h-times and space-grouped thousands', () => {
+    expect(autoTag('Ouvert de 09h00 à 18h30, avec 3 000 places.', { language: 'fra' })).toBe(
+      'Ouvert de neuf:zéro à dix-huit:trente, avec trois mille places.'
+    );
+    expect(autoTag('Poids 1 234,56 kg.', { language: 'fra' })).toBe(
+      'Poids mille deux cent trente-quatre virgule cinquante-six kg.'
+    );
   });
 
   it('supports generic manual digits, identifiers, selection, and extraction', () => {

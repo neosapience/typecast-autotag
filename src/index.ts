@@ -245,6 +245,8 @@ languageModules.kor = languageModules.ko;
 languageModules.eng = languageModules.en;
 languageModules.jpn = languageModules.ja;
 languageModules.zho = languageModules.zh;
+languageModules.nan = languageModules['zh-TW'];
+languageModules.yue = languageModules['zh-TW'];
 
 // ============================================================================
 // Default Language Configuration

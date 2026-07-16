@@ -120,14 +120,19 @@ export const GENERIC_TTS_LANGUAGES = Object.freeze(
   Object.keys(NUMBER_CONVERTERS) as GenericTtsLanguage[]
 );
 
-export const SUPPORTED_AUTO_TAGS = ['phone', 'percentage', 'number'] as const;
-export const SUPPORTED_TAGS = [
-  ...SUPPORTED_AUTO_TAGS,
-  'name',
-  'digits',
+export const SUPPORTED_AUTO_TAGS = [
+  'phone',
+  'datetime',
+  'date',
+  'time',
+  'money',
+  'percentage',
+  'range',
+  'unit',
   'serial',
-  'account',
+  'number',
 ] as const;
+export const SUPPORTED_TAGS = [...SUPPORTED_AUTO_TAGS, 'name', 'digits', 'account'] as const;
 
 type GenericAutoTag = (typeof SUPPORTED_AUTO_TAGS)[number];
 
@@ -173,7 +178,7 @@ function normalizeDigits(value: string): string {
 function normalizeNumber(value: string, language: GenericTtsLanguage): string {
   let normalized = normalizeDigits(value)
     .replace(/^−/, '-')
-    .replace(/[’'\u00a0\u202f]/g, '')
+    .replace(/[’'\s\u00a0\u202f]/g, '')
     .trim();
   normalized = normalized.replace(/٬/g, '').replace(/٫/g, '.');
 
@@ -208,6 +213,18 @@ function normalizeWords(words: string, language: GenericTtsLanguage): string {
     : compact.toLocaleLowerCase(TTS_LANGUAGE_LOCALES[language]);
 }
 
+const DECIMAL_WORDS = Object.fromEntries(
+  GENERIC_TTS_LANGUAGES.map((language) => {
+    const one = normalizeWords(NUMBER_CONVERTERS[language].convert('1'), language);
+    const sample = normalizeWords(NUMBER_CONVERTERS[language].convert('1.1'), language);
+    const separator =
+      sample.startsWith(one) && sample.endsWith(one)
+        ? sample.slice(one.length, sample.length - one.length).trim()
+        : '';
+    return [language, separator];
+  })
+) as Record<GenericTtsLanguage, string>;
+
 export function numberToWords(value: string, language: GenericTtsLanguage): string {
   const normalized = normalizeNumber(value, language);
   if (!/^[+-]?\d+(?:\.\d+)?$/.test(normalized)) return value;
@@ -215,6 +232,17 @@ export function numberToWords(value: string, language: GenericTtsLanguage): stri
   if (/^[+-]?0\d+/.test(normalized)) return digitsToWords(normalized, language);
 
   try {
+    const [integer, fraction] = normalized.split('.');
+    if (fraction !== undefined && DECIMAL_WORDS[language]) {
+      const integerWords = numberToWords(integer ?? '0', language);
+      const fractionWords = /^0/.test(fraction)
+        ? digitsToWords(fraction, language)
+        : numberToWords(fraction, language);
+      return normalizeWords(
+        `${integerWords} ${DECIMAL_WORDS[language]} ${fractionWords}`,
+        language
+      );
+    }
     return normalizeWords(NUMBER_CONVERTERS[language].convert(normalized), language);
   } catch {
     return value;
@@ -250,7 +278,188 @@ function identifierToWords(value: string, language: GenericTtsLanguage): string 
     .trim();
 }
 
+const DATE_PATTERN = `${DIGIT}{1,4}\\s*[-‐‑‒–—−/.]\\s*${DIGIT}{1,2}\\s*[-‐‑‒–—−/.]\\s*${DIGIT}{1,4}`;
+const TIME_PATTERN = `(?:${DIGIT}{1,2}:${DIGIT}{2}(?::${DIGIT}{2})?|${DIGIT}{1,2}\\s*[hH]\\s*${DIGIT}{2})`;
+const DATETIME_PATTERN = `${DATE_PATTERN}(?:T|\\s+)${TIME_PATTERN}`;
+const RANGE_PATTERN = `${NUMBER}\\s*[-‐‑‒–—−~〜/:]\\s*${NUMBER}`;
+const CURRENCY_SYMBOL = '[$€£¥₹₽₩₺]';
+const MONEY_PATTERN = `(?:[-−]?${CURRENCY_SYMBOL}\\s*${NUMBER}|${NUMBER}\\s*${CURRENCY_SYMBOL})`;
+const UNIT =
+  '(?:ms|sec|min|hrs?|kg|mg|km|cm|mm|ml|gb|tb|mb|kb|kw|mw|gw|kwh|mbps|gbps|khz|mhz|ghz|°[cf]|[smhdglw]|cc|㎡|㎢)';
+const UNIT_PATTERN = `(?:${NUMBER}\\s*${UNIT})(?:\\s*${NUMBER}\\s*${UNIT})*`;
+const GROUPED_NUMBER_PATTERN = `[+\\-−]?${DIGIT}{1,3}(?:\\s+${DIGIT}{3})+(?:[,.٬٫]${DIGIT}+)?`;
+const SERIAL_PATTERN =
+  `(?<![\\p{L}\\p{N}_@])(?:` +
+  `\\p{L}{1,10}\\p{Nd}[\\p{L}\\p{N}‐‑‒–—-]*|` +
+  `\\p{L}{1,10}[-‐‑‒–—](?=[\\p{L}\\p{N}‐‑‒–—-]*\\p{Nd})[\\p{L}\\p{N}]+(?:[-‐‑‒–—][\\p{L}\\p{N}]+)*|` +
+  `\\p{Nd}{2,4}[-‐‑‒–—]\\p{L}{1,10}(?:[-‐‑‒–—][\\p{L}\\p{N}]+)*` +
+  `)(?![\\p{L}\\p{N}_@])`;
+
+const DATE_PART_ORDER = Object.fromEntries(
+  GENERIC_TTS_LANGUAGES.map((language) => {
+    const parts = new Intl.DateTimeFormat(TTS_LANGUAGE_LOCALES[language], {
+      calendar: 'gregory',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      timeZone: 'UTC',
+    })
+      .formatToParts(new Date(Date.UTC(2006, 10, 22)))
+      .filter((part) => part.type === 'day' || part.type === 'month' || part.type === 'year')
+      .map((part) => part.type);
+    return [language, parts];
+  })
+) as Record<GenericTtsLanguage, Array<'day' | 'month' | 'year'>>;
+
+function partToWords(value: string, language: GenericTtsLanguage): string {
+  const normalized = normalizeDigits(value).replace(/^0+(?=\d)/, '');
+  return numberToWords(normalized, language);
+}
+
+function dateToWords(value: string, language: GenericTtsLanguage): string {
+  const rawParts = value.split(/\s*[-‐‑‒–—−/.]\s*/u).map(normalizeDigits);
+  if (rawParts.length !== 3) return value;
+
+  let year: number;
+  let month: number;
+  let day: number;
+  const [first = '', second = '', third = ''] = rawParts;
+  if (first.length === 4) {
+    [year, month, day] = [Number(first), Number(second), Number(third)];
+  } else if (third.length === 4) {
+    year = Number(third);
+    const monthFirst =
+      Number(first) <= 12 && (Number(second) > 12 || DATE_PART_ORDER[language][0] === 'month');
+    [month, day] = monthFirst ? [Number(first), Number(second)] : [Number(second), Number(first)];
+  } else {
+    return value;
+  }
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day) ||
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(TTS_LANGUAGE_LOCALES[language], {
+    calendar: 'gregory',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
+    .formatToParts(date)
+    .map((part) =>
+      (part.type === 'year' || part.type === 'month' || part.type === 'day') &&
+      /\p{Nd}/u.test(part.value)
+        ? partToWords(part.value, language)
+        : part.value
+    )
+    .join('');
+}
+
+function timeToWords(value: string, language: GenericTtsLanguage): string {
+  const normalizedTime = value.replace(/\s*[hH]\s*/u, ':');
+  const [rawHour = '', rawMinute = '', rawSecond] = normalizedTime.split(':').map(normalizeDigits);
+  const hour = Number(rawHour);
+  const minute = Number(rawMinute);
+  const second = rawSecond === undefined ? undefined : Number(rawSecond);
+  if (
+    !Number.isInteger(hour) ||
+    !Number.isInteger(minute) ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59 ||
+    (second !== undefined && (!Number.isInteger(second) || second < 0 || second > 59))
+  ) {
+    return value;
+  }
+
+  const options: Intl.DateTimeFormatOptions = {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  };
+  if (second !== undefined) options.second = '2-digit';
+
+  return new Intl.DateTimeFormat(TTS_LANGUAGE_LOCALES[language], options)
+    .formatToParts(new Date(Date.UTC(2024, 0, 1, hour, minute, second ?? 0)))
+    .map((part) =>
+      (part.type === 'hour' || part.type === 'minute' || part.type === 'second') &&
+      /\p{Nd}/u.test(part.value)
+        ? partToWords(part.value, language)
+        : part.value
+    )
+    .join('');
+}
+
+function datetimeToWords(value: string, language: GenericTtsLanguage): string {
+  const match = new RegExp(`^(${DATE_PATTERN})(?:T|\\s+)(${TIME_PATTERN})$`, 'u').exec(value);
+  return match
+    ? `${dateToWords(match[1] ?? '', language)}, ${timeToWords(match[2] ?? '', language)}`
+    : value;
+}
+
+const CURRENCY_CODES = {
+  $: 'USD',
+  '€': 'EUR',
+  '£': 'GBP',
+  '¥': 'JPY',
+  '₹': 'INR',
+  '₽': 'RUB',
+  '₩': 'KRW',
+  '₺': 'TRY',
+} as const;
+
+function moneyToWords(value: string, language: GenericTtsLanguage): string {
+  const symbol = value.match(new RegExp(CURRENCY_SYMBOL, 'u'))?.[0] as
+    keyof typeof CURRENCY_CODES | undefined;
+  const numeric = value.match(new RegExp(NUMBER, 'u'))?.[0];
+  if (!symbol || !numeric) return value;
+  const normalized = normalizeNumber(numeric, language);
+  const amount = Number(normalized) * (/^\s*[-−]/u.test(value) ? -1 : 1);
+  if (!Number.isFinite(amount)) return value;
+  const fraction = normalized.split('.')[1];
+  const fractionDigits = fraction && /[1-9]/.test(fraction) ? fraction.length : 0;
+
+  return new Intl.NumberFormat(TTS_LANGUAGE_LOCALES[language], {
+    style: 'currency',
+    currency: CURRENCY_CODES[symbol],
+    currencyDisplay: 'name',
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  })
+    .format(amount)
+    .replace(new RegExp(NUMBER, 'gu'), (number) => numberToWords(number, language));
+}
+
+function numbersToWords(value: string, language: GenericTtsLanguage): string {
+  return value.replace(new RegExp(NUMBER, 'gu'), (number) => numberToWords(number, language));
+}
+
 const RULES: Rule[] = [
+  {
+    tagType: 'datetime',
+    pattern: new RegExp(DATETIME_PATTERN, 'gu'),
+    convert: datetimeToWords,
+  },
+  {
+    tagType: 'date',
+    pattern: new RegExp(DATE_PATTERN, 'gu'),
+    convert: dateToWords,
+  },
+  {
+    tagType: 'time',
+    pattern: new RegExp(TIME_PATTERN, 'gu'),
+    convert: timeToWords,
+  },
   {
     tagType: 'phone',
     pattern: new RegExp(
@@ -260,9 +469,34 @@ const RULES: Rule[] = [
     convert: phoneToWords,
   },
   {
+    tagType: 'money',
+    pattern: new RegExp(MONEY_PATTERN, 'gu'),
+    convert: moneyToWords,
+  },
+  {
     tagType: 'percentage',
     pattern: new RegExp(`${NUMBER}\\s*[%％٪]`, 'gu'),
     convert: (value, language) => `${numberToWords(value.replace(/\s*[%％٪]$/, ''), language)}%`,
+  },
+  {
+    tagType: 'unit',
+    pattern: new RegExp(UNIT_PATTERN, 'giu'),
+    convert: numbersToWords,
+  },
+  {
+    tagType: 'serial',
+    pattern: new RegExp(SERIAL_PATTERN, 'gu'),
+    convert: identifierToWords,
+  },
+  {
+    tagType: 'range',
+    pattern: new RegExp(RANGE_PATTERN, 'gu'),
+    convert: numbersToWords,
+  },
+  {
+    tagType: 'number',
+    pattern: new RegExp(GROUPED_NUMBER_PATTERN, 'gu'),
+    convert: numberToWords,
   },
   {
     tagType: 'number',
@@ -271,17 +505,10 @@ const RULES: Rule[] = [
   },
 ];
 
-const DATE_PATTERN = `${DIGIT}{1,4}\\s*[-‐‑‒–—−/.]\\s*${DIGIT}{1,2}\\s*[-‐‑‒–—−/.]\\s*${DIGIT}{1,4}`;
-const TIME_PATTERN = `${DIGIT}{1,2}:${DIGIT}{1,2}(?::${DIGIT}{1,2})?`;
-const RANGE_PATTERN = `${DIGIT}+(?:[,.]${DIGIT}+)?\\s*[-‐‑‒–—−~〜/:]\\s*${DIGIT}+(?:[,.]${DIGIT}+)?`;
-const DATE_OR_TIME_PATTERN = new RegExp(`^(?:${DATE_PATTERN}|${TIME_PATTERN})$`, 'u');
-
 function isStandalone(text: string, start: number, end: number, original: string): boolean {
   const before = text.slice(0, start);
   const after = text.slice(end);
   if (/[\p{L}\p{N}_]$/u.test(before) || /^[\p{L}\p{N}_]/u.test(after)) return false;
-  if (DATE_OR_TIME_PATTERN.test(original)) return false;
-
   if (/^[-−]/u.test(original) && /\p{Nd}$/u.test(before)) return false;
   if (
     /\p{Nd}[-‐‑‒–—−~〜/:.]$/u.test(before.slice(-2)) ||
@@ -289,16 +516,6 @@ function isStandalone(text: string, start: number, end: number, original: string
   )
     return false;
   return true;
-}
-
-const PROTECTED_PATTERN = new RegExp(`(?:${DATE_PATTERN}|${TIME_PATTERN}|${RANGE_PATTERN})`, 'gu');
-
-function findProtectedSpans(text: string): Array<{ start: number; end: number }> {
-  PROTECTED_PATTERN.lastIndex = 0;
-  return [...text.matchAll(PROTECTED_PATTERN)].map((match) => ({
-    start: match.index,
-    end: match.index + match[0].length,
-  }));
 }
 
 function findMatches(
@@ -310,7 +527,6 @@ function findMatches(
   if (enabled?.size === 0) return [];
 
   const candidates: Array<MatchResult & { priority: number }> = [];
-  const protectedSpans = findProtectedSpans(text);
   RULES.forEach((rule, priority) => {
     if (enabled && !enabled.has(rule.tagType)) return;
     rule.pattern.lastIndex = 0;
@@ -318,15 +534,12 @@ function findMatches(
     while ((match = rule.pattern.exec(text)) !== null) {
       const start = match.index;
       const end = start + match[0].length;
-      if (
-        rule.tagType !== 'phone' &&
-        protectedSpans.some((span) => start < span.end && end > span.start)
-      )
-        continue;
       if (!isStandalone(text, start, end, match[0])) continue;
+      const converted = rule.convert(match[0], language);
+      if (converted === match[0]) continue;
       candidates.push({
         original: match[0],
-        converted: rule.convert(match[0], language),
+        converted,
         tagType: rule.tagType,
         start,
         end,

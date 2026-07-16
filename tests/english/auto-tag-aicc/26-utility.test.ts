@@ -8,7 +8,7 @@ import { autoTag } from '../../../src/english/auto-tag';
 describe('AICC Scenario 26: Utility Services', () => {
   it('converts electricity bill announcement correctly', () => {
     const input =
-      'City Power electricity billing service.\n\nAccount number: 12-34-5678-9012\nService address: 123 Main Street, 5th floor\n\nJanuary 2024 electric bill:\n\nBilling period: 2024-01-01 to 2024-01-31\nThis month\'s usage: 450 kWh\nPrevious month\'s usage: 380 kWh\nChange: +70 kWh (18% increase)\n\nCharges:\nBase charge: $1.60\nUsage charge: $72.45\nEnvironmental fee: $3.15\nFuel adjustment: $2.25\nTax: $7.95\nPublic goods fee: $0.80\nTotal billed: $88.20\n\nPayment due: 2024-02-15\nLate payment fee: 0.03% per day\n\nEnergy saving tip:\n15% higher than same period last year\nConsider reducing standby power use\n\nTo pay now, press 1.\nFor usage details, press 2.\nTo set up auto-pay, press 3.\nTo return to previous menu, press the star key.';
+      "City Power electricity billing service.\n\nAccount number: 12-34-5678-9012\nService address: 123 Main Street, 5th floor\n\nJanuary 2024 electric bill:\n\nBilling period: 2024-01-01 to 2024-01-31\nThis month's usage: 450 kWh\nPrevious month's usage: 380 kWh\nChange: +70 kWh (18% increase)\n\nCharges:\nBase charge: $1.60\nUsage charge: $72.45\nEnvironmental fee: $3.15\nFuel adjustment: $2.25\nTax: $7.95\nPublic goods fee: $0.80\nTotal billed: $88.20\n\nPayment due: 2024-02-15\nLate payment fee: 0.03% per day\n\nEnergy saving tip:\n15% higher than same period last year\nConsider reducing standby power use\n\nTo pay now, press 1.\nFor usage details, press 2.\nTo set up auto-pay, press 3.\nTo return to previous menu, press the star key.";
 
     const result = autoTag(input);
     expect(result).toContain('January');
@@ -20,7 +20,7 @@ describe('AICC Scenario 26: Utility Services', () => {
 
   it('converts gas bill announcement correctly', () => {
     const input =
-      'City Gas billing service.\n\nAccount number: GS-2024-123456\nService address: 456 Oak Avenue, 12th floor\n\nJanuary 2024 gas bill:\n\nMeter read date: 2024-01-25\nThis month\'s usage: 85 therms\nPrevious month\'s usage: 62 therms\nChange: +23 therms (37% increase)\n\nCharges:\nBase charge: $1.05\nUsage charge: $93.42\nTax: $9.45\nTotal billed: $103.92\n\nHeating usage increase notice:\nAverage temperature last 7 days: -5.3 degrees\nRecommended thermostat setting: 20 to 22 degrees\n\nMonthly usage trend:\nOctober: $27.50\nNovember: $52.78\nDecember: $68.12\nJanuary: $103.92\n\nTo pay now, press 1.\nFor usage details, press 2.\nFor energy saving tips, press 3.\nFor meter reading, press 4.\nTo return to previous menu, press the star key.';
+      "City Gas billing service.\n\nAccount number: GS-2024-123456\nService address: 456 Oak Avenue, 12th floor\n\nJanuary 2024 gas bill:\n\nMeter read date: 2024-01-25\nThis month's usage: 85 therms\nPrevious month's usage: 62 therms\nChange: +23 therms (37% increase)\n\nCharges:\nBase charge: $1.05\nUsage charge: $93.42\nTax: $9.45\nTotal billed: $103.92\n\nHeating usage increase notice:\nAverage temperature last 7 days: -5.3 degrees\nRecommended thermostat setting: 20 to 22 degrees\n\nMonthly usage trend:\nOctober: $27.50\nNovember: $52.78\nDecember: $68.12\nJanuary: $103.92\n\nTo pay now, press 1.\nFor usage details, press 2.\nFor energy saving tips, press 3.\nFor meter reading, press 4.\nTo return to previous menu, press the star key.";
 
     const result = autoTag(input);
     expect(result).toContain('twelfth floor');

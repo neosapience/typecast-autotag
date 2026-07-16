@@ -31,12 +31,12 @@ The JavaScript and browser package accepts every **SSFM v3.0 TTS language**:
 | **English**                       | ✅ Full patterns                | `en`, `eng`           |
 | **Japanese** (日本語)             | ✅ Core TTS patterns            | `ja`, `jpn`           |
 | **Simplified Chinese** (简体中文) | ✅ Core TTS patterns            | `zh`, `zho`           |
-| **Taiwan Mandarin** (繁體中文)    | ✅ Core TTS patterns            | `zh-TW`               |
-| **Other SSFM v3.0 languages**     | ✅ Common numeric patterns (33) | ISO 639-3 codes below |
+| **Traditional Han-script voices** | ✅ Core TTS patterns            | `zh-TW`, `nan`, `yue` |
+| **Other SSFM v3.0 languages**     | ✅ Common TTS patterns (31)     | ISO 639-3 codes below |
 
 Official SSFM v3.0 language codes (37): `ara`, `ben`, `bul`, `ces`, `dan`, `deu`, `ell`, `eng`, `fin`, `fra`, `hin`, `hrv`, `hun`, `ind`, `ita`, `jpn`, `kor`, `msa`, `nan`, `nld`, `nor`, `pan`, `pol`, `por`, `ron`, `rus`, `slk`, `spa`, `swe`, `tam`, `tgl`, `tha`, `tur`, `ukr`, `vie`, `yue`, `zho`.
 
-For the 33 languages without a dedicated rule module, auto-tagging conservatively handles standalone `number`, `percentage`, and `phone` patterns, including locale-formatted decimals and common native digit scripts. Manual tags add `name`, `digits`, `serial`, and `account`. Dedicated date, time, currency, and unit semantics are not inferred; formatted dates, times, scores, and ranges are protected from ambiguous rewrites. `nan` uses Traditional Chinese written numerals as a TTS-readable fallback.
+For the 31 languages without a dedicated rule module, auto-tagging handles `datetime`, `date`, `time`, `money`, `phone`, `percentage`, `range`, `unit`, `serial`, and `number` patterns. It uses locale-specific date order, month names, currency names, decimal separators, 12/24-hour conventions, and common native digit scripts. Manual tags add `name`, `digits`, and `account`. Ambiguous numbers joined to grammatical ordinal or case suffixes remain unchanged so a cardinal rewrite does not damage pronunciation. The `nan` and `yue` codes reuse the Traditional Chinese pattern pipeline while retaining their own TTS voice selection.
 
 > All 37 official codes are currently exposed by the JavaScript and browser package. The native C, Python, and Java bindings retain their existing Korean and English entry points.
 

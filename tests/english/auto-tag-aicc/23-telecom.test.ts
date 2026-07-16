@@ -8,7 +8,7 @@ import { autoTag } from '../../../src/english/auto-tag';
 describe('AICC Scenario 23: Telecom Billing and Service', () => {
   it('converts billing inquiry announcement correctly', () => {
     const input =
-      'AT&T billing inquiry service.\n\nYour current month\'s bill summary:\n\nLine number: 555-987-6543\nPlan: 5G Premier Plus\nBilling month: January 2024\n\nCharges breakdown:\nBase plan: $89.00\nVoice calls: $0.00 (unlimited)\nText messages: $0.00 (unlimited)\nData: $0.00 (unlimited)\nAdd-on services: $4.40\nContent subscriptions: $15.90\n\nDiscounts:\nFamily bundle discount: -$10.00\nLoyalty discount: -$5.00\nPartner card discount: -$10.00\n\nTotal billed: $84.30\nPayment due: 2024-02-10\nAuto-pay date: 2024-02-25\n\nData usage:\nUsed: 45.7 GB / unlimited\nVoice: 320 minutes / unlimited\n\nTo resend statement, press 1.\nTo change plan, press 2.\nFor payment options, press 3.\nTo return to previous menu, press the star key.';
+      "AT&T billing inquiry service.\n\nYour current month's bill summary:\n\nLine number: 555-987-6543\nPlan: 5G Premier Plus\nBilling month: January 2024\n\nCharges breakdown:\nBase plan: $89.00\nVoice calls: $0.00 (unlimited)\nText messages: $0.00 (unlimited)\nData: $0.00 (unlimited)\nAdd-on services: $4.40\nContent subscriptions: $15.90\n\nDiscounts:\nFamily bundle discount: -$10.00\nLoyalty discount: -$5.00\nPartner card discount: -$10.00\n\nTotal billed: $84.30\nPayment due: 2024-02-10\nAuto-pay date: 2024-02-25\n\nData usage:\nUsed: 45.7 GB / unlimited\nVoice: 320 minutes / unlimited\n\nTo resend statement, press 1.\nTo change plan, press 2.\nFor payment options, press 3.\nTo return to previous menu, press the star key.";
 
     const result = autoTag(input);
     expect(result).toContain('five five five');

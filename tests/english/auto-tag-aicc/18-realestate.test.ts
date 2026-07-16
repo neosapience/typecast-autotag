@@ -20,7 +20,7 @@ describe('AICC Scenario 18: Real Estate and Rental', () => {
 
   it('converts rent payment announcement correctly', () => {
     const input =
-      'Rent payment notice.\n\nLease details:\nLease number: L-2023-04567\nProperty: 456 Elm Avenue, Suite 301, Chicago, IL\nLease term: 2023-06-01 through 2025-05-31 (2 years)\n\nMonthly rent breakdown:\nBase rent: $1,500.00\nUtilities: $150.00\nTotal monthly payment: $1,650.00\nDue date: 25th of each month\n\nThis month\'s payment status:\nStatus: unpaid\nDue date: 2024-01-25\nDays late: 5 days\nLate fee: $16.50 (1%)\nCurrent amount due: $1,666.50\n\nAnnual rent summary:\nTotal scheduled: $19,800.00\nPaid to date: $11,550.00 (7 payments)\nUnpaid: $1,650.00 (1 payment)\nRemaining: $6,600.00 (4 payments)\n\nTo pay now, press 1.\nFor auto-pay setup, press 2.\nFor payment history, press 3.\nTo return to previous menu, press the star key.';
+      "Rent payment notice.\n\nLease details:\nLease number: L-2023-04567\nProperty: 456 Elm Avenue, Suite 301, Chicago, IL\nLease term: 2023-06-01 through 2025-05-31 (2 years)\n\nMonthly rent breakdown:\nBase rent: $1,500.00\nUtilities: $150.00\nTotal monthly payment: $1,650.00\nDue date: 25th of each month\n\nThis month's payment status:\nStatus: unpaid\nDue date: 2024-01-25\nDays late: 5 days\nLate fee: $16.50 (1%)\nCurrent amount due: $1,666.50\n\nAnnual rent summary:\nTotal scheduled: $19,800.00\nPaid to date: $11,550.00 (7 payments)\nUnpaid: $1,650.00 (1 payment)\nRemaining: $6,600.00 (4 payments)\n\nTo pay now, press 1.\nFor auto-pay setup, press 2.\nFor payment history, press 3.\nTo return to previous menu, press the star key.";
 
     const result = autoTag(input);
     expect(result).toContain('June');
