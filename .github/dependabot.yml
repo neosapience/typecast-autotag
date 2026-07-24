@@ -46,7 +46,9 @@ updates:
           - "*"
 
   - package-ecosystem: "maven"
-    directory: "/java-binding"
+    directories:
+      - "/java-binding"
+      - "/java-binding/verification-test"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -57,5 +59,20 @@ updates:
       prefix: "deps"
     groups:
       java-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Seoul"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    groups:
+      github-actions:
         patterns:
           - "*"
