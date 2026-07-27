@@ -3,7 +3,7 @@
 # Uses Duktape 2.7.0 (C99 compatible, GCC 4.4 supported)
 # Amazon Linux 2 (glibc 2.26) is backward compatible
 
-FROM --platform=linux/amd64 quay.io/centos/centos:6
+FROM --platform=linux/amd64 quay.io/centos/centos:10
 
 # Switch to CentOS 6 vault repository (required after EOL)
 RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Base.repo && \

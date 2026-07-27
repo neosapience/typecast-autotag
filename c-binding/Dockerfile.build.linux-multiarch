@@ -10,7 +10,7 @@
 # =============================================================================
 # Stage 1: Build x86_64 on CentOS 6 (glibc 2.12)
 # =============================================================================
-FROM --platform=linux/amd64 quay.io/centos/centos:6 AS builder-x86_64
+FROM --platform=linux/amd64 quay.io/centos/centos:10 AS builder-x86_64
 
 # Switch to CentOS 6 vault repository (required after EOL)
 RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Base.repo && \
