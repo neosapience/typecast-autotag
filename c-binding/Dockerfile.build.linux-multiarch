@@ -10,7 +10,7 @@
 # =============================================================================
 # Stage 1: Build x86_64 on CentOS 6 (glibc 2.12)
 # =============================================================================
-FROM --platform=linux/amd64 quay.io/centos/centos:6 AS builder-x86_64
+FROM --platform=linux/amd64 quay.io/centos/centos:10 AS builder-x86_64
 
 # Switch to CentOS 6 vault repository (required after EOL)
 RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Base.repo && \
@@ -47,7 +47,7 @@ RUN mkdir -p /build/output && \
 # Stage 2: Build i686 (x86) on CentOS 6 32-bit (glibc 2.12)
 # Using QEMU emulation via Docker's buildx
 # =============================================================================
-FROM --platform=linux/386 i386/centos:6 AS builder-x86
+FROM --platform=linux/386 i386/centos:7 AS builder-x86
 
 # Switch to CentOS 6 vault repository
 RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Base.repo && \
