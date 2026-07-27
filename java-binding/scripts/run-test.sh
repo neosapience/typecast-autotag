@@ -32,7 +32,7 @@ fi
 cd "$VERIFICATION_DIR"
 
 # Download JNA dependency if needed
-if [ ! -d "target/dependency" ] || [ ! -f "target/dependency/jna-5.14.0.jar" ]; then
+if [ ! -d "target/dependency" ] || ! compgen -G "target/dependency/*.jar" > /dev/null; then
     echo "📦 Downloading JNA dependency..."
     mvn dependency:copy-dependencies -q
     echo "✓ JNA dependency downloaded"
@@ -72,14 +72,13 @@ echo ""
 
 # Compile test
 echo "🔨 Compiling verification test..."
-"$JAVAC_CMD" -cp target/dependency/jna-5.14.0.jar:. SimpleVerificationTest.java
+"$JAVAC_CMD" -cp "target/dependency/*:." SimpleVerificationTest.java
 echo "✓ Compilation successful"
 echo ""
 
 # Run test
 echo "🧪 Running verification test..."
 echo ""
-"$JAVA_CMD" -cp target/dependency/jna-5.14.0.jar:. SimpleVerificationTest
+"$JAVA_CMD" -cp "target/dependency/*:." SimpleVerificationTest
 
 exit $?
-
