@@ -18,6 +18,12 @@ updates:
       - dependency-name: "typescript"
         update-types:
           - "version-update:semver-major"
+      - dependency-name: "release-it"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "@release-it/conventional-changelog"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "npm"
     directory: "/demo-html"
