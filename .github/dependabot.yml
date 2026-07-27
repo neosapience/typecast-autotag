@@ -95,6 +95,8 @@ updates:
       time: "09:00"
       timezone: "Asia/Seoul"
     open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
     groups:
       docker-dependencies:
         patterns:
