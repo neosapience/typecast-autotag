@@ -32,7 +32,7 @@ fi
 cd "$VERIFICATION_DIR"
 
 # Download JNA dependency if needed
-if [ ! -d "target/dependency" ] || [ ! -f "target/dependency/jna-5.14.0.jar" ]; then
+if [ ! -d "target/dependency" ] || ! compgen -G "target/dependency/*.jar" > /dev/null; then
     echo "📦 Downloading JNA dependency..."
     mvn dependency:copy-dependencies -q
     echo "✓ JNA dependency downloaded"
