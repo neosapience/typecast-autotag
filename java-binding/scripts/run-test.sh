@@ -72,14 +72,13 @@ echo ""
 
 # Compile test
 echo "🔨 Compiling verification test..."
-"$JAVAC_CMD" -cp target/dependency/jna-5.14.0.jar:. SimpleVerificationTest.java
+"$JAVAC_CMD" -cp "target/dependency/*:." SimpleVerificationTest.java
 echo "✓ Compilation successful"
 echo ""
 
 # Run test
 echo "🧪 Running verification test..."
 echo ""
-"$JAVA_CMD" -cp target/dependency/jna-5.14.0.jar:. SimpleVerificationTest
+"$JAVA_CMD" -cp "target/dependency/*:." SimpleVerificationTest
 
 exit $?
-
