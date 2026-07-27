@@ -99,7 +99,7 @@ updates:
       prefix: "deps"
     ignore:
       # CentOS 6 is intentional: the C binding targets glibc 2.12 compatibility.
-      - dependency-name: "quay.io/centos/centos"
+      - dependency-name: "centos/centos"
         update-types:
           - "version-update:semver-major"
       - dependency-name: "i386/centos"
