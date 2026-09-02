@@ -98,6 +98,7 @@
     "@types/node": "^26.0.0",
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.19.0",
+    "browserslist": "4.28.8",
     "dotenv-cli": "^11.0.0",
     "esbuild": "^0.28.1",
     "eslint": "^10.5.0",
