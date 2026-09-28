@@ -36,8 +36,9 @@ jobs:
           python -m pip check
       - name: Test installed wheel and bundled native library
         run: |
+          export EXPECTED_VERSION=$(python -c "from pathlib import Path; print(next(Path('dist').glob('*.whl')).name.split('-')[1])")
           cd "${{ runner.temp }}"
-          python -c "from importlib.metadata import metadata; m=metadata('typecast-autotag'); assert m['Version']=='2.0.0'; assert m['Requires-Python']=='>=3.10'"
+          python -c "import os; from importlib.metadata import metadata; m=metadata('typecast-autotag'); assert m['Version']==os.environ['EXPECTED_VERSION']; assert m['Requires-Python']=='>=3.10'"
           python -m pytest "${{ github.workspace }}/python-binding/tests" -v --import-mode=importlib
   rejected:
     name: Reject Python ${{ matrix.python }}
