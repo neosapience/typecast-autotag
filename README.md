@@ -48,7 +48,7 @@ For the 31 languages without a dedicated rule module, auto-tagging handles `date
 | ----------- | ------- | ------------------------------------------ |
 | **Node.js** | ≥18     | `@neosapience/typecast-autotag` (npm/pnpm) |
 | **Browser** | Modern  | `@neosapience/typecast-autotag` (ESM/UMD)  |
-| **Python**  | ≥3.8    | `typecast-autotag` (pip)                   |
+| **Python**  | ≥3.11   | `typecast-autotag` (pip)                   |
 | **Java**    | ≥8      | `typecast-autotag` (Maven)                 |
 | **C/C++**   | Any     | Native library                             |
 
