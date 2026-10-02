@@ -48,7 +48,7 @@ SSFM v3.0 공식 언어 코드(37개): `ara`, `ben`, `bul`, `ces`, `dan`, `deu`,
 | ----------- | ------ | ------------------------------------------ |
 | **Node.js** | ≥18    | `@neosapience/typecast-autotag` (npm/pnpm) |
 | **Browser** | Modern | `@neosapience/typecast-autotag` (ESM/UMD)  |
-| **Python**  | ≥3.8   | `typecast-autotag` (pip)                   |
+| **Python**  | ≥3.11  | `typecast-autotag` (pip)                   |
 | **Java**    | ≥8     | `typecast-autotag` (Maven)                 |
 | **C/C++**   | Any    | 네이티브 라이브러리                        |
 

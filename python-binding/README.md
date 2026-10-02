@@ -23,7 +23,7 @@ Automatically converts various patterns like phone numbers, dates, and amounts i
 
 ## Installation
 
-Python 3.10 or later is required. Python 3.8 and 3.9 are no longer supported because they are end-of-life. Version 1.13.0 is the last release whose published metadata supports Python 3.8/3.9. Upgrade Python and create a new virtual environment before installing 2.0.0. If migration is temporarily impossible, pin `typecast-autotag==1.13.0`; this does not restore security support for the EOL runtime. The supported/tested Python versions remain 3.10 through 3.13. This Python-only major release does not change the native library or other language packages.
+Python 3.11 or later is required. Python 3.8, 3.9, and 3.10 are no longer supported because they are end-of-life. The last compatible published releases are 1.13.0 for Python 3.8/3.9 and 2.0.1 for Python 3.10. Upgrade Python and create a new virtual environment before installing 3.0.0. Temporarily pinning an older release does not restore security support for the EOL runtime. The supported/tested Python versions are 3.11 through 3.13. This Python-only major release does not change the native library or other language packages.
 
 ### From PyPI
 
