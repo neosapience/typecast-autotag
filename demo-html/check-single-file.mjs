@@ -23,6 +23,5 @@ const html = readFileSync('dist/index.html', 'utf8');
 assert.match(html, /<script type="module"/);
 assert.match(html, /<style>/);
 assert.ok(!/<script\b[^>]*\bsrc=/i.test(html), 'Scripts must be inlined');
-const markup = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
-assert.ok(!/<link\b[^>]*href="\.\//i.test(markup), 'Local styles must be inlined');
+assert.ok(!/<link\b[^>]*href="\.\/[^"\n]+\.css"/i.test(html), 'Local styles must be inlined');
 console.log('Single HTML build and closing-tag escaping verified');
