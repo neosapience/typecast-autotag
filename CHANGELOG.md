@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.13.2
+
+- Correct the npm README support table to show Python 3.11 or later for the Python package. JavaScript and browser behavior is unchanged.
+
 # [1.13.0](https://github.com/neosapience/typecast-autotag/compare/v1.12.0...v1.13.0) (2026-07-16)
 
 
