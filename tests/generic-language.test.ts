@@ -75,14 +75,14 @@ describe('SSFM v3.0 language coverage', () => {
   });
 
   it.each([
-    ['ara', 'اثنان و أربعون'],
+    ['ara', 'اثنان وأربعون'],
     ['ben', 'বিয়াল্লিশ'],
-    ['bul', 'четиридесет две'],
+    ['bul', 'четиридесет и две'],
     ['deu', 'zweiundvierzig'],
     ['ell', 'σαράντα δύο'],
     ['hin', 'बयालीस'],
     ['spa', 'cuarenta y dos'],
-    ['tgl', 'apatnapu dalawa'],
+    ['tgl', "apatnapu't dalawa"],
     ['tha', 'สี่สิบสอง'],
     ['yue', '四十二'],
     ['nan', '四十二'],
@@ -106,7 +106,7 @@ describe('SSFM v3.0 language coverage', () => {
 describe('generic language safety and manual tags', () => {
   it('handles standalone numbers, percentages, and conservative phone formats', () => {
     expect(autoTag('Total 1,234.5 and 72.5%.', { language: 'spa' })).toBe(
-      'Total mil doscientos treinta y cuatro punto cinco and setenta y dos punto cinco%.'
+      'Total mil doscientos treinta y cuatro coma cinco and setenta y dos coma cinco%.'
     );
     expect(autoTag('Call +49-30-1234567.', { language: 'deu' })).toBe(
       'Call + vier neun, drei null, eins zwei drei vier fünf sechs sieben.'
@@ -114,7 +114,7 @@ describe('generic language safety and manual tags', () => {
   });
 
   it.each([
-    ['deu', '1.234,56', 'tausend zwei hundert vierunddreißig komma sechsundfünfzig'],
+    ['deu', '1.234,56', 'tausendzweihundertvierunddreißig komma sechsundfünfzig'],
     ['fra', '1 234,56', 'mille deux cent trente-quatre virgule cinquante-six'],
     ['ara', '١٢٫٥', 'اثنا عشر فاصلة خمسة'],
     ['ben', '১২.৫', 'বারো দশমিক পাঁচ'],
@@ -127,7 +127,7 @@ describe('generic language safety and manual tags', () => {
   );
 
   it('normalizes localized percent and minus symbols', () => {
-    expect(autoTag('٧٢٫٥٪', { language: 'ara' })).toBe('اثنان و سبعون فاصلة خمسة%');
+    expect(autoTag('٧٢٫٥٪', { language: 'ara' })).toBe('اثنان وسبعون فاصلة خمسة%');
     expect(autoTag('%50 indirim', { language: 'tur' })).toBe('%elli indirim');
     expect(autoTag('−12,5', { language: 'deu' })).toBe('minus zwölf komma fünf');
   });
@@ -149,7 +149,7 @@ describe('generic language safety and manual tags', () => {
     expect(
       autoTag('Am 25.01.2024 kostet es 59,90 $ und wiegt 35.000kg.', { language: 'deu' })
     ).toBe(
-      'Am fünfundzwanzig. Januar zwei tausend vierundzwanzig kostet es neunundfünfzig komma neunzig US-Dollar und wiegt fünfunddreißig tausendkg.'
+      'Am fünfundzwanzig. Januar zweitausendvierundzwanzig kostet es neunundfünfzig komma neunzig US-Dollar und wiegt fünfunddreißigtausendkg.'
     );
     expect(autoTag('$5.00', { language: 'deu' })).toBe('fünf US-Dollar');
   });
