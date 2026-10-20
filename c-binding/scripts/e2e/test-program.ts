@@ -166,6 +166,13 @@ int main() {
     run_test(&result, "expanded manual output", typecast_auto_tag_with_manual,
              expanded_input, "공 . 일 . 공", 1);
 
+    run_test(&result, "negative English money", typecast_auto_tag_english,
+             "-$50", "minus fifty dollars", 1);
+    run_test(&result, "English currency word range", typecast_auto_tag_english,
+             "costs 10-50 dollars", "costs ten dollars to fifty dollars", 1);
+    run_test(&result, "English shared currency range", typecast_auto_tag_english,
+             "5-€10", "five euros to ten euros", 1);
+
     // money tag
     run_test(&result, "money", typecast_manual_tag,
              "money(50000)원", "오만", 1);

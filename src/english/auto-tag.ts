@@ -165,8 +165,17 @@ export interface MatchResult {
  * - Pattern description: Specifies what format each pattern detects
  */
 const CURRENCY_AMOUNT = '(?:-[$£€¥₩]|[$£€¥₩]-?)[\\d,]+(?:\\.\\d+)?';
-const MONEY_RANGE = new RegExp(
-  `^(${CURRENCY_AMOUNT})(?:\\s*[-~–—]\\s*|\\s+to\\s+)(${CURRENCY_AMOUNT})$`,
+const NUMBER_AMOUNT = '-?[\\d,]+(?:\\.\\d+)?';
+const MONEY_SEPARATOR = '(?:\\s*[-~–—]\\s*|\\s+to\\s+)';
+const CURRENCY_SUFFIX =
+  '\\s*(?:(?:thousand|million|billion|trillion)\\s+)?(?:dollars?|USD|pounds?|GBP|euros?|EUR|yen|JPY|won|KRW|cents?)\\b';
+const MONEY_RANGE = new RegExp(`(${CURRENCY_AMOUNT})${MONEY_SEPARATOR}(${CURRENCY_AMOUNT})`, 'i');
+const MONEY_WORD_RANGE = new RegExp(
+  `(${CURRENCY_AMOUNT}|${NUMBER_AMOUNT})${MONEY_SEPARATOR}(${NUMBER_AMOUNT})(${CURRENCY_SUFFIX})`,
+  'i'
+);
+const MONEY_MIXED_RANGE = new RegExp(
+  `(${NUMBER_AMOUNT})${MONEY_SEPARATOR}(${CURRENCY_AMOUNT})`,
   'i'
 );
 
@@ -389,14 +398,27 @@ const AUTO_TAG_PATTERNS = {
    */
   money: {
     patterns: [
-      new RegExp(`${CURRENCY_AMOUNT}(?:\\s*[-~–—]\\s*|\\s+to\\s+)${CURRENCY_AMOUNT}`, 'gi'),
+      new RegExp(MONEY_RANGE.source, 'gi'),
+      new RegExp(MONEY_WORD_RANGE.source, 'gi'),
+      new RegExp(MONEY_MIXED_RANGE.source, 'gi'),
       new RegExp(`${CURRENCY_AMOUNT}\\s*(?:thousand|million|billion|trillion)\\b`, 'gi'),
       new RegExp(CURRENCY_AMOUNT, 'g'),
-      /-?[\d,]+(?:\.\d+)?\s*(?:(?:thousand|million|billion|trillion)\s+)?(?:dollars?|USD|pounds?|GBP|euros?|EUR|yen|JPY|won|KRW|cents?)\b/gi,
+      new RegExp(`${NUMBER_AMOUNT}${CURRENCY_SUFFIX}`, 'gi'),
     ],
     converter: (match: string) => {
       const range = match.match(MONEY_RANGE);
-      return range ? money(range[1]!) + ' to ' + money(range[2]!) : money(match);
+      if (range) return money(range[1]!) + ' to ' + money(range[2]!);
+      const wordRange = match.match(MONEY_WORD_RANGE);
+      if (wordRange) {
+        const first = /[$£€¥₩]/.test(wordRange[1]!) ? wordRange[1]! : wordRange[1]! + wordRange[3]!;
+        return money(first) + ' to ' + money(wordRange[2]! + wordRange[3]!);
+      }
+      const mixedRange = match.match(MONEY_MIXED_RANGE);
+      if (mixedRange) {
+        const currency = mixedRange[2]!.match(/[$£€¥₩]/)![0];
+        return money(currency + mixedRange[1]!) + ' to ' + money(mixedRange[2]!);
+      }
+      return money(match);
     },
   },
 

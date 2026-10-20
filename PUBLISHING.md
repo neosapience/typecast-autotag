@@ -50,7 +50,7 @@ Packages have independent versions. An npm release must not change Python, Java,
 
    Native changes also require `pnpm test:e2e`, `pnpm test:python`, and `pnpm test:java` after rebuilding libraries. Packaging-only changes must test the installed artifact on its supported platforms.
 
-3. Merge the reviewed version change, then run only the affected registry workflow from that commit. The npm workflow validates, publishes with provenance, and creates a GitHub Release named `npm vX.Y.Z` at that commit. It does not attach unrelated native binaries. `pnpm release:dry` / `pnpm release` remain available for preparing an npm version/tag with release-it; they never synchronize other ecosystems.
+3. Merge the reviewed version change, then run only the affected registry workflow from that commit. The npm workflow validates, publishes with provenance, and creates a GitHub Release named `npm vX.Y.Z` at that commit. It does not attach unrelated native binaries. `pnpm release:dry` / `pnpm release` remain available for preparing an npm version/tag with release-it; they neither create a GitHub Release nor synchronize other ecosystems. Before publishing, the workflow rejects an existing version tag that points to another commit; it checks the tag again before recording the release.
 
 4. Verify each published registry version against its own manifest and source commit:
 

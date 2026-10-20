@@ -43,6 +43,9 @@ jobs:
           test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
           test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
 
+      - name: Verify version tag before publishing
+        run: node scripts/verify-release-tag.js
+
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ""
@@ -55,6 +58,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          node scripts/verify-release-tag.js
           version=$(node -p "require('./package.json').version")
           tag="v$version"
           if ! gh release view "$tag" >/dev/null 2>&1; then

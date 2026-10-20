@@ -22,6 +22,12 @@ describe('signed currency amounts', () => {
   });
 
   it.each([
+    ['costs 10-50 dollars', 'costs ten dollars to fifty dollars'],
+    ['costs 5-$10 today', 'costs five dollars to ten dollars today'],
+    ['5-€10', 'five euros to ten euros'],
+    ['-10--5 euros', 'minus ten euros to minus five euros'],
+    ['$5-10 dollars', 'five dollars to ten dollars'],
+    ['1-2 million dollars', 'one million dollars to two million dollars'],
     ['$50-$100', 'fifty dollars to one hundred dollars'],
     ['-$50 to $100', 'minus fifty dollars to one hundred dollars'],
     ['-$100--$50', 'minus one hundred dollars to minus fifty dollars'],

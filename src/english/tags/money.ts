@@ -151,7 +151,8 @@ export function money(input: number | string, options?: MoneyOptions): string {
       const symbolCurrency = CURRENCY_BY_SYMBOL[symbol];
       const genericCurrency = currencyName
         ? {
-            ...defaultCurrency,
+            subunit,
+            singularSubunit,
             unit: rawCurrencyName,
             singularUnit: rawCurrencyName.endsWith('s')
               ? rawCurrencyName.slice(0, -1)

@@ -10,6 +10,7 @@ describe('independent package versions', () => {
     expect(JSON.stringify({ scripts: manifest.scripts, hooks: config.hooks })).not.toMatch(
       /sync:version|sync-python-version/
     );
+    expect(config.github.release).toBe(false);
     expect(config.github.assets).toBeUndefined();
   });
 
@@ -36,9 +37,11 @@ describe('independent package versions', () => {
       ).toContain('__version__ = "3.0.1"');
       for (const file of ['package.json', 'java-binding/pom.xml'])
         expect(fs.readFileSync(path.join(dir, file), 'utf8')).toBe(fs.readFileSync(file, 'utf8'));
-      expect(() =>
-        execFileSync(process.execPath, [script, '3.0.1-invalid'], { stdio: 'pipe' })
-      ).toThrow();
+      for (const invalid of ['3.0.1-invalid', '3.0.1\n', '3.0.1\r', '3.0.1\u2028', '3.0.1\u2029']) {
+        expect(() =>
+          execFileSync(process.execPath, [script, invalid], { stdio: 'pipe' })
+        ).toThrow();
+      }
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }

@@ -28,6 +28,7 @@ typedef void (*free_fn)(char*);
 static init_fn typecast_init;
 static cleanup_fn typecast_cleanup;
 static tag_fn typecast_auto_tag;
+static tag_fn typecast_auto_tag_english;
 static tag_fn typecast_manual_tag;
 static tag_fn typecast_auto_tag_with_manual;
 static free_fn typecast_free;
@@ -97,11 +98,12 @@ int main() {
     typecast_init = (init_fn)dlsym(handle, "typecast_init");
     typecast_cleanup = (cleanup_fn)dlsym(handle, "typecast_cleanup");
     typecast_auto_tag = (tag_fn)dlsym(handle, "typecast_auto_tag");
+    typecast_auto_tag_english = (tag_fn)dlsym(handle, "typecast_auto_tag_english");
     typecast_manual_tag = (tag_fn)dlsym(handle, "typecast_manual_tag");
     typecast_auto_tag_with_manual = (tag_fn)dlsym(handle, "typecast_auto_tag_with_manual");
     typecast_free = (free_fn)dlsym(handle, "typecast_free");
     
-    if (!typecast_init || !typecast_cleanup || !typecast_auto_tag || 
+    if (!typecast_init || !typecast_cleanup || !typecast_auto_tag || !typecast_auto_tag_english ||
         !typecast_manual_tag || !typecast_auto_tag_with_manual || !typecast_free) {
         fprintf(stderr, "Failed to load functions\\n");
         dlclose(handle);
@@ -154,6 +156,13 @@ int main() {
     for (int i = 0; i < 400; i++) strcat(expanded_input, "phone(010-1234-5678) ");
     run_test(&result, "expanded manual output", typecast_auto_tag_with_manual,
              expanded_input, "공 . 일 . 공", 1);
+
+    run_test(&result, "negative English money", typecast_auto_tag_english,
+             "-$50", "minus fifty dollars", 1);
+    run_test(&result, "English currency word range", typecast_auto_tag_english,
+             "costs 10-50 dollars", "costs ten dollars to fifty dollars", 1);
+    run_test(&result, "English shared currency range", typecast_auto_tag_english,
+             "5-€10", "five euros to ten euros", 1);
 
     // money tag
     run_test(&result, "money", typecast_manual_tag,
