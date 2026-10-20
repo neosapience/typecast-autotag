@@ -1,11 +1,15 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
-  korean,
-  english,
-  japanese,
-  chinese,
-  taiwaneseMandarin,
+  autoTag,
+  manualTag,
+  autoTagWithManual,
+  getSupportedManualTags,
+  MAX_INPUT_LENGTH,
+  SUPPORTED_TTS_LANGUAGES,
+  type SupportedLanguage,
 } from '@neosapience/typecast-autotag';
+import { TTS_LANGUAGE_LOCALES } from '../../src/generic-language';
+import { convertInput } from './convert-input';
 import {
   Icons,
   categoryIconsKo,
@@ -28,15 +32,26 @@ import {
 } from './examples';
 import { useScrollAnimation } from './useScrollAnimation';
 
-type Language = 'ko' | 'en' | 'ja' | 'zh' | 'zh-TW';
+type ExampleLanguage = 'ko' | 'en' | 'ja' | 'zh' | 'zh-TW';
+const additionalLanguages = SUPPORTED_TTS_LANGUAGES.filter(
+  (code) => !['kor', 'eng', 'jpn', 'zho'].includes(code)
+);
+const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
+const genericExamples: typeof examplesEn = [
+  { id: 1, category: 'Number', description: 'Number', original: '42' },
+  { id: 2, category: 'Percentage', description: 'Percentage', original: '72.5%' },
+  { id: 3, category: 'Date', description: 'Date', original: '2026-10-20' },
+  { id: 4, category: 'Phone', description: 'Phone', original: '+1-202-555-0175' },
+];
+const genericAiccExamples = [
+  {
+    id: 'common-patterns',
+    category: 'Common patterns',
+    title: 'Try your own text',
+    input: '42 / 72.5% / 2026-10-20 / +1-202-555-0175',
+  },
+];
 
-const languageModules = {
-  ko: korean,
-  en: english,
-  ja: japanese,
-  zh: chinese,
-  'zh-TW': taiwaneseMandarin,
-};
 const exampleSets = {
   ko: examplesKo,
   en: examplesEn,
@@ -59,7 +74,7 @@ const categoryIconSets = {
   'zh-TW': categoryIconsZhTw,
 };
 const manualTagInputs = {
-  ko: 'name(홍길동)님의 전화번호는 phone(010-1234-5678)입니다.\n금액은 money(50000)원이고, 날짜는 date(2024-12-25)입니다.',
+  ko: 'name(홍길동)님의 전화번호는 phone(010-1234-5678)입니다.\n금액은 money(50000)이고, 날짜는 date(2024-12-25)입니다.',
   en: "name(John)'s phone number is phone(555-1234).\nThe amount is money($100) and the date is date(2024-12-25).",
   ja: 'name(佐藤)様の電話番号はphone(090-1234-5678)です。\n金額はmoney(5000円)、日付はdate(2026-07-14)です。',
   zh: 'name(王伟)的电话是phone(138-0013-8000)。\n金额是money(5000元)，日期是date(2026-07-14)。',
@@ -68,7 +83,7 @@ const manualTagInputs = {
 };
 
 function App() {
-  const [language, setLanguage] = useState<Language>('ko');
+  const [language, setLanguage] = useState<SupportedLanguage>('ko');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -77,23 +92,29 @@ function App() {
   const manualTagSectionAnim = useScrollAnimation<HTMLElement>();
   const infoSectionAnim = useScrollAnimation<HTMLElement>();
 
-  const examples = exampleSets[language];
-  const aiccExamples = aiccExampleSets[language];
-  const categoryIcons = categoryIconSets[language];
-  const languageModule = languageModules[language];
+  const exampleLanguage = (
+    language === 'nan' || language === 'yue' ? 'zh-TW' : language
+  ) as ExampleLanguage;
+  const isGeneric = !Object.prototype.hasOwnProperty.call(exampleSets, exampleLanguage);
+  const examples = isGeneric ? genericExamples : exampleSets[exampleLanguage];
+  const aiccExamples = isGeneric ? genericAiccExamples : aiccExampleSets[exampleLanguage];
+  const categoryIcons = isGeneric ? categoryIconsEn : categoryIconSets[exampleLanguage];
+  const initialManualInput = isGeneric
+    ? 'number(42), digits(1234), phone(+1-202-555-0175)'
+    : manualTagInputs[exampleLanguage];
   const categories = useMemo(() => [...new Set(examples.map((e) => e.category))], [examples]);
 
   const [selectedAICCId, setSelectedAICCId] = useState(aiccExamples[0].id);
   const [editableText, setEditableText] = useState(aiccExamples[0].input);
-  const [manualTagInput, setManualTagInput] = useState(manualTagInputs[language]);
+  const [manualTagInput, setManualTagInput] = useState(initialManualInput);
 
   useEffect(() => {
     setCurrentIndex(0);
     setSelectedCategory(null);
     setSelectedAICCId(aiccExamples[0].id);
     setEditableText(aiccExamples[0].input);
-    setManualTagInput(manualTagInputs[language]);
-  }, [language, aiccExamples]);
+    setManualTagInput(initialManualInput);
+  }, [language, aiccExamples, initialManualInput]);
 
   const filteredExamples = useMemo(() => {
     if (!selectedCategory) return examples;
@@ -103,15 +124,15 @@ function App() {
   const currentExample = filteredExamples[currentIndex] || filteredExamples[0];
 
   const applyAutoTag = (text: string) => {
-    return languageModule.autoTag(text);
+    return autoTag(text, { language });
   };
 
   const applyManualTag = (text: string) => {
-    return languageModule.manualTag(text);
+    return manualTag(text, { language });
   };
 
   const applyAutoTagWithManual = (text: string) => {
-    return languageModule.autoTagWithManual(text);
+    return autoTagWithManual(text, { language });
   };
 
   const result = useMemo(() => {
@@ -126,10 +147,13 @@ function App() {
     return { auto, manual, combined };
   }, [currentExample, language]);
 
-  const aiccResult = useMemo(() => applyAutoTag(editableText), [editableText, language]);
+  const aiccResult = useMemo(
+    () => convertInput(editableText, applyAutoTag),
+    [editableText, language]
+  );
 
   const manualTagResult = useMemo(() => {
-    return applyManualTag(manualTagInput);
+    return convertInput(manualTagInput, applyManualTag);
   }, [manualTagInput, language]);
 
   const handlePrev = () =>
@@ -149,17 +173,17 @@ function App() {
   const selectedAICC = aiccExamples.find((e) => e.id === selectedAICCId);
 
   const t = (ko: string, en: string, ja: string, zh: string, zhTw = zh): string =>
-    language === 'ko'
+    exampleLanguage === 'ko'
       ? ko
-      : language === 'ja'
+      : exampleLanguage === 'ja'
         ? ja
-        : language === 'zh'
+        : exampleLanguage === 'zh'
           ? zh
-          : language === 'zh-TW'
+          : exampleLanguage === 'zh-TW'
             ? zhTw
             : en;
   const zhText = (simplified: string, traditional: string): string =>
-    language === 'zh-TW' ? traditional : simplified;
+    exampleLanguage === 'zh-TW' ? traditional : simplified;
   const ui = {
     subtitle: t(
       'TTS를 위한 텍스트 전처리 데모',
@@ -263,7 +287,7 @@ function App() {
     combinedTagTitle: t('복합 태깅', 'Combined Tagging', '複合タグ', '组合标注', '組合標註'),
     combinedTagDesc: t(
       '수동 태그가 먼저 처리된 후, 나머지 텍스트에 자동 태깅이 적용됩니다.',
-      'Manual tags are processed first, then auto-tagging is applied.',
+      'Manual readings are preserved; auto-tagging applies to the surrounding text.',
       '手動タグを先に処理し、残りのテキストに自動タグを適用します。',
       '先处理手动标注，再对其余文本应用自动标注。',
       '先處理手動標註，再對其餘文字套用自動標註。'
@@ -311,6 +335,28 @@ function App() {
             >
               <span className="lang-icon">{Icons.globe}</span>繁體中文（台灣）
             </button>
+            <label>
+              <select
+                className="lang-btn"
+                aria-label="Additional TTS languages"
+                value={additionalLanguages.some((code) => code === language) ? language : ''}
+                onChange={(event) => {
+                  if (event.target.value) setLanguage(event.target.value as SupportedLanguage);
+                }}
+              >
+                <option value="" disabled>
+                  More languages
+                </option>
+                {additionalLanguages.map((code) => (
+                  <option key={code} value={code}>
+                    {code === 'nan'
+                      ? 'Min Nan Chinese'
+                      : languageNames.of(TTS_LANGUAGE_LOCALES[code])}{' '}
+                    ({code})
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         </div>
       </header>
@@ -400,6 +446,7 @@ function App() {
                   <button
                     key={idx}
                     className={`progress-dot ${idx === currentIndex ? 'active' : ''}`}
+                    aria-label={`${ui.singleExample} ${idx + 1}`}
                     onClick={() => setCurrentIndex(idx)}
                   />
                 ))}
@@ -453,17 +500,35 @@ function App() {
                 </div>
                 <textarea
                   className="aicc-textarea"
+                  aria-label={ui.inputEditable}
+                  aria-describedby="aicc-limit"
+                  maxLength={MAX_INPUT_LENGTH}
                   value={editableText}
                   onChange={(e) => setEditableText(e.target.value)}
                   spellCheck={false}
                 />
+                <small id="aicc-limit">
+                  {editableText.length.toLocaleString()} / {MAX_INPUT_LENGTH.toLocaleString()}
+                </small>
               </div>
               <div className="aicc-panel">
                 <div className="panel-header">
                   <span className="panel-dot after-dot"></span>
                   <span className="panel-label">{ui.autoTagResult}</span>
                 </div>
-                <div className="aicc-result">{aiccResult}</div>
+                {aiccResult.error ? (
+                  <p role="alert">
+                    {t(
+                      '변환할 수 없습니다. 입력을 수정해 주세요.',
+                      'Unable to convert this text. Please edit your input.',
+                      '変換できません。入力を修正してください。',
+                      '无法转换，请修改输入。',
+                      '無法轉換，請修改輸入。'
+                    )}
+                  </p>
+                ) : (
+                  <div className="aicc-result">{aiccResult.text}</div>
+                )}
               </div>
             </div>
           </div>
@@ -487,6 +552,9 @@ function App() {
                 </div>
                 <textarea
                   className="manual-textarea"
+                  aria-label={ui.manualTagInput}
+                  aria-describedby="manual-limit"
+                  maxLength={MAX_INPUT_LENGTH}
                   value={manualTagInput}
                   onChange={(e) => setManualTagInput(e.target.value)}
                   placeholder={t(
@@ -498,13 +566,28 @@ function App() {
                   )}
                   spellCheck={false}
                 />
+                <small id="manual-limit">
+                  {manualTagInput.length.toLocaleString()} / {MAX_INPUT_LENGTH.toLocaleString()}
+                </small>
               </div>
               <div className="manual-result-panel">
                 <div className="panel-header">
                   <span className="panel-dot after-dot"></span>
                   <span className="panel-label">{ui.manualTagResult}</span>
                 </div>
-                <div className="manual-result-content highlight">{manualTagResult}</div>
+                {manualTagResult.error ? (
+                  <p role="alert">
+                    {t(
+                      '변환할 수 없습니다. 입력을 수정해 주세요.',
+                      'Unable to convert this text. Please edit your input.',
+                      '変換できません。入力を修正してください。',
+                      '无法转换，请修改输入。',
+                      '無法轉換，請修改輸入。'
+                    )}
+                  </p>
+                ) : (
+                  <div className="manual-result-content highlight">{manualTagResult.text}</div>
+                )}
               </div>
             </div>
             <div className="tag-list-section">
@@ -513,7 +596,13 @@ function App() {
                 {ui.availableTags}
               </h4>
               <div className="tag-list">
-                {language === 'ko' ? (
+                {isGeneric ? (
+                  <div className="tag-category">
+                    {getSupportedManualTags(language).map((tag) => (
+                      <code key={tag}>{tag}(…)</code>
+                    ))}
+                  </div>
+                ) : exampleLanguage === 'ko' ? (
                   <>
                     <div className="tag-category">
                       <div className="tag-category-title">이름/번호</div>
@@ -627,7 +716,7 @@ function App() {
                       </div>
                     </div>
                   </>
-                ) : language === 'ja' ? (
+                ) : exampleLanguage === 'ja' ? (
                   <>
                     <div className="tag-category">
                       <div className="tag-category-title">名前・番号</div>
@@ -690,7 +779,7 @@ function App() {
                       </div>
                     </div>
                   </>
-                ) : language === 'zh' || language === 'zh-TW' ? (
+                ) : exampleLanguage === 'zh' || exampleLanguage === 'zh-TW' ? (
                   <>
                     <div className="tag-category">
                       <div className="tag-category-title">{zhText('姓名和号码', '姓名與號碼')}</div>

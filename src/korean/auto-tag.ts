@@ -1,3 +1,4 @@
+import { combineTags } from '../auto-with-manual';
 import { numberToKorean } from './utils/number-to-korean';
 import { month } from './tags/month';
 import { day } from './tags/day';
@@ -41,7 +42,7 @@ import { dataCapacity } from './tags/data-capacity';
 import { inch } from './tags/inch';
 import { address } from './tags/address';
 import { assertInputWithinLimit } from '../input-guard';
-import { manualTag } from './manual-tag';
+import { manualTag, extractTags } from './manual-tag';
 
 /**
  * 주소로 인식되는 줄인지 확인하는 패턴들
@@ -2137,7 +2138,7 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
 
   for (const tagType of enabledTags) {
     const tagConfig = AUTO_TAG_PATTERNS[tagType];
-    if (!tagConfig) continue;
+    if (!Object.prototype.hasOwnProperty.call(AUTO_TAG_PATTERNS, tagType)) continue;
 
     for (const pattern of tagConfig.patterns) {
       // 정규식 초기화 (lastIndex 리셋)
@@ -2167,12 +2168,12 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
     let result = preprocessedText;
 
     // 특수문자 단위를 발음으로 변환 (후처리)
-    for (const [pattern, replacement] of SPECIAL_UNIT_MAP) {
+    for (const [pattern, replacement] of options?.enabledTags ? [] : SPECIAL_UNIT_MAP) {
       result = result.replace(pattern, replacement);
     }
 
     // 기술 약어를 발음으로 변환 (후처리)
-    for (const [pattern, replacement] of ABBREVIATION_MAP) {
+    for (const [pattern, replacement] of options?.enabledTags ? [] : ABBREVIATION_MAP) {
       result = result.replace(pattern, replacement);
     }
 
@@ -2229,12 +2230,12 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
   result += preprocessedText.slice(currentIndex);
 
   // 특수문자 단위를 발음으로 변환 (후처리)
-  for (const [pattern, replacement] of SPECIAL_UNIT_MAP) {
+  for (const [pattern, replacement] of options?.enabledTags ? [] : SPECIAL_UNIT_MAP) {
     result = result.replace(pattern, replacement);
   }
 
   // 기술 약어를 발음으로 변환 (후처리)
-  for (const [pattern, replacement] of ABBREVIATION_MAP) {
+  for (const [pattern, replacement] of options?.enabledTags ? [] : ABBREVIATION_MAP) {
     result = result.replace(pattern, replacement);
   }
 
@@ -2271,7 +2272,7 @@ export function extractAutoTags(
 
   for (const tagType of enabledTags) {
     const tagConfig = AUTO_TAG_PATTERNS[tagType];
-    if (!tagConfig) continue;
+    if (!Object.prototype.hasOwnProperty.call(AUTO_TAG_PATTERNS, tagType)) continue;
 
     for (const pattern of tagConfig.patterns) {
       const regex = new RegExp(pattern.source, pattern.flags);
@@ -2336,7 +2337,7 @@ export function extractAutoTags(
  * ```
  */
 export function autoTagWithManual(text: string, autoTagOptions?: AutoTagOptions): string {
-  return autoTag(manualTag(text), autoTagOptions);
+  return combineTags(text, (part) => autoTag(part, autoTagOptions), manualTag, extractTags);
 }
 
 // 편의를 위한 개별 태그별 자동 변환 함수

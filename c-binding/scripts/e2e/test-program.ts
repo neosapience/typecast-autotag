@@ -161,6 +161,11 @@ int main() {
     run_test(&result, "phone", typecast_manual_tag,
              "phone(010-1234-5678)", "공 . 일 . 공", 1);
     
+    char expanded_input[8401] = "";
+    for (int i = 0; i < 400; i++) strcat(expanded_input, "phone(010-1234-5678) ");
+    run_test(&result, "expanded manual output", typecast_auto_tag_with_manual,
+             expanded_input, "공 . 일 . 공", 1);
+
     // money tag
     run_test(&result, "money", typecast_manual_tag,
              "money(50000)원", "오만", 1);

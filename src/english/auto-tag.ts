@@ -1,3 +1,4 @@
+import { combineTags } from '../auto-with-manual';
 import { numberToEnglish, numberToOrdinal } from './utils/number-to-english';
 import { month } from './tags/month';
 import { day } from './tags/day';
@@ -37,7 +38,7 @@ import { dataCapacity } from './tags/data-capacity';
 import { inch } from './tags/inch';
 import { assertInputWithinLimit } from '../input-guard';
 import { isValidCalendarDate } from '../utils/date-validation';
-import { manualTag } from './manual-tag';
+import { manualTag, extractTags } from './manual-tag';
 
 /**
  * Special unit characters to pronunciation mapping
@@ -163,6 +164,12 @@ export interface MatchResult {
  * - Priority: More specific patterns are matched first
  * - Pattern description: Specifies what format each pattern detects
  */
+const CURRENCY_AMOUNT = '(?:-[$£€¥₩]|[$£€¥₩]-?)[\\d,]+(?:\\.\\d+)?';
+const MONEY_RANGE = new RegExp(
+  `^(${CURRENCY_AMOUNT})(?:\\s*[-~–—]\\s*|\\s+to\\s+)(${CURRENCY_AMOUNT})$`,
+  'i'
+);
+
 const AUTO_TAG_PATTERNS = {
   scoreRatio: {
     patterns: [/\b(?:score|ratio)(?:\s+(?:is|was))?\s*[:=]?\s*\d{1,3}\s*[-:]\s*\d{1,3}\b/gi],
@@ -382,34 +389,14 @@ const AUTO_TAG_PATTERNS = {
    */
   money: {
     patterns: [
-      // Money range: $100~$200 (match first)
-      /[$£€¥₩][\d,]+(?:\.\d+)?(?:\s*[-~–—]\s*|\s+to\s+)[$£€¥₩][\d,]+(?:\.\d+)?/gi,
-      // Symbol + large-number magnitude: $2.5 million
-      /[$£€¥₩][\d,]+(?:\.\d+)?\s*(?:thousand|million|billion|trillion)\b/gi,
-      // Dollar with symbol: $100, $1,000.00
-      /\$[\d,]+(?:\.\d+)?/g,
-      // Pound: £100
-      /£[\d,]+(?:\.\d+)?/g,
-      // Euro: €100
-      /€[\d,]+(?:\.\d+)?/g,
-      // Yen: ¥100
-      /¥[\d,]+(?:\.\d+)?/g,
-      // Won: ₩100
-      /₩[\d,]+(?:\.\d+)?/g,
-      // Number + currency word: 100 dollars, 50 USD, 30 euros
-      /[\d,]+(?:\.\d+)?\s*(?:(?:thousand|million|billion|trillion)\s+)?(?:dollars?|USD|pounds?|GBP|euros?|EUR|yen|JPY|won|KRW|cents?)\b/gi,
+      new RegExp(`${CURRENCY_AMOUNT}(?:\\s*[-~–—]\\s*|\\s+to\\s+)${CURRENCY_AMOUNT}`, 'gi'),
+      new RegExp(`${CURRENCY_AMOUNT}\\s*(?:thousand|million|billion|trillion)\\b`, 'gi'),
+      new RegExp(CURRENCY_AMOUNT, 'g'),
+      /-?[\d,]+(?:\.\d+)?\s*(?:(?:thousand|million|billion|trillion)\s+)?(?:dollars?|USD|pounds?|GBP|euros?|EUR|yen|JPY|won|KRW|cents?)\b/gi,
     ],
     converter: (match: string) => {
-      // Money range
-      if (/^[$£€¥₩][\d,]+/.test(match)) {
-        const parts = match.split(/\s*[-~–—]\s*|\s+to\s+/i);
-        if (parts.length === 2) {
-          const money1 = money(parts[0] ?? '');
-          const money2 = money(parts[1] ?? '');
-          return money1 + ' to ' + money2;
-        }
-      }
-      return money(match);
+      const range = match.match(MONEY_RANGE);
+      return range ? money(range[1]!) + ' to ' + money(range[2]!) : money(match);
     },
   },
 
@@ -1192,7 +1179,7 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
 
   for (const tagType of enabledTags) {
     const tagConfig = AUTO_TAG_PATTERNS[tagType];
-    if (!tagConfig) continue;
+    if (!Object.prototype.hasOwnProperty.call(AUTO_TAG_PATTERNS, tagType)) continue;
 
     for (const pattern of tagConfig.patterns) {
       // Reset regex (reset lastIndex)
@@ -1222,12 +1209,12 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
     let result = text;
 
     // Convert special unit characters to pronunciation (post-processing)
-    for (const [pattern, replacement] of SPECIAL_UNIT_MAP) {
+    for (const [pattern, replacement] of options?.enabledTags ? [] : SPECIAL_UNIT_MAP) {
       result = result.replace(pattern, replacement);
     }
 
     // Convert tech abbreviations to pronunciation (post-processing)
-    for (const [pattern, replacement] of ABBREVIATION_MAP) {
+    for (const [pattern, replacement] of options?.enabledTags ? [] : ABBREVIATION_MAP) {
       result = result.replace(pattern, replacement);
     }
 
@@ -1268,12 +1255,12 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
   result += text.slice(currentIndex);
 
   // Convert special unit characters to pronunciation (post-processing)
-  for (const [pattern, replacement] of SPECIAL_UNIT_MAP) {
+  for (const [pattern, replacement] of options?.enabledTags ? [] : SPECIAL_UNIT_MAP) {
     result = result.replace(pattern, replacement);
   }
 
   // Convert tech abbreviations to pronunciation (post-processing)
-  for (const [pattern, replacement] of ABBREVIATION_MAP) {
+  for (const [pattern, replacement] of options?.enabledTags ? [] : ABBREVIATION_MAP) {
     result = result.replace(pattern, replacement);
   }
 
@@ -1309,7 +1296,7 @@ export function extractAutoTags(
 
   for (const tagType of enabledTags) {
     const tagConfig = AUTO_TAG_PATTERNS[tagType];
-    if (!tagConfig) continue;
+    if (!Object.prototype.hasOwnProperty.call(AUTO_TAG_PATTERNS, tagType)) continue;
 
     for (const pattern of tagConfig.patterns) {
       const regex = new RegExp(pattern.source, pattern.flags);
@@ -1374,7 +1361,7 @@ export function extractAutoTags(
  * ```
  */
 export function autoTagWithManual(text: string, autoTagOptions?: AutoTagOptions): string {
-  return autoTag(manualTag(text), autoTagOptions);
+  return combineTags(text, (part) => autoTag(part, autoTagOptions), manualTag, extractTags);
 }
 
 // Convenience functions for individual tag auto-conversion
