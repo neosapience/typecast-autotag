@@ -1,3 +1,5 @@
+import { convertUnitRange } from '../utils/unit-range';
+import { protectText, extractOutsideProtected } from '../utils/protected-text';
 import { isSafeNumber } from '../utils/number-safety';
 import { patternMatches } from '../utils/pattern-matches';
 import { combineTags } from '../auto-with-manual';
@@ -957,6 +959,9 @@ const AUTO_TAG_PATTERNS = {
   phone: {
     // 더 구체적인 패턴부터 먼저 매칭
     patterns: [
+      /\+?\(?\d[\d .()-]{5,22}\d\s*(?:내선|ext(?:ension)?\.?|x)\s*[:#]?\s*\d{1,8}(?!\d)/gi,
+      /\+[1-9]\d{0,2}[-.\s]?(?:\(\d{1,4}\)|\d{1,4})(?:[-.\s]?\d{2,4}){1,3}(?!\d)/g,
+
       // 휴대폰 번호: 010, 011, 016, 017, 018, 019로 시작
       /\b01[016789][-.\s]?\d{3,4}[-.\s]?\d{4}\b/g,
       // 서울 지역번호: 02
@@ -1564,11 +1569,11 @@ const AUTO_TAG_PATTERNS = {
   weight: {
     patterns: [
       // 무게: 숫자 + kg/mg/ton/톤/킬로그램/그램/밀리그램 (kg, mg 먼저 매칭)
-      /[\d,]+(?:\.\d+)?\s*(?:kg|mg|ton|톤|킬로그램|그램|밀리그램)/gi,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?[\d,]+(?:\.\d+)?\s*(?:kg|mg|ton|톤|킬로그램|그램|밀리그램)/gi,
       // 무게: 숫자 + g (소문자 g만, 뒤에 영문자가 없는 경우만 - 5G, GB 등 제외)
-      /[\d,]+(?:\.\d+)?\s*g(?![a-zA-Z])/g,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?[\d,]+(?:\.\d+)?\s*g(?![a-zA-Z])/g,
     ],
-    converter: (match: string) => weight(match),
+    converter: (match: string) => convertUnitRange(match, weight, '에서 '),
   },
 
   /**
@@ -1704,11 +1709,11 @@ const AUTO_TAG_PATTERNS = {
   distance: {
     patterns: [
       // 거리: 숫자 + km/cm/mm/킬로미터/미터/센티미터/밀리미터
-      /[\d,]+(?:\.\d+)?\s*(?:km|킬로미터|센티미터|밀리미터|cm|mm)/gi,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?[\d,]+(?:\.\d+)?\s*(?:km|킬로미터|센티미터|밀리미터|cm|mm)/gi,
       // 한글 '미터'는 명확하므로 처리
-      /[\d,]+(?:\.\d+)?\s*미터(?![법])/g,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?[\d,]+(?:\.\d+)?\s*미터(?![법])/g,
     ],
-    converter: (match: string) => distance(match),
+    converter: (match: string) => convertUnitRange(match, distance, '에서 '),
   },
 
   /**
@@ -1884,13 +1889,13 @@ const AUTO_TAG_PATTERNS = {
   volume: {
     patterns: [
       // 리터: NL, NmL (숫자로 시작해야 함 - LTE 등과 구분)
-      /\d[\d,]*(?:\.\d+)?\s*(?:mL|ML|ml|L|ℓ)/g,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?\d[\d,]*(?:\.\d+)?\s*(?:mL|ML|ml|L|ℓ)/g,
       // 세제곱미터: Nm³, Nm3
-      /\d[\d,]*(?:\.\d+)?\s*(?:m³|m3|cm³|cm3)/g,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?\d[\d,]*(?:\.\d+)?\s*(?:m³|m3|cm³|cm3)/g,
       // 시시: Ncc (뒤에 영문자가 없는 경우만 - CCTV 등 제외)
-      /\d[\d,]*(?:\.\d+)?\s*(?:cc|CC)(?![a-zA-Z])/gi,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?\d[\d,]*(?:\.\d+)?\s*(?:cc|CC)(?![a-zA-Z])/gi,
     ],
-    converter: (match: string) => volume(match),
+    converter: (match: string) => convertUnitRange(match, volume, '에서 '),
   },
 
   /**
@@ -2134,6 +2139,8 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
     return text;
   }
   assertInputWithinLimit(text, 'korean.autoTag');
+  const protectedResult = protectText(text, (part) => autoTag(part, options));
+  if (protectedResult !== null) return protectedResult;
 
   const enabledTags = options?.enabledTags ?? SUPPORTED_AUTO_TAGS;
   // address가 비활성화된 호출은 원문을 전처리하지 않는다.
@@ -2267,6 +2274,8 @@ export function extractAutoTags(
     return [];
   }
   assertInputWithinLimit(text, 'korean.extractAutoTags');
+  const protectedResult = extractOutsideProtected(text, (part) => extractAutoTags(part, options));
+  if (protectedResult !== null) return protectedResult;
 
   const enabledTags = options?.enabledTags ?? SUPPORTED_AUTO_TAGS;
   const allMatches: MatchResult[] = [];

@@ -1,3 +1,4 @@
+import { protectText, extractOutsideProtected } from '../utils/protected-text';
 import { combineTags } from '../auto-with-manual';
 import { assertInputWithinLimit } from '../input-guard';
 import * as chinese from '../chinese';
@@ -93,6 +94,8 @@ function findMatches(text: string, options?: AutoTagOptions): MatchResult[] {
 export function autoTag(text: string, options?: AutoTagOptions): string {
   if (!text) return text;
   assertInputWithinLimit(text, 'taiwaneseMandarin.autoTag');
+  const protectedResult = protectText(text, (part) => autoTag(part, options));
+  if (protectedResult !== null) return protectedResult;
   const matches = findMatches(text, options);
   if (matches.length === 0) return text;
 
@@ -111,6 +114,8 @@ export function extractAutoTags(
 ): Array<Omit<MatchResult, 'converted'>> {
   if (!text) return [];
   assertInputWithinLimit(text, 'taiwaneseMandarin.extractAutoTags');
+  const protectedResult = extractOutsideProtected(text, (part) => extractAutoTags(part, options));
+  if (protectedResult !== null) return protectedResult;
   return findMatches(text, options).map(({ converted: _converted, ...match }) => match);
 }
 

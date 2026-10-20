@@ -1,3 +1,4 @@
+import { protectText } from './utils/protected-text';
 import { assertInputWithinLimit } from './input-guard';
 
 export function combineTags(
@@ -8,6 +9,10 @@ export function combineTags(
 ): string {
   if (!text) return text;
   assertInputWithinLimit(text, 'autoTagWithManual');
+  const protectedResult = protectText(text, (part) =>
+    combineTags(part, autoTag, manualTag, extractTags)
+  );
+  if (protectedResult !== null) return protectedResult;
   let result = '';
   let cursor = 0;
   // Preserve explicit readings and keep each automatic pass within the original input limit.

@@ -199,6 +199,19 @@ int main() {
     run_test(&result, "Korean comma address after digit", typecast_auto_tag,
              "101, 102동 304호", "101백이동 삼백사호", 1);
 
+    run_test(&result, "URL preservation", typecast_auto_tag,
+             "https://example.com/2024/01/15", "https://example.com/2024/01/15", 0);
+    run_test(&result, "English code preservation", typecast_auto_tag_english,
+             "\`500kg\`", "\`500kg\`", 0);
+    run_test(&result, "Korean decimal range", typecast_auto_tag,
+             "1.5~2.0kg", "일 쩜 오킬로그램에서 이 쩜 영킬로그램", 0);
+    run_test(&result, "English decimal range", typecast_auto_tag_english,
+             "1.5~2.0kg", "one point five kilograms to two point zero kilograms", 0);
+    run_test(&result, "Korean phone extension", typecast_auto_tag,
+             "02-1234-5678 내선 0012", "내선 공 . 공 . 일 . 이", 1);
+    run_test(&result, "English international phone", typecast_auto_tag_english,
+             "+44 20 7946 0958", "plus four four two zero seven nine four six zero nine five eight", 0);
+
     // money tag
     run_test(&result, "money", typecast_manual_tag,
              "money(50000)원", "오만", 1);

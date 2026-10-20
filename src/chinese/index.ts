@@ -1,3 +1,4 @@
+import { protectText, extractOutsideProtected } from '../utils/protected-text';
 import { combineTags } from '../auto-with-manual';
 import { assertInputWithinLimit } from '../input-guard';
 import { isValidCalendarDate } from '../utils/date-validation';
@@ -504,6 +505,8 @@ function findMatches(text: string, enabledTags?: ChineseAutoTag[]): MatchResult[
 export function autoTag(text: string, options?: AutoTagOptions): string {
   if (!text) return text;
   assertInputWithinLimit(text, 'chinese.autoTag');
+  const protectedResult = protectText(text, (part) => autoTag(part, options));
+  if (protectedResult !== null) return protectedResult;
   const matches = findMatches(text, options?.enabledTags);
   if (matches.length === 0) return text;
 
@@ -522,6 +525,8 @@ export function extractAutoTags(
 ): Array<Omit<MatchResult, 'converted'>> {
   if (!text) return [];
   assertInputWithinLimit(text, 'chinese.extractAutoTags');
+  const protectedResult = extractOutsideProtected(text, (part) => extractAutoTags(part, options));
+  if (protectedResult !== null) return protectedResult;
   return findMatches(text, options?.enabledTags).map(
     ({ converted: _converted, ...match }) => match
   );

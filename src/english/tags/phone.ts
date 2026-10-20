@@ -55,6 +55,15 @@ export function phone(input: string, options?: PhoneOptions): string {
   // Phonetic code usage
   const usePhoneticCode = options?.usePhoneticCode ?? false;
   const digitConverter = usePhoneticCode ? digitToPhoneticEnglish : digitToPhoneEnglish;
+  const extension = input.match(
+    /^(\+?\(?\d[\d\s().-]*\d)\s*(?:내선|ext(?:ension)?\.?|x)\s*[:#]?\s*(\d{1,8})$/i
+  );
+  if (extension)
+    return (
+      phone(extension[1]!, options) +
+      ' extension ' +
+      extension[2]!.split('').map(digitConverter).join(' ')
+    );
 
   // Split by delimiters
   const groups = input.split(delimiters).filter((group) => group.length > 0);
