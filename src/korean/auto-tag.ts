@@ -1,3 +1,4 @@
+import { patternMatches } from '../utils/pattern-matches';
 import { combineTags } from '../auto-with-manual';
 import { numberToKorean } from './utils/number-to-korean';
 import { month } from './tags/month';
@@ -2141,12 +2142,7 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
     if (!Object.prototype.hasOwnProperty.call(AUTO_TAG_PATTERNS, tagType)) continue;
 
     for (const pattern of tagConfig.patterns) {
-      // 정규식 초기화 (lastIndex 리셋)
-      const regex = new RegExp(pattern.source, pattern.flags);
-
-      let match: RegExpExecArray | null;
-      while ((match = regex.exec(preprocessedText)) !== null) {
-        const original = match[0];
+      for (const { original, start } of patternMatches(preprocessedText, pattern)) {
         const converted = tagConfig.converter(original);
 
         // 변환이 실제로 일어났는지 확인 (원본과 다른 경우만)
@@ -2155,8 +2151,8 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
             original,
             converted,
             tagType,
-            start: match.index,
-            end: match.index + original.length,
+            start,
+            end: start + original.length,
           });
         }
       }
@@ -2275,11 +2271,7 @@ export function extractAutoTags(
     if (!Object.prototype.hasOwnProperty.call(AUTO_TAG_PATTERNS, tagType)) continue;
 
     for (const pattern of tagConfig.patterns) {
-      const regex = new RegExp(pattern.source, pattern.flags);
-
-      let match: RegExpExecArray | null;
-      while ((match = regex.exec(text)) !== null) {
-        const original = match[0];
+      for (const { original, start } of patternMatches(text, pattern)) {
         const converted = tagConfig.converter(original);
 
         if (original !== converted) {
@@ -2287,8 +2279,8 @@ export function extractAutoTags(
             original,
             converted,
             tagType,
-            start: match.index,
-            end: match.index + original.length,
+            start,
+            end: start + original.length,
           });
         }
       }

@@ -1,3 +1,5 @@
+import { isSafeNumber } from '../utils/number-safety';
+import { patternMatches } from '../utils/pattern-matches';
 import { ToWords as ArabicToWords } from 'to-words/ar-SA';
 import { ToWords as BengaliToWords } from 'to-words/bn-BD';
 import { ToWords as BulgarianToWords } from 'to-words/bg-BG';
@@ -316,6 +318,10 @@ function partToWords(value: string, language: GenericTtsLanguage): string {
   return numberToWords(normalized, language);
 }
 
+const dateFormatters = new Map<GenericTtsLanguage, Intl.DateTimeFormat>();
+const timeFormatters = new Map<string, Intl.DateTimeFormat>();
+const moneyFormatters = new Map<string, Intl.NumberFormat>();
+
 function dateToWords(value: string, language: GenericTtsLanguage): string {
   const rawParts = value.split(/\s*[-‐‑‒–—−/.]\s*/u).map(normalizeDigits);
   if (rawParts.length !== 3) return value;
@@ -347,13 +353,18 @@ function dateToWords(value: string, language: GenericTtsLanguage): string {
     return value;
   }
 
-  return new Intl.DateTimeFormat(TTS_LANGUAGE_LOCALES[language], {
-    calendar: 'gregory',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'UTC',
-  })
+  let formatter = dateFormatters.get(language);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(TTS_LANGUAGE_LOCALES[language], {
+      calendar: 'gregory',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'UTC',
+    });
+    dateFormatters.set(language, formatter);
+  }
+  return formatter
     .formatToParts(date)
     .map((part) =>
       (part.type === 'year' || part.type === 'month' || part.type === 'day') &&
@@ -389,7 +400,13 @@ function timeToWords(value: string, language: GenericTtsLanguage): string {
   };
   if (second !== undefined) options.second = '2-digit';
 
-  return new Intl.DateTimeFormat(TTS_LANGUAGE_LOCALES[language], options)
+  const key = `${language}:${second !== undefined}`;
+  let formatter = timeFormatters.get(key);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(TTS_LANGUAGE_LOCALES[language], options);
+    timeFormatters.set(key, formatter);
+  }
+  return formatter
     .formatToParts(new Date(Date.UTC(2024, 0, 1, hour, minute, second ?? 0)))
     .map((part) =>
       (part.type === 'hour' || part.type === 'minute' || part.type === 'second') &&
@@ -430,18 +447,34 @@ function moneyToWords(value: string, language: GenericTtsLanguage): string {
   const numeric = value.match(new RegExp(NUMBER, 'u'))?.[0];
   if (!symbol || !numeric) return value;
   const normalized = normalizeNumber(numeric, language);
-  const amount = Number(normalized) * (/^\s*[-−]/u.test(value) ? -1 : 1);
-  if (!Number.isFinite(amount)) return value;
+  const amount =
+    Number(normalized) * (/^\s*[-−]/u.test(value) && !normalized.startsWith('-') ? -1 : 1);
+  if (!isSafeNumber(amount)) return value;
   const fraction = normalized.split('.')[1];
   const fractionDigits = fraction && /[1-9]/.test(fraction) ? fraction.length : 0;
 
-  return new Intl.NumberFormat(TTS_LANGUAGE_LOCALES[language], {
-    style: 'currency',
-    currency: CURRENCY_CODES[symbol],
-    currencyDisplay: 'name',
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-  })
+  // Bound formatter precision and cache keys; preserve unsupported amounts.
+  if (fractionDigits > 20) return value;
+  const integer =
+    normalized
+      .replace(/^[+-]/, '')
+      .split('.')[0]
+      ?.replace(/^0+(?=\d)/, '') ?? '0';
+  const exact = integer + (fractionDigits ? `.${fraction}` : '');
+  if (Math.abs(amount).toFixed(fractionDigits) !== exact) return value;
+  const key = `${language}:${symbol}:${fractionDigits}`;
+  let formatter = moneyFormatters.get(key);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(TTS_LANGUAGE_LOCALES[language], {
+      style: 'currency',
+      currency: CURRENCY_CODES[symbol],
+      currencyDisplay: 'name',
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    });
+    moneyFormatters.set(key, formatter);
+  }
+  return formatter
     .format(amount)
     .replace(new RegExp(NUMBER, 'gu'), (number) => numberToWords(number, language));
 }
@@ -538,23 +571,21 @@ function findMatches(
   if (enabled?.size === 0) return [];
 
   const candidates: Array<MatchResult & { priority: number }> = [];
-  const protectedDatetimes: Array<{ start: number; end: number }> = [];
+  const protectedRanges: Array<{ start: number; end: number }> = [];
   RULES.forEach((rule, priority) => {
     if (enabled && !enabled.has(rule.tagType)) return;
-    rule.pattern.lastIndex = 0;
-    let match: RegExpExecArray | null;
-    while ((match = rule.pattern.exec(text)) !== null) {
-      const start = match.index;
-      const end = start + match[0].length;
-      if (!isStandalone(text, start, end, match[0])) continue;
-      const converted = rule.convert(match[0], language);
-      if (converted === match[0]) {
-        if (rule.tagType === 'datetime') protectedDatetimes.push({ start, end });
+    for (const { original, start } of patternMatches(text, rule.pattern)) {
+      const end = start + original.length;
+      if (!isStandalone(text, start, end, original)) continue;
+      if (protectedRanges.some((range) => start < range.end && end > range.start)) continue;
+      const converted = rule.convert(original, language);
+      if (converted === original) {
+        if (rule.tagType === 'datetime' || rule.tagType === 'money')
+          protectedRanges.push({ start, end });
         continue;
       }
-      if (protectedDatetimes.some((range) => start >= range.start && end <= range.end)) continue;
       candidates.push({
-        original: match[0],
+        original,
         converted,
         tagType: rule.tagType,
         start,
@@ -612,7 +643,10 @@ function extractAutoTags(
   );
 }
 
-const MANUAL_TAG_PATTERN = new RegExp(`(${SUPPORTED_TAGS.join('|')})\\(([^)]*)\\)`, 'g');
+const MANUAL_TAG_PATTERN = new RegExp(
+  `(${SUPPORTED_TAGS.join('|')})\\(([^()]*(?:\\([^()]*\\)[^()]*)*)\\)`,
+  'g'
+);
 
 type GenericLanguageModule = {
   autoTag: (text: string, options?: { enabledTags?: string[] }) => string;

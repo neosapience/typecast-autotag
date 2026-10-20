@@ -1,3 +1,4 @@
+import { isSafeNumber } from '../../utils/number-safety';
 import { numberToEnglish } from '../utils/number-to-english';
 
 /**
@@ -59,7 +60,7 @@ export function numberTag(input: number | string, options?: NumberTagOptions): s
       const numStr = removeThousandSeparators(labelMatch[2] ?? '');
       const num = parseInt(numStr, 10);
 
-      if (isNaN(num)) {
+      if (!isSafeNumber(num)) {
         return String(input);
       }
 
@@ -90,7 +91,7 @@ export function numberTag(input: number | string, options?: NumberTagOptions): s
       const numStr = removeThousandSeparators(match[1] ?? '');
       const num = parseInt(numStr, 10);
 
-      if (isNaN(num)) {
+      if (!isSafeNumber(num)) {
         return String(input);
       }
 
@@ -112,7 +113,7 @@ export function numberTag(input: number | string, options?: NumberTagOptions): s
       const numStr = removeThousandSeparators(numOnlyMatch[1] ?? '');
       const num = parseInt(numStr, 10);
 
-      if (isNaN(num)) {
+      if (!isSafeNumber(num)) {
         return String(input);
       }
 
@@ -129,6 +130,8 @@ export function numberTag(input: number | string, options?: NumberTagOptions): s
 
     return String(input);
   }
+
+  if (isFinite(input) && !isSafeNumber(input)) return String(input);
 
   // Number processing
   if (isNaN(input)) {

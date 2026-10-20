@@ -156,6 +156,22 @@ int main() {
     run_test(&result, "English shared currency range", typecast_auto_tag_english,
              "5-€10", "five euros to ten euros", 1);
 
+    char large_digits[310];
+    memset(large_digits, '9', 309);
+    large_digits[309] = 0;
+    char large_manual[320];
+    snprintf(large_manual, sizeof(large_manual), "number(%s)", large_digits);
+    run_test(&result, "overflowing manual number", typecast_manual_tag,
+             large_manual, large_digits, 1);
+    char large_money[330];
+    snprintf(large_money, sizeof(large_money), "%s dollars", large_digits);
+    run_test(&result, "overflowing English amount", typecast_auto_tag_english,
+             large_money, large_money, 0);
+    run_test(&result, "unsafe Korean integer", typecast_manual_tag,
+             "money(9007199254740993)", "9007199254740993", 1);
+    run_test(&result, "adjacent English units", typecast_auto_tag_english,
+             "5kg,6kg", "five kilograms,six kilograms", 1);
+
     // money tag
     run_test(&result, "money", typecast_manual_tag,
              "money(50000)원", "오만", 1);

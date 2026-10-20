@@ -1,3 +1,4 @@
+import { isSafeNumber } from '../../utils/number-safety';
 import { numberToKorean, digitToKorean } from '../utils/number-to-korean';
 
 /**
@@ -102,6 +103,8 @@ export function money(input: number | string, options?: MoneyOptions): string {
       const cheonman = parseInt(koreanMixedMatch[3] ?? '0', 10);
       const baekman = parseInt(koreanMixedMatch[4] ?? '0', 10);
 
+      if (![eok, cheonman, baekman].every(isSafeNumber)) return input;
+
       const parts: string[] = [];
       if (eok > 0) {
         parts.push(numberToKorean(eok) + '억');
@@ -123,7 +126,7 @@ export function money(input: number | string, options?: MoneyOptions): string {
       const bigUnit = bigUnitMatch[2]; // 만, 억, 조, 경, 천
       const num = parseInt(numStr, 10);
 
-      if (isNaN(num) || num < 0) {
+      if (!isSafeNumber(num) || num < 0) {
         return String(input);
       }
 
@@ -142,6 +145,7 @@ export function money(input: number | string, options?: MoneyOptions): string {
 
       // 소수점이 포함된 경우
       if (numStr.includes('.')) {
+        if (!isSafeNumber(Number(removeThousandSeparators(numStr).split('.')[0]))) return input;
         const korean = numberToKoreanWithDecimal(numStr);
         return negativePrefix + korean + space + parsedUnit;
       }
@@ -149,7 +153,7 @@ export function money(input: number | string, options?: MoneyOptions): string {
       const cleanedNum = removeThousandSeparators(numStr);
       const num = parseInt(cleanedNum, 10);
 
-      if (isNaN(num) || num < 0) {
+      if (!isSafeNumber(num) || num < 0) {
         return String(input);
       }
 
@@ -162,6 +166,8 @@ export function money(input: number | string, options?: MoneyOptions): string {
 
     return String(input);
   }
+
+  if (isFinite(input) && !isSafeNumber(input)) return String(input);
 
   // 숫자 처리
   if (isNaN(input) || !isFinite(input)) {

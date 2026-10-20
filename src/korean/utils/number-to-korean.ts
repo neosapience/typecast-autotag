@@ -1,3 +1,4 @@
+import { isSafeNumber } from '../../utils/number-safety';
 /**
  * 숫자를 한글로 변환하는 유틸리티 함수들
  */
@@ -133,6 +134,7 @@ function fourDigitsToKorean(num: number): string {
  * @returns 한글 숫자
  */
 export function numberToKorean(num: number): string {
+  if (!isSafeNumber(num)) return String(num);
   if (num === 0) return '영';
   if (num < 0) return '마이너스 ' + numberToKorean(-num);
 
