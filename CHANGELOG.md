@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.13.4
 
 - Preserve explicit manual readings and accept expanded results within the original input limit.
 - Reject inherited object properties as language codes, respect explicit tag filters, and read negative and ranged English currency amounts in JavaScript and native builds.
