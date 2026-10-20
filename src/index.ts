@@ -1,3 +1,4 @@
+import { combineTags } from './auto-with-manual';
 /**
  * Typecast Autotag - Multilingual Auto-Tagging Library
  *
@@ -265,7 +266,7 @@ let defaultLanguage: SupportedLanguage = 'ko';
  * ```
  */
 export function setDefaultLanguage(language: SupportedLanguage): void {
-  if (!languageModules[language]) {
+  if (!Object.prototype.hasOwnProperty.call(languageModules, language)) {
     throw new Error(`Unsupported language: ${language}`);
   }
   defaultLanguage = language;
@@ -327,7 +328,7 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
   const language = options?.language ?? defaultLanguage;
   const module = languageModules[language];
 
-  if (!module) {
+  if (!Object.prototype.hasOwnProperty.call(languageModules, language)) {
     throw new Error(`Unsupported language: ${language}`);
   }
 
@@ -359,7 +360,7 @@ export function extractAutoTags(
   const language = options?.language ?? defaultLanguage;
   const module = languageModules[language];
 
-  if (!module) {
+  if (!Object.prototype.hasOwnProperty.call(languageModules, language)) {
     throw new Error(`Unsupported language: ${language}`);
   }
 
@@ -391,7 +392,7 @@ export function manualTag(text: string, options?: ManualTagOptions): string {
   const language = options?.language ?? defaultLanguage;
   const module = languageModules[language];
 
-  if (!module) {
+  if (!Object.prototype.hasOwnProperty.call(languageModules, language)) {
     throw new Error(`Unsupported language: ${language}`);
   }
 
@@ -415,7 +416,7 @@ export function extractTags(text: string, options?: ManualTagOptions): Extracted
   const language = options?.language ?? defaultLanguage;
   const module = languageModules[language];
 
-  if (!module) {
+  if (!Object.prototype.hasOwnProperty.call(languageModules, language)) {
     throw new Error(`Unsupported language: ${language}`);
   }
 
@@ -439,7 +440,7 @@ export function manualTagSelective(text: string, options: ManualTagSelectiveOpti
   const language = options?.language ?? defaultLanguage;
   const module = languageModules[language];
 
-  if (!module) {
+  if (!Object.prototype.hasOwnProperty.call(languageModules, language)) {
     throw new Error(`Unsupported language: ${language}`);
   }
 
@@ -451,7 +452,7 @@ export function manualTagSelective(text: string, options: ManualTagSelectiveOpti
  *
  * Priority:
  * 1. Manual tags are processed first
- * 2. Then auto-tags are applied
+ * 2. Auto-tags are applied only outside manual tags
  *
  * @param text - Text to convert
  * @param options - Auto-tagging options
@@ -467,16 +468,19 @@ export function autoTagWithManual(text: string, options?: AutoTagOptions): strin
   const language = options?.language ?? defaultLanguage;
   const module = languageModules[language];
 
-  if (!module) {
+  if (!Object.prototype.hasOwnProperty.call(languageModules, language)) {
     throw new Error(`Unsupported language: ${language}`);
   }
 
-  // Apply manual tags first
-  const manualTagged = module.manualTag(text);
-  // Then apply auto-tags
-  return module.autoTag(manualTagged, {
-    enabledTags: options?.enabledTags as KoAutoTagOptions['enabledTags'],
-  });
+  return combineTags(
+    text,
+    (part) =>
+      module.autoTag(part, {
+        enabledTags: options?.enabledTags as KoAutoTagOptions['enabledTags'],
+      }),
+    module.manualTag,
+    module.extractTags
+  );
 }
 
 /**
@@ -489,7 +493,7 @@ export function getSupportedAutoTags(language?: SupportedLanguage): string[] {
   const lang = language ?? defaultLanguage;
   const module = languageModules[lang];
 
-  if (!module) {
+  if (!Object.prototype.hasOwnProperty.call(languageModules, lang)) {
     throw new Error(`Unsupported language: ${lang}`);
   }
 
@@ -506,7 +510,7 @@ export function getSupportedManualTags(language?: SupportedLanguage): string[] {
   const lang = language ?? defaultLanguage;
   const module = languageModules[lang];
 
-  if (!module) {
+  if (!Object.prototype.hasOwnProperty.call(languageModules, lang)) {
     throw new Error(`Unsupported language: ${lang}`);
   }
 

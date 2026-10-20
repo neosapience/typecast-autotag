@@ -124,13 +124,12 @@ export function money(input: number | string, options?: MoneyOptions): string {
     const trimmed = input.trim();
     if (trimmed === '') return input;
 
-    // Remove currency symbols: $, £, €, ¥, ₩
-    const symbol = trimmed.match(/^[$£€¥₩]/)?.[0] ?? '';
-    let withoutCurrency = trimmed.replace(/^[$£€¥₩]\s*/, '');
-
-    // Handle negative: -number
-    let isNegative = false;
+    let isNegative = trimmed.startsWith('-');
+    const unsigned = isNegative ? trimmed.slice(1).trim() : trimmed;
+    const symbol = unsigned.match(/^[$£€¥₩]/)?.[0] ?? '';
+    let withoutCurrency = unsigned.replace(/^[$£€¥₩]\s*/, '');
     if (withoutCurrency.startsWith('-')) {
+      if (isNegative) return input;
       isNegative = true;
       withoutCurrency = withoutCurrency.slice(1).trim();
     }
@@ -152,7 +151,8 @@ export function money(input: number | string, options?: MoneyOptions): string {
       const symbolCurrency = CURRENCY_BY_SYMBOL[symbol];
       const genericCurrency = currencyName
         ? {
-            ...defaultCurrency,
+            subunit,
+            singularSubunit,
             unit: rawCurrencyName,
             singularUnit: rawCurrencyName.endsWith('s')
               ? rawCurrencyName.slice(0, -1)

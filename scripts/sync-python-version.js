@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Sync Python binding version with the main package version
+ * Set the Python package version independently of npm
  *
  * Usage: node scripts/sync-python-version.js <version>
  * Example: node scripts/sync-python-version.js 1.2.0
@@ -18,7 +18,7 @@ if (!version) {
 }
 
 // Validate version format
-if (!/^\d+\.\d+\.\d+/.test(version)) {
+if (!/^\d+\.\d+\.\d+$/.test(version)) {
   console.error(`Error: Invalid version format: ${version}`);
   console.error('Expected format: X.Y.Z (e.g., 1.2.0)');
   process.exit(1);

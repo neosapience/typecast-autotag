@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
@@ -32,8 +32,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build package
-        run: pnpm build
+      - name: Validate package
+        run: pnpm typecheck && pnpm lint && pnpm test:coverage --runInBand && pnpm build
 
       - name: Upgrade npm
         run: npm install -g npm@11.12.1
@@ -43,6 +43,9 @@ jobs:
           test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
           test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
 
+      - name: Verify version tag before publishing
+        run: node scripts/verify-release-tag.js
+
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ""
@@ -50,3 +53,14 @@ jobs:
         run: |
           printf 'registry=https://registry.npmjs.org/\n' > "$NPM_CONFIG_USERCONFIG"
           npm publish --provenance --access public
+
+      - name: Record the published npm release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/verify-release-tag.js
+          version=$(node -p "require('./package.json').version")
+          tag="v$version"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$GITHUB_SHA" --title "npm $tag" --generate-notes
+          fi

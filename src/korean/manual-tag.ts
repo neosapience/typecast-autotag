@@ -157,7 +157,7 @@ export function extractTags(
   assertInputWithinLimit(text, 'korean.extractTags');
 
   const results: Array<{ tag: string; value: string; start: number; end: number }> = [];
-  const pattern = new RegExp(`(${SUPPORTED_TAGS.join('|')})\\(([^)]*)\\)`, 'g');
+  const pattern = new RegExp(TAG_PATTERN.source, 'g');
 
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(text)) !== null) {

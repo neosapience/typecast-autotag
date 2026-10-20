@@ -303,6 +303,8 @@ autoTag('010-1234-5678, 50000원', { language: 'ko', enabledTags: ['phone'] });
 | `language`    | `SupportedLanguage` | `'ko'` | 공식 ISO 639-3 코드 또는 지원 단축 코드 |
 | `enabledTags` | `string[]`          | 전체   | 활성화할 태그 유형                      |
 
+`enabledTags`를 지정하면 선택한 태그 외의 약어·단위 후처리는 수행하지 않습니다. 빈 배열을 지정하면 원문을 유지합니다.
+
 </details>
 
 <details>
@@ -353,7 +355,7 @@ autoTagWithManual('name(김철수)님, 010-1234-5678로 연락주세요.', { lan
 // → '김 . 철 . 수 님, 공 . 일 . 공 . 일 . 이 . 삼 . 사 . 오 . 육 . 칠 . 팔 로 연락주세요.'
 ```
 
-> **참고:** 수동 태그가 먼저 처리된 후 자동 태그가 적용됩니다.
+> **참고:** 수동 태그 결과는 그대로 보존하고 주변 텍스트에만 자동 태깅을 적용합니다. 입력 한도 10,000자(`MAX_INPUT_LENGTH`, JavaScript 문자열 길이 기준)는 확장된 결과가 아닌 원문에 적용됩니다.
 
 </details>
 
@@ -700,17 +702,9 @@ src/
 
 <br>
 
-## 릴리즈와 공개 배포
+## 릴리즈
 
-GitHub Release 생성은 `release-it`을 사용합니다. npm, PyPI, Maven Central 공개 레지스트리 배포 절차는 [PUBLISHING.md](./PUBLISHING.md)에 정리되어 있습니다.
-
-현재 공개 패키지는 다음 좌표로 배포합니다:
-
-- npm: `@neosapience/typecast-autotag`
-- PyPI: `typecast-autotag`
-- Maven Central: `com.neosapience:typecast-autotag`
-
-<br>
+npm, Python, Java, 네이티브 라이브러리는 버전을 독립적으로 관리합니다. 변경한 패키지의 검증·배포 절차는 [PUBLISHING.md](./PUBLISHING.md)를 따릅니다. npm 게시 시 같은 버전의 GitHub Release를 기록하며, npm 릴리즈에 네이티브 바이너리를 첨부하지 않습니다.
 
 ## 라이선스
 

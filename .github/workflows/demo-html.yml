@@ -1,10 +1,10 @@
 name: Demo HTML
 on:
   pull_request:
-    paths: ['demo-html/**', 'src/**', 'tests/**', 'package.json', 'pnpm-lock.yaml', '.github/workflows/demo-html.yml']
+    paths: ['demo-html/**', 'src/**', 'tests/**', 'scripts/**', 'c-binding/src/**', 'jest.config.js', 'tsconfig*.json', '.release-it.json', 'package.json', 'pnpm-lock.yaml', '.github/workflows/demo-html.yml']
   push:
     branches: [main]
-    paths: ['demo-html/**', 'src/**', 'tests/**', 'package.json', 'pnpm-lock.yaml', '.github/workflows/demo-html.yml']
+    paths: ['demo-html/**', 'src/**', 'tests/**', 'scripts/**', 'c-binding/src/**', 'jest.config.js', 'tsconfig*.json', '.release-it.json', 'package.json', 'pnpm-lock.yaml', '.github/workflows/demo-html.yml']
 permissions:
   contents: read
 jobs:
@@ -21,6 +21,6 @@ jobs:
         with:
           node-version: 24
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:jest --runInBand
+      - run: pnpm typecheck && pnpm lint && pnpm test:coverage --runInBand && pnpm build
       - run: pnpm install --frozen-lockfile && pnpm build && pnpm test && pnpm audit --audit-level=moderate
         working-directory: demo-html

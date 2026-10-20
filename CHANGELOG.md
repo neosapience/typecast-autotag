@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Preserve explicit manual readings and accept expanded results within the original input limit.
+- Reject inherited object properties as language codes, respect explicit tag filters, and read negative and ranged English currency amounts in JavaScript and native builds.
+- Keep the demo usable after conversion errors, enforce input limits, and expose all 37 TTS language codes.
+- Separate package versions and require coverage checks before npm publishing.
+
 ## 1.13.3
 
 - Update bundled number-to-word conversion to to-words 7.2.0, including corrected locale-specific wording and spacing.

@@ -10,23 +10,7 @@
     "publish": false
   },
   "github": {
-    "release": true,
-    "releaseName": "v${version}",
-    "assets": [
-      "c-binding/build/libtypecast_autotag.dylib",
-      "c-binding/build/libtypecast_autotag.so",
-      "c-binding/build/libtypecast_autotag_arm64.so",
-      "c-binding/build/libtypecast_autotag_armv7.so",
-      "c-binding/build/libtypecast_autotag_x86_64.so",
-      "c-binding/build/libtypecast_autotag_x86.so",
-      "c-binding/build/typecast_autotag.dll",
-      "c-binding/build/typecast_autotag.lib",
-      "c-binding/build/typecast_autotag_i686.dll",
-      "c-binding/build/typecast_autotag_i686.lib",
-      "c-binding/build/typecast_autotag_x86_64.dll",
-      "c-binding/build/typecast_autotag_x86_64.lib",
-      "c-binding/build/typecast_autotag.h"
-    ]
+    "release": false
   },
   "plugins": {
     "@release-it/conventional-changelog": {
@@ -35,7 +19,6 @@
     }
   },
   "hooks": {
-    "before:init": ["pnpm test:jest", "pnpm build", "pnpm python-binding:copy-libs", "pnpm python-binding:test"],
-    "after:bump": ["pnpm sync:version", "node scripts/sync-python-version.js ${version}"]
+    "before:init": ["pnpm typecheck", "pnpm lint", "pnpm test:coverage --runInBand", "pnpm build"]
   }
 }

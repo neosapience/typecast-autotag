@@ -1,3 +1,4 @@
+import { combineTags } from '../auto-with-manual';
 import { assertInputWithinLimit } from '../input-guard';
 import * as chinese from '../chinese';
 
@@ -144,5 +145,5 @@ export function manualTagSelective(text: string, allowedTags: string[]): string 
 }
 
 export function autoTagWithManual(text: string, options?: AutoTagOptions): string {
-  return autoTag(manualTag(text), options);
+  return combineTags(text, (part) => autoTag(part, options), manualTag, extractTags);
 }
