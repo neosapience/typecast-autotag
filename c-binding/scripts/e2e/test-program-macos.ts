@@ -187,6 +187,9 @@ int main() {
     run_test(&result, "Korean comma address", typecast_auto_tag,
              "엘지아파트,102동 304호", "엘지아파트백이동 삼백사호", 1);
 
+    run_test(&result, "Korean comma address after digit", typecast_auto_tag,
+             "101, 102동 304호", "101백이동 삼백사호", 1);
+
     // money tag
     run_test(&result, "money", typecast_manual_tag,
              "money(50000)원", "오만", 1);

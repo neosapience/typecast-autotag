@@ -144,6 +144,15 @@ describe('parenthesized phone numbers', () => {
 });
 
 describe('numeric pattern boundaries', () => {
+  it.each(['101, 102동 304호', '101,102동 304호'])(
+    'matches comma addresses after a numeric prefix: %s',
+    (input) => {
+      expect(autoTag(input)).toBe('101백이동 삼백사호');
+      expect(extractAutoTags(input)).toEqual([
+        { original: input.slice(3), tagType: 'address', start: 3, end: input.length },
+      ]);
+    }
+  );
   it.each(['엘지아파트, 102동 304호', '엘지아파트,102동 304호'])(
     'keeps literal comma address patterns: %s',
     (input) => {
