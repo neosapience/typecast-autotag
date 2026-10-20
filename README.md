@@ -303,6 +303,8 @@ autoTag('$500, 555-1234', { language: 'en', enabledTags: ['phone'] });
 | `language`    | `SupportedLanguage` | `'ko'`  | Official ISO 639-3 code or a supported alias |
 | `enabledTags` | `string[]`          | all     | Tag types to enable                          |
 
+An explicit `enabledTags` list also disables unrelated abbreviation/unit post-processing. An empty list leaves the input unchanged.
+
 </details>
 
 <details>
@@ -363,7 +365,7 @@ autoTagWithManual('name(John), call 555-123-4567.', { language: 'en' });
 // → 'J O H N, call five five five, one two three, four five six seven.'
 ```
 
-> **Note:** Manual tags are processed first, then auto-tags are applied.
+> **Note:** Manual tag results are preserved; auto-tagging applies only to the surrounding text. The 10,000-character input limit (`MAX_INPUT_LENGTH`, JavaScript string length) applies to the original input, not expanded output.
 
 </details>
 
@@ -708,62 +710,7 @@ src/
 
 ## Releasing
 
-This project uses [release-it](https://github.com/release-it/release-it) for GitHub Releases. Public registry publishing is handled by GitHub Actions; see [PUBLISHING.md](./PUBLISHING.md) for the npm, PyPI, and Maven Central checklist.
-
-### Setup
-
-1. Copy the example environment file:
-
-```bash
-cp .env.example .env
-```
-
-2. Add your GitHub Personal Access Token to `.env`:
-
-```bash
-GITHUB_TOKEN=<your-github-token>
-```
-
-> Generate a token at [GitHub Settings → Tokens](https://github.com/settings/tokens) with permission to create releases and upload release assets.
-
-### Creating a Release
-
-```bash
-# Dry run (preview without publishing)
-pnpm release:dry
-
-# Create a release
-pnpm release
-```
-
-This will:
-
-- Run tests and build
-- Bump version based on [Conventional Commits](https://www.conventionalcommits.org/)
-- Generate/update `CHANGELOG.md`
-- Create a Git tag
-- Create a GitHub Release with pre-built C binding binaries attached
-
-After the release tag is created, run the publishing workflows for:
-
-- npm: `@neosapience/typecast-autotag`
-- PyPI: `typecast-autotag`
-- Maven Central: `com.neosapience:typecast-autotag`
-
-### Release Assets
-
-The following pre-built binaries are automatically attached to each release:
-
-| Platform | Files                                                                                                                                                                  |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| macOS    | `libtypecast_autotag.dylib`                                                                                                                                            |
-| Linux    | `libtypecast_autotag.so`, `libtypecast_autotag_arm64.so`, `libtypecast_autotag_armv7.so`, `libtypecast_autotag_x86_64.so`, `libtypecast_autotag_x86.so`                |
-| Windows  | `typecast_autotag.dll`, `typecast_autotag.lib`, `typecast_autotag_i686.dll`, `typecast_autotag_i686.lib`, `typecast_autotag_x86_64.dll`, `typecast_autotag_x86_64.lib` |
-| Header   | `typecast_autotag.h`                                                                                                                                                   |
-
-> **Note:** Make sure to build the C bindings before releasing: `pnpm c-binding:build-all-multiarch`
-
-<br>
+npm, Python, Java, and native libraries use independent versions. Follow [PUBLISHING.md](./PUBLISHING.md) to validate and publish the affected package. npm publishing also records the matching GitHub Release; npm releases do not include native binaries.
 
 ## License
 

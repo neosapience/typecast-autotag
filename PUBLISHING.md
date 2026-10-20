@@ -26,43 +26,42 @@ npm uses GitHub Actions OIDC trusted publishing for `@neosapience/typecast-autot
 
 ## Release Checklist
 
-1. Confirm all package versions are synchronized.
+Packages have independent versions. An npm release must not change Python, Java, or the native library version.
 
-   ```bash
-   pnpm sync:version
-   ```
+1. Update only the package being released:
+   - npm: `package.json` and `CHANGELOG.md`.
+   - Python: `node scripts/sync-python-version.js <python-version>` updates both Python version fields.
+   - Java: `java-binding/pom.xml`.
+   - Native C library: `TYPECAST_VERSION` in `c-binding/include/typecast_autotag.h`; rebuild and test the native assets before distributing them.
 
-2. Run the local validation suite before cutting a release.
+2. Validate the affected package. For npm and the browser demo:
 
    ```bash
    pnpm install --frozen-lockfile
-   pnpm build
    pnpm typecheck
+   pnpm lint
+   pnpm test:coverage --runInBand
+   pnpm build
+   cd demo-html
+   pnpm install --frozen-lockfile
+   pnpm build
    pnpm test
    ```
 
-3. Create the GitHub release and tag.
+   Native changes also require `pnpm test:e2e`, `pnpm test:python`, and `pnpm test:java` after rebuilding libraries. Packaging-only changes must test the installed artifact on its supported platforms.
+
+3. Merge the reviewed version change, then run only the affected registry workflow from that commit. The npm workflow validates, publishes with provenance, and creates a GitHub Release named `npm vX.Y.Z` at that commit. It does not attach unrelated native binaries. `pnpm release:dry` / `pnpm release` remain available for preparing an npm version/tag with release-it; they never synchronize other ecosystems.
+
+4. Verify each published registry version against its own manifest and source commit:
 
    ```bash
-   pnpm release:dry
-   pnpm release
-   ```
-
-4. Run the registry publishing workflows from GitHub Actions.
-
-   - `Publish npm package`
-   - `Publish Python package`
-   - `Publish Maven package`
-
-5. Verify the published packages.
-
-   ```bash
-   npm view @neosapience/typecast-autotag version
+   npm view @neosapience/typecast-autotag version gitHead
    python -m pip index versions typecast-autotag
-   mvn --batch-mode --no-transfer-progress dependency:get \
-     -Dartifact=com.neosapience:typecast-autotag:$(node -p "require('./package.json').version") \
-     -Dtransitive=false
+   mvn --batch-mode --no-transfer-progress -f java-binding/pom.xml help:evaluate \
+     -Dexpression=project.version -q -DforceStdout
    ```
+
+   For Maven artifact verification, use that Java version in `dependency:get -Dartifact=com.neosapience:typecast-autotag:<java-version> -Dtransitive=false`. Check the installed artifact as a consumer, not only the workflow status.
 
 ## Notes
 
