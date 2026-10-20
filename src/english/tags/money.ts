@@ -1,3 +1,4 @@
+import { isSafeNumber } from '../../utils/number-safety';
 import { numberToEnglish } from '../utils/number-to-english';
 
 /**
@@ -168,14 +169,14 @@ export function money(input: number | string, options?: MoneyOptions): string {
       const standaloneSubunit = SUBUNIT_BY_NAME[currencyName];
       if (standaloneSubunit && !magnitude) {
         const value = Number(numStr);
-        if (!Number.isFinite(value)) return String(input);
+        if (!isSafeNumber(value)) return String(input);
         const subunitWord = value === 1 ? standaloneSubunit[1] : standaloneSubunit[0];
         return negativePrefix + numberToEnglish(value) + space + subunitWord;
       }
 
       if (magnitude) {
         const value = Number(numStr);
-        if (!Number.isFinite(value)) return String(input);
+        if (!isSafeNumber(value)) return String(input);
         return negativePrefix + numberToEnglish(value) + ' ' + magnitude + space + parsedUnit;
       }
 
@@ -185,7 +186,7 @@ export function money(input: number | string, options?: MoneyOptions): string {
         const intNum = parseInt(intPart || '0', 10);
         const decNum = parseInt((decPart || '0').padEnd(2, '0').slice(0, 2), 10);
 
-        if (isNaN(intNum)) {
+        if (!isSafeNumber(intNum)) {
           return String(input);
         }
 
@@ -220,7 +221,7 @@ export function money(input: number | string, options?: MoneyOptions): string {
 
       const num = parseInt(numStr, 10);
 
-      if (isNaN(num) || num < 0) {
+      if (!isSafeNumber(num) || num < 0) {
         return String(input);
       }
 
@@ -235,6 +236,8 @@ export function money(input: number | string, options?: MoneyOptions): string {
 
     return String(input);
   }
+
+  if (isFinite(input) && !isSafeNumber(input)) return String(input);
 
   // Number processing
   if (isNaN(input) || !isFinite(input)) {

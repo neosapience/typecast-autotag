@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Preserve unsupported numeric values instead of overflowing or silently rounding large integers.
+- Correct localized negative currency amounts and preserve unsupported currency precision.
+- Avoid repeated matching inside long numbers and reuse locale formatters.
+- Support parentheses inside English and generic-language manual phone tags.
+
 ## 1.13.4
 
 - Preserve explicit manual readings and accept expanded results within the original input limit.

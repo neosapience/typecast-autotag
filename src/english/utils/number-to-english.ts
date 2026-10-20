@@ -1,3 +1,4 @@
+import { isSafeNumber } from '../../utils/number-safety';
 /**
  * Utility functions for converting numbers to English words
  */
@@ -188,6 +189,7 @@ function threeDigitsToEnglish(num: number): string {
  * ```
  */
 export function numberToEnglish(num: number): string {
+  if (!isSafeNumber(num)) return String(num);
   if (num === 0) return 'zero';
   if (num < 0) return 'minus ' + numberToEnglish(-num);
 

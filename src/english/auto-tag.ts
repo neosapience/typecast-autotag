@@ -1,3 +1,5 @@
+import { isSafeNumber } from '../utils/number-safety';
+import { patternMatches } from '../utils/pattern-matches';
 import { combineTags } from '../auto-with-manual';
 import { numberToEnglish, numberToOrdinal } from './utils/number-to-english';
 import { month } from './tags/month';
@@ -644,6 +646,7 @@ const AUTO_TAG_PATTERNS = {
       if (siTimeRangeMatch) {
         const num1 = parseInt(siTimeRangeMatch[1] ?? '0', 10);
         const num2 = parseInt(siTimeRangeMatch[2] ?? '0', 10);
+        if (!isSafeNumber(num1) || !isSafeNumber(num2)) return match;
         const unit = siTimeRangeMatch[3]?.toLowerCase() ?? 'ms';
         const englishUnit = timeUnitMap[unit] ?? 'seconds';
         return numberToEnglish(num1) + ' to ' + numberToEnglish(num2) + ' ' + englishUnit;
@@ -653,6 +656,7 @@ const AUTO_TAG_PATTERNS = {
       const siTimeMatch = match.match(/^(\d+)\s*([µu]?[mnpf]?s)$/i);
       if (siTimeMatch) {
         const num = parseInt(siTimeMatch[1] ?? '0', 10);
+        if (!isSafeNumber(num)) return match;
         const unit = siTimeMatch[2]?.toLowerCase() ?? 'ms';
         const englishUnit = timeUnitMap[unit] ?? 'seconds';
         return numberToEnglish(num) + ' ' + englishUnit;
@@ -735,6 +739,7 @@ const AUTO_TAG_PATTERNS = {
       if (rangeMatch) {
         const num1 = parseInt(rangeMatch[1] ?? '0', 10);
         const num2 = parseInt(rangeMatch[2] ?? '0', 10);
+        if (!isSafeNumber(num1) || !isSafeNumber(num2)) return match;
         const unit = rangeMatch[3] ?? '';
         return numberToEnglish(num1) + ' to ' + numberToEnglish(num2) + ' ' + unit;
       }
@@ -1076,7 +1081,7 @@ const AUTO_TAG_PATTERNS = {
       if (numMatch) {
         const numStr = numMatch[1]?.replace(/,/g, '') ?? '0';
         const num = parseInt(numStr, 10);
-        if (!isNaN(num)) {
+        if (isSafeNumber(num)) {
           return numberToEnglish(num) + ' points';
         }
       }
@@ -1204,12 +1209,7 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
     if (!Object.prototype.hasOwnProperty.call(AUTO_TAG_PATTERNS, tagType)) continue;
 
     for (const pattern of tagConfig.patterns) {
-      // Reset regex (reset lastIndex)
-      const regex = new RegExp(pattern.source, pattern.flags);
-
-      let match: RegExpExecArray | null;
-      while ((match = regex.exec(text)) !== null) {
-        const original = match[0];
+      for (const { original, start } of patternMatches(text, pattern)) {
         const converted = tagConfig.converter(original);
 
         // Only add if conversion actually happened
@@ -1218,8 +1218,8 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
             original,
             converted,
             tagType,
-            start: match.index,
-            end: match.index + original.length,
+            start,
+            end: start + original.length,
           });
         }
       }
@@ -1321,11 +1321,7 @@ export function extractAutoTags(
     if (!Object.prototype.hasOwnProperty.call(AUTO_TAG_PATTERNS, tagType)) continue;
 
     for (const pattern of tagConfig.patterns) {
-      const regex = new RegExp(pattern.source, pattern.flags);
-
-      let match: RegExpExecArray | null;
-      while ((match = regex.exec(text)) !== null) {
-        const original = match[0];
+      for (const { original, start } of patternMatches(text, pattern)) {
         const converted = tagConfig.converter(original);
 
         if (original !== converted) {
@@ -1333,8 +1329,8 @@ export function extractAutoTags(
             original,
             converted,
             tagType,
-            start: match.index,
-            end: match.index + original.length,
+            start,
+            end: start + original.length,
           });
         }
       }

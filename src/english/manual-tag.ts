@@ -81,9 +81,12 @@ export const SUPPORTED_TAGS = Object.keys(TAG_FUNCTIONS);
 
 /**
  * Regular expression for tag matching
- * Format: tagName(value) - any characters allowed inside parentheses (excluding nested parentheses)
+ * Format: tagName(value) - any characters allowed inside parentheses (including one level of parentheses)
  */
-const TAG_PATTERN = new RegExp(`(${SUPPORTED_TAGS.join('|')})\\(([^)]*)\\)`, 'g');
+const TAG_PATTERN = new RegExp(
+  `(${SUPPORTED_TAGS.join('|')})\\(([^()]*(?:\\([^()]*\\)[^()]*)*)\\)`,
+  'g'
+);
 
 /**
  * Parse tags in text and replace with results of applying tag functions
@@ -187,7 +190,10 @@ export function manualTagSelective(text: string, allowedTags: string[]): string 
     return text;
   }
 
-  const pattern = new RegExp(`(${filteredTags.join('|')})\\(([^)]*)\\)`, 'g');
+  const pattern = new RegExp(
+    `(${filteredTags.join('|')})\\(([^()]*(?:\\([^()]*\\)[^()]*)*)\\)`,
+    'g'
+  );
 
   return text.replace(pattern, (match, tagName: string, value: string) => {
     const tagFunction = TAG_FUNCTIONS[tagName];

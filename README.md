@@ -367,6 +367,8 @@ autoTagWithManual('name(John), call 555-123-4567.', { language: 'en' });
 
 > **Note:** Manual tag results are preserved; auto-tagging applies only to the surrounding text. The 10,000-character input limit (`MAX_INPUT_LENGTH`, JavaScript string length) applies to the original input, not expanded output.
 
+Numeric and money tags in Korean and English preserve values outside JavaScript’s safe integer range. Generic-language currency conversion preserves unsupported amounts (including more than 20 fractional digits). English and generic-language manual tags support one level of parentheses, such as `phone(+1 (202) 555-0175)`.
+
 </details>
 
 ### Utility Functions
