@@ -97,6 +97,10 @@ describe('voice-agent sessions', () => {
     const safe = createVoiceAgent({ language: 'ko' });
     expect(safe.normalize('3/4에 예약되었습니다.')).toBe('3/4에 예약되었습니다.');
     expect(safe.normalize('예약일 03/04/2026')).toBe('예약일 03/04/2026');
+    expect(safe.normalize('예약일: 3/4.')).toBe('예약일: 3/4.');
+    expect(createVoiceAgent({ language: 'en', dateOrder: 'mdy' }).normalize('3/4.')).toBe(
+      'March fourth.'
+    );
     expect(safe.normalize('fraction(1/2)정')).toBe('이 분의 일정');
     expect(safe.normalize('date(2026-03-04)')).not.toMatch(/\d/);
     expect(createVoiceAgent({ language: 'ko', dateOrder: 'mdy' }).normalize('3/4')).toBe(

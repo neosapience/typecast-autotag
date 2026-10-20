@@ -15,21 +15,6 @@ export interface VoiceAgentOptions extends AutoTagOptions {
 }
 
 const SLASH_DATE = /\b(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?\b/g;
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-
 export interface VoiceAgent {
   normalize(text: string): string;
   push(chunk: string): string;
@@ -69,7 +54,7 @@ export function createVoiceAgent(options: VoiceAgentOptions): VoiceAgent {
       return manualTag(`date(${year}-${month}-${day})`, { language });
     }
     if (language === 'ko' || language === 'kor') return korean.date(`${month}월 ${day}일`);
-    if (language === 'en' || language === 'eng') return english.date(`${MONTHS[month - 1]} ${day}`);
+    if (language === 'en' || language === 'eng') return english.date(`${month}월 ${day}일`);
     // shortcut: yearless slash dates only have dedicated ko/en readers; supply ISO dates otherwise.
     return value;
   }
@@ -112,7 +97,7 @@ export function createVoiceAgent(options: VoiceAgentOptions): VoiceAgent {
     while ((date = SLASH_DATE.exec(text)) !== null) {
       if (
         /[\d/.-]/.test(text[date.index - 1] ?? '') ||
-        /[\d/.-]/.test(text[date.index + date[0].length] ?? '')
+        /^(?:[\d/]|[.-]\d)/.test(text.slice(date.index + date[0].length))
       )
         continue;
       spans.push({ start: date.index, end: date.index + date[0].length, value: readDate(date[0]) });
