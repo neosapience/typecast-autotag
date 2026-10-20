@@ -182,6 +182,12 @@ int main() {
     run_test(&result, "Korean comma address after digit", typecast_auto_tag,
              "101, 102동 304호", "101백이동 삼백사호", 1);
 
+    run_test(&result, "signed Korean amount is not a phone", typecast_auto_tag,
+             "+1500원", "+천오백원", 0);
+    run_test(&result, "signed English points are not a phone", typecast_auto_tag_english,
+             "+1500 points", "+one thousand five hundred points", 0);
+    run_test(&result, "compact international phone", typecast_auto_tag_english,
+             "+821012345678", "plus eight two one zero one two three four five six seven eight", 0);
     run_test(&result, "URL preservation", typecast_auto_tag,
              "https://example.com/2024/01/15", "https://example.com/2024/01/15", 0);
     run_test(&result, "English code preservation", typecast_auto_tag_english,

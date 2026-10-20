@@ -11,10 +11,13 @@ export function patternMatches(
   if (!compiled) {
     const digits = pattern.unicode ? '\\p{Nd}' : '\\d';
     const punctuation = pattern.unicode ? ".,٬٫'’\\u00a0\\u202f" : '.,';
+    // Prefix boundaries avoid lookbehind, which the native Duktape runtime cannot parse.
     // Literal comma address patterns provide their own boundary, including after a digit.
     const boundary = pattern.source.startsWith(',')
       ? '()'
-      : `(^|[^${digits}${punctuation}]|(?:^|[^${digits}])[${punctuation}])(?!,)`;
+      : pattern.source.startsWith('\\+')
+        ? '(^|[^\\w+])'
+        : `(^|[^${digits}${punctuation}]|(?:^|[^${digits}])[${punctuation}])(?!,)`;
     compiled = {
       regex: new RegExp(`${boundary}(${pattern.source})`, pattern.flags),
       endsInDigit: new RegExp(`[${digits}]$`, pattern.unicode ? 'u' : ''),

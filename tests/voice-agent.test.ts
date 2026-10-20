@@ -50,6 +50,7 @@ describe('spoken units and phone numbers', () => {
       for (const input of [
         '+82 10-1234-5678',
         '+44 20 7946 0958',
+        '+821012345678',
         '02-1234-5678 내선 0012',
         '202-555-0175 ext. 0012',
         '(202) 555-0175 ext. 0012',
@@ -61,6 +62,23 @@ describe('spoken units and phone numbers', () => {
       }
     }
   );
+  it('does not interpret signed amounts or embedded plus signs as international phones', () => {
+    expect(autoTag('+1500원', { language: 'ko' })).toBe('+천오백원');
+    expect(autoTag('+1500 points', { language: 'en' })).toBe('+one thousand five hundred points');
+    for (const language of ['ko', 'en'] as const) {
+      for (const input of [
+        language === 'ko' ? '+15000000원' : '+15000000 points',
+        '+1500.50',
+        'abc+821012345678',
+        '++821012345678',
+      ]) {
+        expect(extractAutoTags(input, { language }).filter((m) => m.tagType === 'phone')).toEqual(
+          []
+        );
+      }
+    }
+  });
+
   it('uses the same extension handling for direct phone tags', () => {
     expect(korean.phone('02-1234-5678 내선 0012')).toContain('내선 공 . 공 . 일 . 이');
     expect(english.phone('202-555-0175 ext. 0012')).toContain('extension zero zero one two');
@@ -181,6 +199,20 @@ describe('voice-agent sessions', () => {
     expect(agent.push('. ')).toBe('Acme Incorporated. ');
     expect(agent.push('Acme. Inc')).toBe('');
     expect(agent.flush()).toBe('Acme Incorporated');
+  });
+
+  it('emits URL-ending sentences while preserving URL paths and code', () => {
+    const agent = createVoiceAgent({ language: 'en' });
+    for (const input of [
+      'See https://example.com/2024. ',
+      'See (https://example.com/(2024)). ',
+      'See https://example.com/?x=500;:! ',
+    ]) {
+      expect(agent.push(input)).toBe(input);
+      expect(agent.flush()).toBe('');
+    }
+    expect(agent.push('See `https://example.com/2024.`')).toBe('');
+    expect(agent.flush()).toBe('See `https://example.com/2024.`');
   });
 
   it('bounds pending input and preserves the previous buffer after a failed push', () => {

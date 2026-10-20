@@ -4,7 +4,21 @@ export function protectedRanges(text: string): Array<{ start: number; end: numbe
   const ranges: Array<{ start: number; end: number }> = [];
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(text)) !== null) {
-    ranges.push({ start: match.index, end: match.index + match[0].length });
+    const value = match[0];
+    let length = value.length;
+    if (value[0] !== '`') {
+      // Keep URL-internal parentheses, but leave enclosing prose punctuation visible.
+      let extraClosings = (value.match(/\)/g)?.length ?? 0) - (value.match(/\(/g)?.length ?? 0);
+      while (length > 0) {
+        const last = value[length - 1]!;
+        if (/[.!?。！？]/.test(last)) length--;
+        else if (last === ')' && extraClosings > 0) {
+          length--;
+          extraClosings--;
+        } else break;
+      }
+    }
+    ranges.push({ start: match.index, end: match.index + length });
   }
   return ranges;
 }

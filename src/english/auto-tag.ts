@@ -220,7 +220,8 @@ const AUTO_TAG_PATTERNS = {
   phone: {
     patterns: [
       /\+?\(?\d[\d .()-]{5,22}\d\s*(?:내선|ext(?:ension)?\.?|x)\s*[:#]?\s*\d{1,8}(?!\d)/gi,
-      /\+[1-9]\d{0,2}[-.\s]?(?:\(\d{1,4}\)|\d{1,4})(?:[-.\s]?\d{2,4}){1,3}(?!\d)/g,
+      /\+[1-9]\d{0,2}[-.\s](?:\(\d{1,4}\)|\d{1,4})(?:[-.\s]\d{2,4}){1,3}(?![\dA-Za-z]|\s*(?:원|달러|엔|유로|위안|[₩$€£¥]|points?\b|dollars?\b|USD\b|P\b))/gi,
+      /\+[1-9]\d{7,14}(?![\dA-Za-z]|\s*(?:원|달러|엔|유로|위안|[₩$€£¥]|points?\b|dollars?\b|USD\b|P\b))/gi,
 
       // US format with country code: +1-xxx-xxx-xxxx
       /\+1[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
