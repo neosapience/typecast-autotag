@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.13.3
+
+- Update bundled number-to-word conversion to to-words 7.2.0, including corrected locale-specific wording and spacing.
+- Keep the JavaScript, ESM, and browser bundles consistent with the updated conversion rules.
+
 ## 1.13.2
 
 - Correct the npm README support table to show Python 3.11 or later for the Python package. JavaScript and browser behavior is unchanged.
