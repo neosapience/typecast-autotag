@@ -104,6 +104,8 @@ export function money(input: number | string, options?: MoneyOptions): string {
       const baekman = parseInt(koreanMixedMatch[4] ?? '0', 10);
 
       if (![eok, cheonman, baekman].every(isSafeNumber)) return input;
+      const total = eok * 100_000_000 + cheonman * 10_000_000 + baekman * 1_000_000;
+      if (!isSafeNumber(total)) return input;
 
       const parts: string[] = [];
       if (eok > 0) {

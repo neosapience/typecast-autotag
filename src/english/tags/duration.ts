@@ -1,3 +1,4 @@
+import { isSafeNumber } from '../../utils/number-safety';
 import { numberToEnglish } from '../utils/number-to-english';
 
 /**
@@ -91,7 +92,7 @@ export function duration(input: string, _options?: DurationOptions): string {
 
     const num = parseInt(numStr, 10);
 
-    if (isNaN(num) || num < 0) {
+    if (!isSafeNumber(num) || num < 0) {
       return input;
     }
 
@@ -110,7 +111,7 @@ export function duration(input: string, _options?: DurationOptions): string {
 
     const num = parseInt(numStr, 10);
 
-    if (isNaN(num) || num < 0) {
+    if (!isSafeNumber(num) || num < 0) {
       return input;
     }
 

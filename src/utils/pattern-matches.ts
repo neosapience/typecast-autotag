@@ -11,9 +11,11 @@ export function patternMatches(
   if (!compiled) {
     const digits = pattern.unicode ? '\\p{Nd}' : '\\d';
     const punctuation = pattern.unicode ? ".,٬٫'’\\u00a0\\u202f" : '.,';
+    // Literal comma prefixes belong to address patterns; numeric patterns must not eat separators.
+    const numericStart = pattern.source.startsWith(',') ? '' : '(?!,)';
     compiled = {
       regex: new RegExp(
-        `(^|[^${digits}${punctuation}]|(?:^|[^${digits}])[${punctuation}])(?!,)(${pattern.source})`,
+        `(^|[^${digits}${punctuation}]|(?:^|[^${digits}])[${punctuation}])${numericStart}(${pattern.source})`,
         pattern.flags
       ),
       endsInDigit: new RegExp(`[${digits}]$`, pattern.unicode ? 'u' : ''),

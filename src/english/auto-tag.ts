@@ -1,3 +1,4 @@
+import { isSafeNumber } from '../utils/number-safety';
 import { patternMatches } from '../utils/pattern-matches';
 import { combineTags } from '../auto-with-manual';
 import { numberToEnglish, numberToOrdinal } from './utils/number-to-english';
@@ -645,6 +646,7 @@ const AUTO_TAG_PATTERNS = {
       if (siTimeRangeMatch) {
         const num1 = parseInt(siTimeRangeMatch[1] ?? '0', 10);
         const num2 = parseInt(siTimeRangeMatch[2] ?? '0', 10);
+        if (!isSafeNumber(num1) || !isSafeNumber(num2)) return match;
         const unit = siTimeRangeMatch[3]?.toLowerCase() ?? 'ms';
         const englishUnit = timeUnitMap[unit] ?? 'seconds';
         return numberToEnglish(num1) + ' to ' + numberToEnglish(num2) + ' ' + englishUnit;
@@ -654,6 +656,7 @@ const AUTO_TAG_PATTERNS = {
       const siTimeMatch = match.match(/^(\d+)\s*([µu]?[mnpf]?s)$/i);
       if (siTimeMatch) {
         const num = parseInt(siTimeMatch[1] ?? '0', 10);
+        if (!isSafeNumber(num)) return match;
         const unit = siTimeMatch[2]?.toLowerCase() ?? 'ms';
         const englishUnit = timeUnitMap[unit] ?? 'seconds';
         return numberToEnglish(num) + ' ' + englishUnit;
@@ -736,6 +739,7 @@ const AUTO_TAG_PATTERNS = {
       if (rangeMatch) {
         const num1 = parseInt(rangeMatch[1] ?? '0', 10);
         const num2 = parseInt(rangeMatch[2] ?? '0', 10);
+        if (!isSafeNumber(num1) || !isSafeNumber(num2)) return match;
         const unit = rangeMatch[3] ?? '';
         return numberToEnglish(num1) + ' to ' + numberToEnglish(num2) + ' ' + unit;
       }
@@ -1077,7 +1081,7 @@ const AUTO_TAG_PATTERNS = {
       if (numMatch) {
         const numStr = numMatch[1]?.replace(/,/g, '') ?? '0';
         const num = parseInt(numStr, 10);
-        if (!isNaN(num)) {
+        if (isSafeNumber(num)) {
           return numberToEnglish(num) + ' points';
         }
       }

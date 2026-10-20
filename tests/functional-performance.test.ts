@@ -14,6 +14,28 @@ import { numberToEnglish } from '../src/english/utils/number-to-english';
 import { numberToKorean } from '../src/korean/utils/number-to-korean';
 
 describe('numeric safety', () => {
+  it.each(['ko', 'en'] as const)('preserves unsafe automatic numeric units in %s', (language) => {
+    for (const value of ['9007199254740993', '9'.repeat(309)]) {
+      const inputs = [
+        `${value}P`,
+        `${value}ms`,
+        `${value}~${value}ms`,
+        `${value}~${value}${language === 'ko' ? '개월' : ' months'}`,
+        ...(language === 'ko' ? [`$${value}`, `$${value}.25`, `${value}인승`, `${value}동`] : []),
+      ];
+      for (const input of inputs) {
+        expect(autoTag(input, { language })).toBe(input);
+        expect(extractAutoTags(input, { language })).toEqual([]);
+      }
+    }
+  });
+
+  it('preserves Korean mixed amounts whose total exceeds the safe range', () => {
+    const input = '9007199254740991억 1천만원';
+    expect(korean.money(input)).toBe(input);
+    expect(korean.money('3억 5천만원')).toBe('삼억 오천만원');
+  });
+
   it('terminates for overflowing numeric strings in automatic and manual APIs', () => {
     // A subprocess timeout also catches native-style infinite loops that Jest cannot interrupt.
     execFileSync(
@@ -122,6 +144,13 @@ describe('parenthesized phone numbers', () => {
 });
 
 describe('numeric pattern boundaries', () => {
+  it.each(['엘지아파트, 102동 304호', '엘지아파트,102동 304호'])(
+    'keeps literal comma address patterns: %s',
+    (input) => {
+      expect(autoTag(input)).toBe('엘지아파트백이동 삼백사호');
+      expect(extractAutoTags(input).some((tag) => tag.tagType === 'address')).toBe(true);
+    }
+  );
   it('does not read a fractional duration as an integer suffix', () => {
     expect(autoTag('0.4 months', { language: 'en' })).toBe('0.4 months');
     expect(extractAutoTags('0.4 months', { language: 'en' })).toEqual([]);

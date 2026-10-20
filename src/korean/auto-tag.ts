@@ -1,3 +1,4 @@
+import { isSafeNumber } from '../utils/number-safety';
 import { patternMatches } from '../utils/pattern-matches';
 import { combineTags } from '../auto-with-manual';
 import { numberToKorean } from './utils/number-to-korean';
@@ -298,7 +299,7 @@ function readRoadNameNumberReplacement(
   }
 
   const number = parseInt(text.slice(koreanEnd, numberEnd), 10);
-  if (isNaN(number) || number <= 0) {
+  if (!isSafeNumber(number) || number <= 0) {
     return null;
   }
 
@@ -1357,6 +1358,7 @@ const AUTO_TAG_PATTERNS = {
       if (siTimeRangeMatch) {
         const num1 = parseInt(siTimeRangeMatch[1] ?? '0', 10);
         const num2 = parseInt(siTimeRangeMatch[2] ?? '0', 10);
+        if (!isSafeNumber(num1) || !isSafeNumber(num2)) return match;
         const unit = siTimeRangeMatch[3]?.toLowerCase() ?? 'ms';
         const koreanUnit = timeUnitMap[unit] ?? '초';
         const koreanNum1 = numberToKorean(num1);
@@ -1367,6 +1369,7 @@ const AUTO_TAG_PATTERNS = {
       const siTimeMatch = match.match(/^(\d+)\s*([µu]?[mnpf]?s)$/i);
       if (siTimeMatch) {
         const num = parseInt(siTimeMatch[1] ?? '0', 10);
+        if (!isSafeNumber(num)) return match;
         const unit = siTimeMatch[2]?.toLowerCase() ?? 'ms';
         const koreanUnit = timeUnitMap[unit] ?? '초';
         const koreanNum = numberToKorean(num);
@@ -1506,6 +1509,7 @@ const AUTO_TAG_PATTERNS = {
       if (rangeMatch) {
         const num1 = parseInt(rangeMatch[1] ?? '0', 10);
         const num2 = parseInt(rangeMatch[2] ?? '0', 10);
+        if (!isSafeNumber(num1) || !isSafeNumber(num2)) return match;
         const unit = rangeMatch[3] ?? '';
 
         const koreanNum1 = numberToKorean(num1);
@@ -1647,7 +1651,7 @@ const AUTO_TAG_PATTERNS = {
       if (numMatch) {
         const num = parseInt(numMatch[1] ?? '0', 10);
         const suffix = numMatch[2] ?? '';
-        if (!isNaN(num) && num > 0) {
+        if (isSafeNumber(num) && num > 0) {
           return numberToKorean(num) + suffix;
         }
       }
@@ -1969,7 +1973,7 @@ const AUTO_TAG_PATTERNS = {
         const numStr = numMatch[1]?.replace(/,/g, '') ?? '0';
         const unit = numMatch[2] ?? '';
         const num = parseInt(numStr, 10);
-        if (!isNaN(num)) {
+        if (isSafeNumber(num)) {
           return numberToKorean(num) + ' ' + unit;
         }
       }
@@ -1991,7 +1995,7 @@ const AUTO_TAG_PATTERNS = {
       if (numMatch) {
         const numStr = numMatch[1]?.replace(/,/g, '') ?? '0';
         const num = parseInt(numStr, 10);
-        if (!isNaN(num)) {
+        if (isSafeNumber(num)) {
           return numberToKorean(num) + ' 포인트';
         }
       }
@@ -2043,6 +2047,7 @@ const AUTO_TAG_PATTERNS = {
         if (numStr.includes('.')) {
           const [intPart, decPart] = numStr.split('.');
           const intNum = parseInt(intPart || '0', 10);
+          if (!isSafeNumber(intNum)) return match;
           const intKorean = intNum === 0 ? '영' : numberToKorean(intNum);
 
           // 소수점 이하가 00이면 생략
@@ -2061,7 +2066,7 @@ const AUTO_TAG_PATTERNS = {
         }
 
         const num = parseInt(numStr, 10);
-        if (!isNaN(num)) {
+        if (isSafeNumber(num)) {
           return (num === 0 ? '영' : numberToKorean(num)) + ' ' + unit;
         }
       }

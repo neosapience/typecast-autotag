@@ -189,6 +189,13 @@ int main() {
     run_test(&result, "adjacent English units", typecast_auto_tag_english,
              "5kg,6kg", "five kilograms,six kilograms", 1);
 
+    run_test(&result, "unsafe Korean foreign amount", typecast_auto_tag,
+             "$9007199254740993", "$9007199254740993", 0);
+    run_test(&result, "unsafe English time unit", typecast_auto_tag_english,
+             "9007199254740993ms", "9007199254740993ms", 0);
+    run_test(&result, "Korean comma address", typecast_auto_tag,
+             "엘지아파트,102동 304호", "엘지아파트백이동 삼백사호", 1);
+
     // money tag
     run_test(&result, "money", typecast_manual_tag,
              "money(50000)원", "오만", 1);

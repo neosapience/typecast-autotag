@@ -1,3 +1,4 @@
+import { isSafeNumber } from '../../utils/number-safety';
 import { numberToKorean } from '../utils/number-to-korean';
 
 /**
@@ -79,7 +80,7 @@ export function duration(input: number | string, options?: DurationOptions): str
       const numStr = removeThousandSeparators(parenYearMatch[1] ?? '');
       const num = parseInt(numStr, 10);
 
-      if (isNaN(num) || num < 0) {
+      if (!isSafeNumber(num) || num < 0) {
         return String(input);
       }
 
@@ -98,7 +99,7 @@ export function duration(input: number | string, options?: DurationOptions): str
       const suffix = suffixMatch[3] ?? '';
       const num = parseInt(numStr, 10);
 
-      if (isNaN(num) || num < 0) {
+      if (!isSafeNumber(num) || num < 0) {
         return String(input);
       }
 
@@ -117,7 +118,7 @@ export function duration(input: number | string, options?: DurationOptions): str
       const unit = prefixMatch[3] ?? '';
       const num = parseInt(numStr, 10);
 
-      if (isNaN(num) || num < 0) {
+      if (!isSafeNumber(num) || num < 0) {
         return String(input);
       }
 
@@ -139,7 +140,7 @@ export function duration(input: number | string, options?: DurationOptions): str
       const parsedUnit = match[2] ?? '';
       const num = parseInt(numStr, 10);
 
-      if (isNaN(num) || num < 0) {
+      if (!isSafeNumber(num) || num < 0) {
         return String(input);
       }
 
@@ -181,7 +182,7 @@ export function gIbun(input: string): string {
   const match = trimmed.match(/^(\d+)\s*기분$/);
   if (match) {
     const num = parseInt(match[1] ?? '', 10);
-    if (isNaN(num) || num < 0) {
+    if (!isSafeNumber(num) || num < 0) {
       return input;
     }
     return numberToKorean(num) + ' 기분';
