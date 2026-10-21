@@ -1,5 +1,12 @@
 # Changelog
 
+## Native 1.14.0, Python 3.0.1, Java 1.14.0
+
+- Rebuild the Korean and English native converters with URL/backtick-code preservation, safe large-number handling, corrected signed currency, decimal unit ranges, and international phone extensions.
+- Bundle the rebuilt Linux, Windows, and macOS libraries in Python and Java packages without changing their public APIs or runtime requirements.
+- Add binding regressions for protected text, unsafe integers, signed amounts, and native version, plus cross-platform Java verification.
+- Voice-agent session APIs remain JavaScript/browser only. npm 1.14.0 is unchanged.
+
 ## 1.14.0
 
 - Add isolated JavaScript voice-agent sessions with streaming buffers, interruption reset, pronunciation overrides, explicit date ordering, and labelled identifier readings.

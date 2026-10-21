@@ -29,6 +29,28 @@ public class TypecastAutotagTest {
         assertNotNull("Version should not be null", version);
         assertFalse("Version should not be empty", version.isEmpty());
         assertFalse("Version should not be 'unknown'", version.equals("unknown"));
+        assertEquals("1.14.0", version);
+    }
+
+    @Test
+    public void testProtectedText() throws Exception {
+        String input = "https://example.com/123 `500 USD`";
+        assertEquals(input, TypecastAutotag.autoTag(input));
+        assertEquals(input, TypecastAutotag.autoTagEn(input));
+        assertEquals(input, TypecastAutotag.autoTagWithManual(input));
+        assertEquals(input, TypecastAutotag.autoTagWithManualEn(input));
+    }
+
+    @Test
+    public void testUnsafeNumbersArePreserved() throws Exception {
+        assertEquals("9007199254740993원", TypecastAutotag.autoTag("9007199254740993원"));
+        assertEquals("9007199254740993 dollars", TypecastAutotag.autoTagEn("9007199254740993 dollars"));
+    }
+
+    @Test
+    public void testSignedMoney() throws Exception {
+        assertEquals("마이너스 오백원", TypecastAutotag.autoTag("-500원"));
+        assertEquals("minus five hundred dollars", TypecastAutotag.autoTagEn("$-500"));
     }
     
     @Test

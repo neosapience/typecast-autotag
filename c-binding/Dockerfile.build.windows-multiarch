@@ -9,7 +9,8 @@ FROM --platform=linux/amd64 debian:bullseye-slim
 ARG WIN_ARCH
 
 # Install build tools (MinGW-w64 cross-compiler)
-RUN apt-get update && \
+RUN sed -i 's|deb.debian.org/debian-security|archive.debian.org/debian-security|g' /etc/apt/sources.list && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
         mingw-w64 \
         curl \
