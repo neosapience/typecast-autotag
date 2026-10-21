@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.14.0
 
 - Add isolated JavaScript voice-agent sessions with streaming buffers, interruption reset, pronunciation overrides, explicit date ordering, and labelled identifier readings.
 - Preserve URLs and backtick code across automatic conversion and extraction APIs.
