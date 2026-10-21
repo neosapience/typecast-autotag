@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add isolated JavaScript voice-agent sessions with streaming buffers, interruption reset, pronunciation overrides, explicit date ordering, and labelled identifier readings.
+- Preserve URLs and backtick code across automatic conversion and extraction APIs.
+- Read Korean/English decimal unit ranges, international phone numbers, and extensions.
+
 - Preserve unsupported numeric values instead of overflowing or silently rounding large integers.
 - Correct localized negative currency amounts and preserve unsupported currency precision.
 - Avoid repeated matching inside long numbers and reuse locale formatters.

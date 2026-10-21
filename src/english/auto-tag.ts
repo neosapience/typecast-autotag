@@ -1,3 +1,5 @@
+import { convertUnitRange } from '../utils/unit-range';
+import { protectText, extractOutsideProtected } from '../utils/protected-text';
 import { isSafeNumber } from '../utils/number-safety';
 import { patternMatches } from '../utils/pattern-matches';
 import { combineTags } from '../auto-with-manual';
@@ -217,8 +219,12 @@ const AUTO_TAG_PATTERNS = {
    */
   phone: {
     patterns: [
+      /\+?\(?\d[\d .()-]{5,22}\d\s*(?:내선|ext(?:ension)?\.?|x)\s*[:#]?\s*\d{1,8}(?!\d)/gi,
+      /\+[1-9]\d{0,2}[-.\s](?:\(\d{1,4}\)|\d{1,4})(?:[-.\s]\d{2,4}){1,3}(?![\dA-Za-z]|\s*(?:원|달러|엔|유로|위안|[₩$€£¥]|points?\b|dollars?\b|USD\b|P\b))/gi,
+      /\+[1-9]\d{7,14}(?![\dA-Za-z]|\s*(?:원|달러|엔|유로|위안|[₩$€£¥]|points?\b|dollars?\b|USD\b|P\b))/gi,
+
       // US format with country code: +1-xxx-xxx-xxxx
-      /\+1[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
+      /\+1[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b(?![\dA-Za-z]|\s*(?:원|달러|엔|유로|위안|[₩$€£¥]|points?\b|dollars?\b|USD\b|P\b))/gi,
       // US format with parentheses: (xxx) xxx-xxxx
       /\(\d{3}\)\s*\d{3}[-.\s]?\d{4}\b/g,
       // US format: xxx-xxx-xxxx, xxx.xxx.xxxx, xxx xxx xxxx
@@ -783,11 +789,11 @@ const AUTO_TAG_PATTERNS = {
   weight: {
     patterns: [
       // Weight: number + kg/mg/lb/oz/ton (kg, mg first)
-      /[\d,]+(?:\.\d+)?\s*(?:kg|mg|lbs?|oz|tons?|kilograms?|grams?|milligrams?|ounces?|pounds?)\b/gi,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?[\d,]+(?:\.\d+)?\s*(?:kg|mg|lbs?|oz|tons?|kilograms?|grams?|milligrams?|ounces?|pounds?)\b/gi,
       // Weight: number + g (lowercase only, not followed by letters)
-      /[\d,]+(?:\.\d+)?\s*g(?![a-zA-Z])/g,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?[\d,]+(?:\.\d+)?\s*g(?![a-zA-Z])/g,
     ],
-    converter: (match: string) => weight(match),
+    converter: (match: string) => convertUnitRange(match, weight, ' to '),
   },
 
   /**
@@ -868,11 +874,11 @@ const AUTO_TAG_PATTERNS = {
   distance: {
     patterns: [
       // Distance: number + km/cm/mm/kilometers/meters/centimeters/millimeters
-      /[\d,]+(?:\.\d+)?\s*(?:km|kilometers?|centimeters?|millimeters?|cm|mm)/gi,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?[\d,]+(?:\.\d+)?\s*(?:km|kilometers?|centimeters?|millimeters?|cm|mm)/gi,
       // Meters (when clear it's distance)
-      /[\d,]+(?:\.\d+)?\s*meters?\b/gi,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?[\d,]+(?:\.\d+)?\s*meters?\b/gi,
     ],
-    converter: (match: string) => distance(match),
+    converter: (match: string) => convertUnitRange(match, distance, ' to '),
   },
 
   /**
@@ -1002,17 +1008,17 @@ const AUTO_TAG_PATTERNS = {
   volume: {
     patterns: [
       // Liters: NL, NmL (must start with number)
-      /\d[\d,]*(?:\.\d+)?\s*(?:mL|ML|ml|L|ℓ|liters?|litres?)/gi,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?\d[\d,]*(?:\.\d+)?\s*(?:mL|ML|ml|L|ℓ|liters?|litres?)/gi,
       // Cubic meters: Nm³, Nm3
-      /\d[\d,]*(?:\.\d+)?\s*(?:m³|m3|cm³|cm3)/g,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?\d[\d,]*(?:\.\d+)?\s*(?:m³|m3|cm³|cm3)/g,
       // CC: Ncc (not followed by letters - exclude CCTV)
-      /\d[\d,]*(?:\.\d+)?\s*(?:cc|CC)(?![a-zA-Z])/gi,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?\d[\d,]*(?:\.\d+)?\s*(?:cc|CC)(?![a-zA-Z])/gi,
       // Gallons
-      /\d[\d,]*(?:\.\d+)?\s*(?:gallons?|gal)\b/gi,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?\d[\d,]*(?:\.\d+)?\s*(?:gallons?|gal)\b/gi,
       // Fluid ounces
-      /\d[\d,]*(?:\.\d+)?\s*(?:fl\.?\s*oz|fluid\s*ounces?)\b/gi,
+      /(?:[\d,]+(?:\.\d+)?\s*[-~–—]\s*)?\d[\d,]*(?:\.\d+)?\s*(?:fl\.?\s*oz|fluid\s*ounces?)\b/gi,
     ],
-    converter: (match: string) => volume(match),
+    converter: (match: string) => convertUnitRange(match, volume, ' to '),
   },
 
   /**
@@ -1198,6 +1204,8 @@ export function autoTag(text: string, options?: AutoTagOptions): string {
     return text;
   }
   assertInputWithinLimit(text, 'english.autoTag');
+  const protectedResult = protectText(text, (part) => autoTag(part, options));
+  if (protectedResult !== null) return protectedResult;
 
   const enabledTags = options?.enabledTags ?? SUPPORTED_AUTO_TAGS;
 
@@ -1312,6 +1320,8 @@ export function extractAutoTags(
     return [];
   }
   assertInputWithinLimit(text, 'english.extractAutoTags');
+  const protectedResult = extractOutsideProtected(text, (part) => extractAutoTags(part, options));
+  if (protectedResult !== null) return protectedResult;
 
   const enabledTags = options?.enabledTags ?? SUPPORTED_AUTO_TAGS;
   const allMatches: MatchResult[] = [];

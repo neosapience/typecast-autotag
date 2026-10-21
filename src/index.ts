@@ -1,3 +1,5 @@
+export { createVoiceAgent } from './voice-agent';
+export type { VoiceAgent, VoiceAgentOptions } from './voice-agent';
 import { combineTags } from './auto-with-manual';
 /**
  * Typecast Autotag - Multilingual Auto-Tagging Library

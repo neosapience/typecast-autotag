@@ -58,6 +58,11 @@ export function phone(input: string, options?: PhoneOptions): string {
   // 포네틱 코드 사용 여부 (기본값: false)
   const usePhoneticCode = options?.usePhoneticCode ?? false;
   const digitConverter = usePhoneticCode ? digitToPhoneticKorean : digitToPhoneKorean;
+  const extension = input.match(
+    /^(\+?\(?\d[\d\s().-]*\d)\s*(?:내선|ext(?:ension)?\.?|x)\s*[:#]?\s*(\d{1,8})$/i
+  );
+  if (extension)
+    return phone(extension[1]!, options) + ' 내선 ' + convertDigits(extension[2]!, digitConverter);
   const domesticPhoneGroups = splitDomesticPhoneGroups(input);
 
   if (domesticPhoneGroups) {

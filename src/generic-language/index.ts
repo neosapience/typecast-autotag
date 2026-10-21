@@ -1,3 +1,4 @@
+import { protectText, extractOutsideProtected } from '../utils/protected-text';
 import { isSafeNumber } from '../utils/number-safety';
 import { patternMatches } from '../utils/pattern-matches';
 import { ToWords as ArabicToWords } from 'to-words/ar-SA';
@@ -619,6 +620,8 @@ function autoTag(
 ): string {
   if (!text) return text;
   assertInputWithinLimit(text, `genericLanguage(${language}).autoTag`);
+  const protectedResult = protectText(text, (part) => autoTag(part, language, options));
+  if (protectedResult !== null) return protectedResult;
   const matches = findMatches(text, language, options?.enabledTags);
   if (matches.length === 0) return text;
 
@@ -638,6 +641,10 @@ function extractAutoTags(
 ): Array<Omit<MatchResult, 'converted'>> {
   if (!text) return [];
   assertInputWithinLimit(text, `genericLanguage(${language}).extractAutoTags`);
+  const protectedResult = extractOutsideProtected(text, (part) =>
+    extractAutoTags(part, language, options)
+  );
+  if (protectedResult !== null) return protectedResult;
   return findMatches(text, language, options?.enabledTags).map(
     ({ converted: _converted, ...match }) => match
   );

@@ -281,6 +281,36 @@ taiwaneseMandarin.autoTag('手機號碼是0912-345-678。');
 
 <br>
 
+## Voice agents
+
+Create one JavaScript/browser session per conversation. Its language and configuration are copied at creation, so changing the global default cannot affect another call.
+
+```typescript
+import { createVoiceAgent } from '@neosapience/typecast-autotag';
+
+const speech = createVoiceAgent({
+  language: 'ko',
+  pronunciations: { Typecast: '타입캐스트' },
+});
+
+speech.normalize('인증번호는 001234입니다.'); // Reads every digit, including leading zeroes.
+speech.normalize('3/4에 예약되었습니다.'); // Preserves 3/4 for clarification.
+speech.push('가격은 12,'); // '' — wait for the rest of the amount.
+speech.push('500원입니다. '); // '가격은 일만이천오백원 입니다. '
+speech.flush(); // Emit the remaining text at the end of the turn.
+speech.reset(); // Discard pending text when the user interrupts.
+```
+
+Send only non-empty `push()`/`flush()` results to TTS; keep the original text for display. Stop accepting chunks from an interrupted turn before `reset()`. Cancel queued TTS/audio separately: `reset()` only clears text that has not been emitted. The session API is JavaScript/browser only; native callers can buffer text before calling the existing conversion API.
+
+- `push()` buffers until sentence punctuation (Western punctuation followed by whitespace, or CJK punctuation/newline). It retains decimals, common English abbreviations, parenthesized/manual tags, URLs/code, and split pronunciation terms. Call `flush()` only at turn completion. This conservative buffering trades some latency for intact numbers; it is not a general sentence parser.
+- `normalize()` and each pending buffer plus incoming chunk are limited to 10,000 UTF-16 code units. Oversized calls throw `RangeError`; a failed `push()` retains the previous buffer. Empty `flush()` returns `''`.
+- Slash dates/fractions such as `3/4` stay unchanged by default. Clarify the date with the caller, use an ISO date/manual tag, or set `dateOrder: 'mdy' | 'dmy'` when the application knows the order. Yearless slash-date conversion is supported in Korean/English. Use `fraction(1/2)` for an explicit fraction.
+- Korean/English labels such as `인증번호`, `예약번호`, `계좌번호`, `verification code`, and `account number` read identifiers digit by digit (or as serials), preserving leading zeroes. Use `digits(...)`/`serial(...)` when no label is present.
+- Pronunciation keys are literal and case-sensitive, with ASCII word boundaries. Manual tags and protected URLs/code take precedence; replacements are not parsed again. `enabledTags` filters automatic tags, while date preservation, labelled identifiers and pronunciation overrides remain active.
+
+All automatic APIs now preserve HTTP(S)/`www.` URLs and backtick code. Korean/English automatic conversion also supports shared-unit decimal ranges (`1.5~2.0kg`, `1.5–2.0L`) and international phone numbers/extensions. URL/code protection and these number improvements also apply to the native builds. Verify pronunciation with your chosen TTS voice before deploying.
+
 ## API Reference
 
 ### Auto-tagging Functions

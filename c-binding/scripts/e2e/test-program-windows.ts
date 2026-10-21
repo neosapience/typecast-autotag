@@ -182,6 +182,29 @@ int main() {
     run_test(&result, "Korean comma address after digit", typecast_auto_tag,
              "101, 102동 304호", "101백이동 삼백사호", 1);
 
+    run_test(&result, "signed Korean amount is not a phone", typecast_auto_tag,
+             "+1500원", "+천오백원", 0);
+    run_test(&result, "signed English points are not a phone", typecast_auto_tag_english,
+             "+1500 points", "+one thousand five hundred points", 0);
+    run_test(&result, "large signed points bypass US phone fallback", typecast_auto_tag_english,
+             "+15000000000 points", "+fifteen billion points", 0);
+    run_test(&result, "US phone fallback format", typecast_auto_tag_english,
+             "+1 2025550175", "plus one two zero two five five five zero one seven five", 0);
+    run_test(&result, "compact international phone", typecast_auto_tag_english,
+             "+821012345678", "plus eight two one zero one two three four five six seven eight", 0);
+    run_test(&result, "URL preservation", typecast_auto_tag,
+             "https://example.com/2024/01/15", "https://example.com/2024/01/15", 0);
+    run_test(&result, "English code preservation", typecast_auto_tag_english,
+             "\`500kg\`", "\`500kg\`", 0);
+    run_test(&result, "Korean decimal range", typecast_auto_tag,
+             "1.5~2.0kg", "일 쩜 오킬로그램에서 이 쩜 영킬로그램", 0);
+    run_test(&result, "English decimal range", typecast_auto_tag_english,
+             "1.5~2.0kg", "one point five kilograms to two point zero kilograms", 0);
+    run_test(&result, "Korean phone extension", typecast_auto_tag,
+             "02-1234-5678 내선 0012", "내선 공 . 공 . 일 . 이", 1);
+    run_test(&result, "English international phone", typecast_auto_tag_english,
+             "+44 20 7946 0958", "plus four four two zero seven nine four six zero nine five eight", 0);
+
     // money tag
     run_test(&result, "money", typecast_manual_tag,
              "money(50000)원", "오만", 1);
