@@ -113,7 +113,7 @@ async function runWindowsDockerTest(
 
     // Compiler and Wine commands based on architecture
     const compiler = isX86 ? 'i686-w64-mingw32-gcc' : 'x86_64-w64-mingw32-gcc';
-    const wine = isX86 ? 'wine' : 'wine64';
+    const wine = 'wine';
 
     // Build Docker command for Wine test
     const dockerCommand = `
@@ -240,7 +240,7 @@ export async function buildWindowsTestImage(): Promise<void> {
   const dockerfilePath = new URL('../../Dockerfile.test.windows', import.meta.url).pathname;
   const contextPath = new URL('../../', import.meta.url).pathname;
 
-  await $`docker build -t typecast-autotag-test-windows -f ${dockerfilePath} ${contextPath}`.quiet();
+  await $`docker build --platform linux/amd64 -t typecast-autotag-test-windows -f ${dockerfilePath} ${contextPath}`.quiet();
 }
 
 /**

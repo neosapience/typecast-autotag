@@ -19,6 +19,11 @@ jobs:
       matrix:
         os: [ubuntu-22.04, windows-2022, macos-15-intel]
         java: ['8', '21']
+        architecture: [x64]
+        include:
+          - os: windows-2022
+            java: '8'
+            architecture: x86
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -27,6 +32,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
+          architecture: ${{ matrix.architecture }}
           cache: maven
       - name: Verify JAR and bundled native library
         run: mvn --batch-mode --no-transfer-progress -f java-binding/pom.xml verify
