@@ -48,6 +48,19 @@ class TestInitializationCleanup:
 
 
 class TestNativeReleaseRegressions:
+    def test_windows_library_matches_process_bitness(self, monkeypatch):
+        from typecast_autotag import binding
+
+        monkeypatch.setattr(binding.platform, "system", lambda: "Windows")
+        monkeypatch.setattr(binding.platform, "machine", lambda: "AMD64")
+        try:
+            for size, name in ((4, "typecast_autotag_i686.dll"), (8, "typecast_autotag_x86_64.dll")):
+                monkeypatch.setattr(binding.ctypes, "sizeof", lambda _: size)
+                binding._get_library_path.cache_clear()
+                assert binding._get_library_path().name == name
+        finally:
+            binding._get_library_path.cache_clear()
+
     def test_native_version(self):
         assert version() == "1.14.0"
 

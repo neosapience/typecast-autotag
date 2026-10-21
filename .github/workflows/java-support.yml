@@ -2,17 +2,17 @@ name: Java bindings
 
 on:
   pull_request:
-    paths: ['java-binding/**', '.github/workflows/java-support.yml']
+    paths: ['java-binding/**', 'c-binding/**', '.github/workflows/java-support.yml']
   push:
     branches: [main]
-    paths: ['java-binding/**', '.github/workflows/java-support.yml']
+    paths: ['java-binding/**', 'c-binding/**', '.github/workflows/java-support.yml']
 
 permissions:
   contents: read
 
 jobs:
   installed:
-    name: Java ${{ matrix.java }} on ${{ matrix.os }}
+    name: Java ${{ matrix.java }} ${{ matrix.architecture }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

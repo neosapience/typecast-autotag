@@ -68,7 +68,7 @@ async function runLinuxDockerTest(
 ${testProgram}
 TESTCODE
       
-      gcc -o /tmp/test /tmp/test.c -ldl 2>&1
+      gcc -std=c99 -o /tmp/test /tmp/test.c -ldl 2>&1
       /tmp/test 2>&1
     `;
 
@@ -87,7 +87,10 @@ TESTCODE
       output: result.stdout,
     };
   } catch (error) {
-    const errorOutput = error instanceof Error ? error.message : String(error);
+    const errorOutput =
+      error instanceof Error
+        ? `${error.message}\n${'stdout' in error ? error.stdout : ''}`
+        : String(error);
     return {
       name: env.name,
       passed: false,

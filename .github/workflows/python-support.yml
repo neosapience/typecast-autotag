@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   supported:
-    name: Python ${{ matrix.python }} on ${{ matrix.os }}
+    name: Python ${{ matrix.python }} ${{ matrix.architecture }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
