@@ -13,6 +13,8 @@ public class TypecastAutotagTest {
     
     @BeforeClass
     public static void setUp() throws Exception {
+        // Native strings are UTF-8 even when the platform/JNA default is not.
+        System.setProperty("jna.encoding", "windows-1252");
         // Initialize library before running tests
         TypecastAutotag.initialize();
     }

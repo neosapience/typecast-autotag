@@ -49,7 +49,7 @@ async function runLinuxDockerTest(
     const setupCommands =
       (env.setupCommands?.join(' && ') || 'true') +
       (env.image.includes('centos')
-        ? " && sed -i 's|vault.centos.org/centos/|vault.centos.org/|g' /etc/yum.repos.d/CentOS-*.repo"
+        ? " && sed -i 's|http://vault.centos.org/centos/|https://archive.kernel.org/centos-vault/|g' /etc/yum.repos.d/CentOS-*.repo"
         : '');
 
     // Get library file name
