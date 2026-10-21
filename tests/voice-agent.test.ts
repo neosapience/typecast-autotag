@@ -79,6 +79,45 @@ describe('spoken units and phone numbers', () => {
     }
   });
 
+  it.each([
+    'points',
+    'POINTS',
+    'point',
+    'dollars',
+    'dollar',
+    'USD',
+    'P',
+    '원',
+    '달러',
+    '엔',
+    '유로',
+    '위안',
+    '₩',
+    '$',
+    '€',
+    '£',
+    '¥',
+  ])('does not let the US country-code fallback override the %s suffix', (suffix) => {
+    const input = `+15000000000 ${suffix}`;
+    expect(
+      extractAutoTags(input, { language: 'en' }).some((match) => match.tagType === 'phone')
+    ).toBe(false);
+    expect(autoTag(input, { language: 'en' })).not.toContain('plus one five zero');
+  });
+
+  it('reads large quantities while retaining compact and separated US phone formats', () => {
+    expect(autoTag('+15000000000 points', { language: 'en' })).toBe('+fifteen billion points');
+    expect(autoTag('+15000000000 dollars', { language: 'en' })).toBe('+fifteen billion dollars');
+    for (const input of ['+12025550175', '+1-202-555-0175', '+1 2025550175', '+1202555-0175']) {
+      expect(autoTag(input, { language: 'en' })).toBe(
+        'plus one two zero two five five five zero one seven five'
+      );
+      expect(extractAutoTags(input, { language: 'en' })).toEqual([
+        { original: input, tagType: 'phone', start: 0, end: input.length },
+      ]);
+    }
+  });
+
   it('uses the same extension handling for direct phone tags', () => {
     expect(korean.phone('02-1234-5678 내선 0012')).toContain('내선 공 . 공 . 일 . 이');
     expect(english.phone('202-555-0175 ext. 0012')).toContain('extension zero zero one two');

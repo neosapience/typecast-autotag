@@ -224,7 +224,7 @@ const AUTO_TAG_PATTERNS = {
       /\+[1-9]\d{7,14}(?![\dA-Za-z]|\s*(?:원|달러|엔|유로|위안|[₩$€£¥]|points?\b|dollars?\b|USD\b|P\b))/gi,
 
       // US format with country code: +1-xxx-xxx-xxxx
-      /\+1[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
+      /\+1[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b(?![\dA-Za-z]|\s*(?:원|달러|엔|유로|위안|[₩$€£¥]|points?\b|dollars?\b|USD\b|P\b))/gi,
       // US format with parentheses: (xxx) xxx-xxxx
       /\(\d{3}\)\s*\d{3}[-.\s]?\d{4}\b/g,
       // US format: xxx-xxx-xxxx, xxx.xxx.xxxx, xxx xxx xxxx

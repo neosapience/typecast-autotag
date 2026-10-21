@@ -194,6 +194,10 @@ int main() {
              "+1500원", "+천오백원", 0);
     run_test(&result, "signed English points are not a phone", typecast_auto_tag_english,
              "+1500 points", "+one thousand five hundred points", 0);
+    run_test(&result, "large signed points bypass US phone fallback", typecast_auto_tag_english,
+             "+15000000000 points", "+fifteen billion points", 0);
+    run_test(&result, "US phone fallback format", typecast_auto_tag_english,
+             "+1 2025550175", "plus one two zero two five five five zero one seven five", 0);
     run_test(&result, "compact international phone", typecast_auto_tag_english,
              "+821012345678", "plus eight two one zero one two three four five six seven eight", 0);
     run_test(&result, "URL preservation", typecast_auto_tag,
