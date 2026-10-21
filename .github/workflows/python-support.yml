@@ -1,21 +1,26 @@
 name: Python support
 on:
   pull_request:
-    paths: ["python-binding/**", ".github/workflows/python-support.yml"]
+    paths: ['python-binding/**', '.github/workflows/python-support.yml']
   push:
     branches: [main]
-    paths: ["python-binding/**", ".github/workflows/python-support.yml"]
+    paths: ['python-binding/**', '.github/workflows/python-support.yml']
 permissions:
   contents: read
 jobs:
   supported:
-    name: Python ${{ matrix.python }} on ${{ matrix.os }}
+    name: Python ${{ matrix.python }} ${{ matrix.architecture }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, windows-2022, macos-15-intel]
-        python: ["3.11", "3.12", "3.13"]
+        python: ['3.11', '3.12', '3.13']
+        architecture: [x64]
+        include:
+          - os: windows-2022
+            python: '3.11'
+            architecture: x86
     defaults:
       run:
         working-directory: python-binding
@@ -27,6 +32,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: ${{ matrix.python }}
+          architecture: ${{ matrix.architecture }}
       - name: Build and validate distribution
         run: |
           python -m pip install build twine pytest
@@ -45,7 +51,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python: ["3.8", "3.9", "3.10"]
+        python: ['3.8', '3.9', '3.10']
     defaults:
       run:
         working-directory: python-binding
@@ -55,7 +61,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: "3.12"
+          python-version: '3.12'
       - run: python -m pip install build && python -m build
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
@@ -86,7 +92,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: "3.12"
+          python-version: '3.12'
       - name: Audit Python build and test tooling
         run: |
           python -m pip install --upgrade pip setuptools wheel build twine pytest pip-audit

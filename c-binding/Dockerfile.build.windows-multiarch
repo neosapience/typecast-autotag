@@ -9,7 +9,8 @@ FROM --platform=linux/amd64 debian:bullseye-slim
 ARG WIN_ARCH
 
 # Install build tools (MinGW-w64 cross-compiler)
-RUN apt-get update && \
+RUN sed -i 's|deb.debian.org/debian-security|archive.debian.org/debian-security|g' /etc/apt/sources.list && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
         mingw-w64 \
         curl \
@@ -44,7 +45,7 @@ RUN ${CC_PREFIX}-gcc -std=c99 -O2 -c \
     -o /build/duktape.o
 
 # Build Windows DLL
-RUN ${CC_PREFIX}-gcc -std=c99 -Wall -O2 -shared \
+RUN ${CC_PREFIX}-gcc -std=c99 -Wall -O2 -shared -static-libgcc \
     -DTYPECAST_BUILDING_DLL \
     -I/build/include \
     -I/build/duktape-${DUKTAPE_VERSION}/src \

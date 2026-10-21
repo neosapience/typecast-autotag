@@ -3,6 +3,7 @@ package ai.typecast.autotag;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import java.util.Collections;
 
 /**
  * Typecast Autotag library for Java.
@@ -73,7 +74,8 @@ public final class TypecastAutotag {
             NativeLibraryLoader.loadLibrary();
             LIB = Native.load(
                 NativeLibraryLoader.getLoadedLibraryPath(),
-                TypecastAutotagLib.class
+                TypecastAutotagLib.class,
+                Collections.singletonMap(Library.OPTION_STRING_ENCODING, "UTF-8")
             );
         } catch (LibraryNotFoundException e) {
             throw new ExceptionInInitializerError(e);

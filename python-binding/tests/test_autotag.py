@@ -47,6 +47,37 @@ class TestInitializationCleanup:
         assert len(parts) >= 2
 
 
+class TestNativeReleaseRegressions:
+    def test_windows_library_matches_process_bitness(self, monkeypatch):
+        from typecast_autotag import binding
+
+        monkeypatch.setattr(binding.platform, "system", lambda: "Windows")
+        monkeypatch.setattr(binding.platform, "machine", lambda: "AMD64")
+        try:
+            for size, name in ((4, "typecast_autotag_i686.dll"), (8, "typecast_autotag_x86_64.dll")):
+                monkeypatch.setattr(binding.ctypes, "sizeof", lambda _: size)
+                binding._get_library_path.cache_clear()
+                assert binding._get_library_path().name == name
+        finally:
+            binding._get_library_path.cache_clear()
+
+    def test_native_version(self):
+        assert version() == "1.14.0"
+
+    def test_protected_text(self):
+        for convert in (auto_tag, auto_tag_with_manual, auto_tag_en, auto_tag_with_manual_en):
+            text = "https://example.com/123 `500 USD`"
+            assert convert(text) == text
+
+    def test_unsafe_numbers_are_preserved(self):
+        assert auto_tag("9007199254740993원") == "9007199254740993원"
+        assert auto_tag_en("9007199254740993 dollars") == "9007199254740993 dollars"
+
+    def test_signed_money(self):
+        assert auto_tag("-500원") == "마이너스 오백원"
+        assert auto_tag_en("$-500") == "minus five hundred dollars"
+
+
 class TestAutoTag:
     """Tests for auto_tag() function."""
     

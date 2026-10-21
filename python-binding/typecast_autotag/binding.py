@@ -73,13 +73,11 @@ def _get_library_path() -> Path:
         
     elif system == "windows":
         platform_dir = lib_dir / "windows"
-        arch_map = {
-            "amd64": "typecast_autotag_x86_64.dll",
-            "x86_64": "typecast_autotag_x86_64.dll",
-            "x86": "typecast_autotag_i686.dll",
-            "i686": "typecast_autotag_i686.dll",
-        }
-        lib_name = arch_map.get(machine, "typecast_autotag.dll")
+        lib_name = (
+            "typecast_autotag_x86_64.dll"
+            if ctypes.sizeof(ctypes.c_void_p) == 8
+            else "typecast_autotag_i686.dll"
+        )
         lib_path = platform_dir / lib_name
         if not lib_path.exists():
             lib_path = platform_dir / "typecast_autotag.dll"

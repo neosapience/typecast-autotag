@@ -33,14 +33,24 @@ async function runLinuxDockerTest(
 ): Promise<DockerTestResult> {
   try {
     // Build setup commands based on image type
-    let installCommand = 'apt-get update && apt-get install -y gcc > /dev/null 2>&1';
+    let installCommand =
+      "sed -i 's|deb.debian.org/debian-security|archive.debian.org/debian-security|g' /etc/apt/sources.list && apt-get update && apt-get install -y gcc";
 
     // Check if it's a yum-based image (CentOS/Amazon Linux)
     if (env.image.includes('centos') || env.image.includes('amazonlinux')) {
-      installCommand = 'yum install -y gcc > /dev/null 2>&1';
+      const release = env.image.includes('centos:6')
+        ? '--releasever=6.10'
+        : env.image.includes('centos:7')
+          ? '--releasever=7.9.2009'
+          : '';
+      installCommand = `yum ${release} install -y gcc`;
     }
 
-    const setupCommands = env.setupCommands?.join(' && ') || 'true';
+    const setupCommands =
+      (env.setupCommands?.join(' && ') || 'true') +
+      (env.image.includes('centos')
+        ? " && sed -i 's|http://vault.centos.org/centos/|https://archive.kernel.org/centos-vault/|g' /etc/yum.repos.d/CentOS-*.repo"
+        : '');
 
     // Get library file name
     const libraryFile = env.libraryFile || 'libtypecast_autotag.so';
@@ -50,6 +60,7 @@ async function runLinuxDockerTest(
 
     // Build Docker command
     const dockerCommand = `
+      set -e
       ${setupCommands}
       ${installCommand}
       
@@ -57,7 +68,7 @@ async function runLinuxDockerTest(
 ${testProgram}
 TESTCODE
       
-      gcc -o /tmp/test /tmp/test.c -ldl 2>&1
+      gcc -std=c99 -o /tmp/test /tmp/test.c -ldl 2>&1
       /tmp/test 2>&1
     `;
 
@@ -76,7 +87,10 @@ TESTCODE
       output: result.stdout,
     };
   } catch (error) {
-    const errorOutput = error instanceof Error ? error.message : String(error);
+    const errorOutput =
+      error instanceof Error
+        ? `${error.message}\n${'stdout' in error ? error.stdout : ''}`
+        : String(error);
     return {
       name: env.name,
       passed: false,
@@ -102,10 +116,11 @@ async function runWindowsDockerTest(
 
     // Compiler and Wine commands based on architecture
     const compiler = isX86 ? 'i686-w64-mingw32-gcc' : 'x86_64-w64-mingw32-gcc';
-    const wine = isX86 ? 'wine' : 'wine64';
+    const wine = 'wine';
 
     // Build Docker command for Wine test
     const dockerCommand = `
+      set -e
       # Write test program
       cat > /tmp/test.c << 'TESTCODE'
 ${testProgram}
@@ -125,7 +140,7 @@ TESTCODE
     const result = await $`docker run --rm \
       -v ${buildDir}:/lib_check \
       --platform linux/amd64 \
-      ${env.image} sh -c ${dockerCommand}`.quiet();
+      --entrypoint sh ${env.image} -c ${dockerCommand}`.quiet();
 
     return {
       name: env.name,
@@ -228,7 +243,7 @@ export async function buildWindowsTestImage(): Promise<void> {
   const dockerfilePath = new URL('../../Dockerfile.test.windows', import.meta.url).pathname;
   const contextPath = new URL('../../', import.meta.url).pathname;
 
-  await $`docker build -t typecast-autotag-test-windows -f ${dockerfilePath} ${contextPath}`.quiet();
+  await $`docker build --platform linux/amd64 -t typecast-autotag-test-windows -f ${dockerfilePath} ${contextPath}`.quiet();
 }
 
 /**

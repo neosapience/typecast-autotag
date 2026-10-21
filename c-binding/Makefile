@@ -160,7 +160,7 @@ macos: $(WRAPPER_SRC) $(DUKTAPE_DIR) $(BUNDLE_HEADER)
 ifeq ($(UNAME_S),Darwin)
 	@echo "Building macOS dylib..."
 	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -dynamiclib \
+	$(CC) $(CFLAGS) -mmacosx-version-min=11.0 -dynamiclib \
 		-DTYPECAST_BUILDING_DLL \
 		-I$(INCLUDE_DIR) \
 		-I$(DUKTAPE_DIR)/src \
@@ -182,7 +182,7 @@ ifeq ($(UNAME_S),Darwin)
 	@echo "Building macOS universal dylib (x86_64 + arm64)..."
 	@mkdir -p $(BUILD_DIR)
 	@# Build for x86_64
-	$(CC) $(CFLAGS) -dynamiclib -arch x86_64 \
+	$(CC) $(CFLAGS) -mmacosx-version-min=11.0 -dynamiclib -arch x86_64 \
 		-DTYPECAST_BUILDING_DLL \
 		-I$(INCLUDE_DIR) \
 		-I$(DUKTAPE_DIR)/src \
@@ -192,7 +192,7 @@ ifeq ($(UNAME_S),Darwin)
 		-install_name @rpath/$(LIB_NAME).dylib \
 		-o $(BUILD_DIR)/$(LIB_NAME)_x86_64.dylib
 	@# Build for arm64
-	$(CC) $(CFLAGS) -dynamiclib -arch arm64 \
+	$(CC) $(CFLAGS) -mmacosx-version-min=11.0 -dynamiclib -arch arm64 \
 		-DTYPECAST_BUILDING_DLL \
 		-I$(INCLUDE_DIR) \
 		-I$(DUKTAPE_DIR)/src \
