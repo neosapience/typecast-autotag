@@ -675,7 +675,7 @@ english.phone('555-123-4567');
 
 ### Prerequisites
 
-- Node.js >= 18
+- Node.js >= 20.19 for development tools (the published package supports Node.js >= 18)
 - pnpm 9.x
 
 ### Quick Setup
