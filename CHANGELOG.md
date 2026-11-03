@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.14.1
+
+- Update bundled multilingual number conversion from to-words 7.2.0 to 7.4.1 in the JavaScript, ESM, and browser packages.
+
 ## Native 1.14.0, Python 3.0.1, Java 1.14.0
 
 - Rebuild the Korean and English native converters with URL/backtick-code preservation, safe large-number handling, corrected signed currency, decimal unit ranges, and international phone extensions.

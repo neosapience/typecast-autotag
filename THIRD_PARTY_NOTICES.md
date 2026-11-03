@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-## to-words 5.6.1
+## to-words 7.4.1
 
 Source: https://github.com/mastermunj/to-words
 
