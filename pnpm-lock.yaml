@@ -24,6 +24,11 @@ overrides:
   svgo: ^2.8.1
   undici: ^6.29.1
 
+patchedDependencies:
+  deepmerge@4.3.1:
+    hash: klikkrgeo6wgizfveqhu7sd4v4
+    path: patches/deepmerge@4.3.1.patch
+
 importers:
 
   .:
@@ -5232,7 +5237,7 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  deepmerge@4.3.1: {}
+  deepmerge@4.3.1(patch_hash=klikkrgeo6wgizfveqhu7sd4v4): {}
 
   default-browser-id@5.0.1: {}
 
@@ -5766,7 +5771,7 @@ snapshots:
       babel-jest: 30.5.2(@babel/core@8.0.10)
       chalk: 4.1.2
       ci-info: 4.4.0
-      deepmerge: 4.3.1
+      deepmerge: 4.3.1(patch_hash=klikkrgeo6wgizfveqhu7sd4v4)
       glob: 14.0.3
       graceful-fs: 4.2.11
       jest-circus: 30.5.2(babel-plugin-macros@3.1.0)
