@@ -15,7 +15,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
     "paths": {
       "@neosapience/typecast-autotag": ["../src"],
       "@neosapience/typecast-autotag/english": ["../src/english"]
